@@ -19,7 +19,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/supabase.js"></script>
-      <script>
+  <script>
     const form=document.getElementById("form"), err=document.getElementById("err"), btn=document.getElementById("btn");
     
     form.addEventListener("submit", async e => {
@@ -31,7 +31,6 @@
       const email = document.getElementById("identifier").value;
       const password = document.getElementById("password").value;
 
-      // 1. Proses Login ke Supabase
       const { data, error } = await loginWithIdentifier(email, password);
       
       if (error) { 
@@ -42,15 +41,15 @@
         return; 
       }
 
-      // 2. JIKA LOGIN BERHASIL, TUNGGU SEBENTAR LALU LEMPAR KE PORTAL/PANITIA
-      btn.textContent = "Berhasil, mengalihkan...";
-      
-      // Beri waktu 1 detik agar Supabase menyimpan token session ke browser
-      setTimeout(() => {
-        // Kita gunakan redirectByRole yang sudah kita buat
-        redirectByRole('kontingen'); 
-      }, 1000); 
+      // KITA SIMPAN DATA USER DI LOCAL STORAGE AGAR TIDAK LUPA
+      if (data && data.user) {
+        localStorage.setItem("jumbara_user_id", data.user.id);
+        localStorage.setItem("jumbara_user_email", data.user.email);
+      }
+
+      btn.textContent = "Berhasil...";
+      setTimeout(() => { location.href = "/portal/index.html"; }, 500); 
     });
-  </script>
+  </script>   
 </body>
 </html>
