@@ -1,5 +1,5 @@
 // assets/supabase.js
-const SUPABASE_URL      = "https://ltlltnemwhavhhmevdun.supabase.co/rest/v1/";
+const SUPABASE_URL      = "https://ltlltnemwhavhhmevdun.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_86Su9Ae3p-9Pl3cCiunnUg_ZVt0SaGO";
 
 window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
