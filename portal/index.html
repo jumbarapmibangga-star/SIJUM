@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Portal Kontingen — Jumbara</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body data-require-role="kontingen" class="bg-slate-50 min-h-screen">
+  <header class="bg-red-700 text-white p-4 flex justify-between items-center">
+    <h1 class="font-bold">Portal Kontingen</h1>
+    <button id="logout" class="text-sm underline">Keluar</button>
+  </header>
+  <main class="max-w-2xl mx-auto p-4 space-y-4">
+    <p class="text-slate-700">Halo, <b data-user-nama></b>.</p>
+    <section id="card" class="bg-white p-4 rounded shadow">Memuat…</section>
+    <nav class="grid grid-cols-2 gap-2">
+      <a href="/portal/peserta.html" class="bg-white p-3 rounded shadow text-center">Peserta</a>
+      <a id="submitLink" href="/portal/submit.html" class="hidden bg-red-600 text-white p-3 rounded shadow text-center">Submit Verifikasi</a>
+    </nav>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/supabase.js"></script>
+  <script src="/assets/ui.js"></script>
+  <script src="/assets/auth-guard.js"></script>
+  <script>
+    document.getElementById("logout").onclick = logout;
+    (async () => {
+      const p = await getMyProfile();
+      if (!p?.kontingen_id) return document.getElementById("card").textContent = "Akun belum ditautkan ke kontingen.";
+      const { data: k, error } = await sb.from("master_kontingen")
+        .select("id,nama,kode,status,revision_notes,reject_reason")
+        .eq("id", p.kontingen_id).single();
+      if (error || !k) return document.getElementById("card").textContent = "Kontingen tidak ditemukan.";
+      document.getElementById("card").innerHTML = `
+        <p class="text-lg font-semibold">${esc(k.nama)} — ${esc(k.kode)}</p>
+        <p class="mt-1">Status: ${statusBadge(k.status)}</p>
+        ${k.status==="revision" ? `<p class="text-amber-700 mt-2">Catatan: ${esc(k.revision_notes)}</p>` : ""}
+        ${k.status==="rejected" ? `<p class="text-red-700 mt-2">Ditolak: ${esc(k.reject_reason)}</p>` : ""}`;
+      if (["draft","revision"].includes(k.status)) document.getElementById("submitLink").classList.remove("hidden");
+    })();
+  </script>
+</body>
+</html>
