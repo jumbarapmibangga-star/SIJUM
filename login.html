@@ -19,7 +19,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/supabase.js"></script>
-    <script>
+      <script>
     const form=document.getElementById("form"), err=document.getElementById("err"), btn=document.getElementById("btn");
     
     form.addEventListener("submit", async e => {
@@ -31,39 +31,25 @@
       const email = document.getElementById("identifier").value;
       const password = document.getElementById("password").value;
 
-      // 1. Proses Login
-      const { data: authData, error: authError } = await loginWithIdentifier(email, password);
+      // 1. Proses Login ke Supabase
+      const { data, error } = await loginWithIdentifier(email, password);
       
-      if (authError) { 
-        err.textContent="Gagal masuk: "+authError.message; 
+      if (error) { 
+        err.textContent="Gagal masuk: "+error.message; 
         err.classList.remove("hidden"); 
         btn.disabled=false; 
         btn.textContent="Masuk"; 
         return; 
       }
 
-      // 2. Ambil Profil
-      const { data: profile, error: profError } = await sb.from("profiles")
-        .select("role, nama, aktif")
-        .eq("user_id", authData.user.id)
-        .single();
-
-      // Jika profil tidak ketemu, buat profil darurat agar bisa lanjut
-      if (profError || !profile) {
-        alert("Login berhasil, tapi data profil tidak ditemukan. Mengarahkan ke Portal Kontingen.");
-        location.href = "/portal/index.html";
-        return;
-      }
-
-      // 3. Arahkan sesuai Role
-      if (profile.role === "panitia") {
-        location.href = "/panitia/index.html";
-      } else if (profile.role === "juri") {
-        location.href = "/juri/index.html";
-      } else {
-        // Default ke kontingen
-        location.href = "/portal/index.html";
-      }
+      // 2. JIKA LOGIN BERHASIL, TUNGGU SEBENTAR LALU LEMPAR KE PORTAL/PANITIA
+      btn.textContent = "Berhasil, mengalihkan...";
+      
+      // Beri waktu 1 detik agar Supabase menyimpan token session ke browser
+      setTimeout(() => {
+        // Kita gunakan redirectByRole yang sudah kita buat
+        redirectByRole('kontingen'); 
+      }, 1000); 
     });
   </script>
 </body>
