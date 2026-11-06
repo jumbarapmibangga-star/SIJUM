@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Daftar Kontingen — Jumbara</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 p-4">
+  <main class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow space-y-3">
+    <h1 class="text-xl font-bold text-red-700">Pendaftaran Kontingen</h1>
+    <div id="closed" class="hidden text-amber-700 bg-amber-50 p-3 rounded">Pendaftaran sedang ditutup.</div>
+    <form id="form" class="space-y-3 hidden">
+      <input name="nama"     required placeholder="Nama Kontingen"          class="w-full border rounded px-3 py-2">
+      <input name="kode"     required placeholder="Kode Kontingen (unik)"   class="w-full border rounded px-3 py-2">
+      <input name="sekolah"           placeholder="Sekolah / Instansi"      class="w-full border rounded px-3 py-2">
+      <input name="alamat"            placeholder="Alamat"                  class="w-full border rounded px-3 py-2">
+      <input name="ketua"             placeholder="Nama Ketua"              class="w-full border rounded px-3 py-2">
+      <input name="phone"             placeholder="No. HP Ketua"            class="w-full border rounded px-3 py-2">
+      <input name="email"    type="email" required placeholder="Email"      class="w-full border rounded px-3 py-2">
+      <input name="password" type="password" required minlength="8" placeholder="Password (min 8)" class="w-full border rounded px-3 py-2">
+      <p id="err" class="text-red-600 text-sm hidden"></p>
+      <button id="btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Daftar</button>
+      <p class="text-sm text-center">Sudah punya akun? <a href="/login.html" class="text-red-600 underline">Masuk</a></p>
+    </form>
+    <div id="ok" class="hidden text-green-700 bg-green-50 p-3 rounded">Pendaftaran berhasil! Silakan <a href="/login.html" class="underline">login</a>.</div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/supabase.js"></script>
+  <script>
+    (async () => {
+      const { data: open } = await sb.from("app_settings").select("value").eq("key","pendaftaran_open").single();
+      if (open?.value !== true) { document.getElementById("closed").classList.remove("hidden"); return; }
+      document.getElementById("form").classList.remove("hidden");
+
+      const form=document.getElementById("form"), err=document.getElementById("err"), btn=document.getElementById("btn");
+      form.addEventListener("submit", async e => {
+        e.preventDefault(); err.classList.add("hidden"); btn.disabled=true; btn.textContent="Mendaftar…";
+        const payload = Object.fromEntries(new FormData(form).entries());
+        const { data, error } = await sb.functions.invoke("register-kontingen", { body: payload });
+        btn.disabled=false; btn.textContent="Daftar";
+        if (error || data?.error) { err.textContent = data?.error ?? error?.message ?? "Gagal"; err.classList.remove("hidden"); return; }
+        form.classList.add("hidden"); document.getElementById("ok").classList.remove("hidden");
+      });
+    })();
+  </script>
+</body>
+</html>
