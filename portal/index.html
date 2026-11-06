@@ -44,33 +44,35 @@
         .eq("user_id", savedUserId)
         .single();
 
-      if (errProfile) {
-        card.innerHTML = `<span class="text-red-500">Gagal ambil profil: ${errProfile.message}</span>`;
+      if (errProfile || !profile) {
+        card.innerHTML = `<span class="text-red-500">Gagal ambil profil: ${errProfile?.message || 'Data tidak ditemukan'}</span>`;
         return;
       }
 
-      if (profile) {
-        document.getElementById("nama-user").textContent = profile.nama;
-        
-        if (profile.kontingen_id) {
-          // 2. Ambil Kontingen
-          const { data: k, error: errKontingen } = await sb.from("master_kontingen")
-            .select("nama, kode, status")
-            .eq("id", profile.kontingen_id)
-            .single();
-            
-          if (errKontingen) {
-            card.innerHTML = `<span class="text-red-500">Gagal ambil kontingen: ${errKontingen.message}</span>`;
-          } else if (k) {
-            card.innerHTML = `
-              <p class="text-lg font-semibold text-slate-800">${esc(k.nama)}</p>
-              <p class="text-slate-600 mb-2">Kode: ${esc(k.kode)}</p>
-              <div>Status: ${statusBadge(k.status)}</div>
-            `;
-          }
+      document.getElementById("nama-user").textContent = profile.nama;
+      
+      if (profile.kontingen_id) {
+        // 2. Ambil Kontingen menggunakan limit(1) agar kebal error
+        const { data: kArray, error: errKontingen } = await sb.from("master_kontingen")
+          .select("nama, kode, status")
+          .eq("id", profile.kontingen_id)
+          .limit(1);
+          
+        const k = kArray && kArray.length > 0 ? kArray[0] : null;
+
+        if (errKontingen) {
+          card.innerHTML = `<span class="text-red-500">Gagal ambil kontingen: ${errKontingen.message}</span>`;
+        } else if (k) {
+          card.innerHTML = `
+            <p class="text-lg font-semibold text-slate-800">${esc(k.nama)}</p>
+            <p class="text-slate-600 mb-2">Kode: ${esc(k.kode)}</p>
+            <div>Status: ${statusBadge(k.status)}</div>
+          `;
         } else {
-          card.innerHTML = `<span class="text-amber-500">Akun ini belum terhubung ke kontingen mana pun.</span>`;
+          card.innerHTML = `<span class="text-amber-500">Data kontingen tidak ditemukan di database.</span>`;
         }
+      } else {
+        card.innerHTML = `<span class="text-amber-500">Akun ini belum terhubung ke kontingen mana pun. Silakan hubungi panitia.</span>`;
       }
     })();
   </script>
