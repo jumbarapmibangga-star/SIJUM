@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login — Jumbara PMI Purbalingga</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+  <form id="form" class="bg-white p-6 rounded-lg shadow max-w-sm w-full space-y-3">
+    <h1 class="text-xl font-bold text-red-700">Jumbara PMI Purbalingga</h1>
+    <p class="text-sm text-slate-600">Masuk dengan email (panitia/kontingen) atau username (juri).</p>
+    <input id="identifier" required placeholder="Email atau username" class="w-full border rounded px-3 py-2">
+    <input id="password" type="password" required placeholder="Password" class="w-full border rounded px-3 py-2">
+    <p id="err" class="text-red-600 text-sm hidden"></p>
+    <button id="btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Masuk</button>
+    <p class="text-sm text-center">Belum punya akun kontingen? <a href="/daftar.html" class="text-red-600 underline">Daftar</a></p>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/supabase.js"></script>
+  <script>
+    const form=document.getElementById("form"), err=document.getElementById("err"), btn=document.getElementById("btn");
+    form.addEventListener("submit", async e => {
+      e.preventDefault(); err.classList.add("hidden"); btn.disabled=true; btn.textContent="Memproses…";
+      const { error } = await loginWithIdentifier(
+        document.getElementById("identifier").value,
+        document.getElementById("password").value
+      );
+      if (error) { err.textContent="Gagal masuk: "+error.message; err.classList.remove("hidden"); btn.disabled=false; btn.textContent="Masuk"; return; }
+      const p = await getMyProfile();
+      if (!p || !p.aktif) { await sb.auth.signOut(); err.textContent="Akun tidak aktif."; err.classList.remove("hidden"); btn.disabled=false; btn.textContent="Masuk"; return; }
+      redirectByRole(p.role);
+    });
+  </script>
+</body>
+</html>
