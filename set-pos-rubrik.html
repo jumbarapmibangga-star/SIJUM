@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jumbara — Set Pos & Rubrik</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-red-700 text-white px-4 py-3 flex justify-between items-center shadow">
+    <h1 class="text-lg font-semibold">Jumbara — Set Pos & Rubrik</h1>
+    <span id="lockBadge" class="text-sm bg-yellow-400 text-black px-3 py-1 rounded font-bold">● Belum Terkunci</span>
+  </header>
+
+  <!-- Banner Kunci -->
+  <div id="lockBanner" class="hidden bg-red-100 text-red-800 px-4 py-2 text-sm font-semibold text-center border-b border-red-300">
+    🔒 Konfigurasi terkunci — Hanya panitia yang dapat melakukan koreksi nilai.
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-hidden flex p-4 gap-4">
+
+    <!-- Kolom Kiri: Daftar Pos -->
+    <section class="w-1/3 bg-white rounded shadow p-4 flex flex-col h-full">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-lg">Daftar Pos</h2>
+        <button id="btnAddPos" class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded">+ Pos Baru</button>
+      </div>
+      <ul id="posList" class="flex-1 overflow-y-auto space-y-1 text-sm border rounded p-2"></ul>
+      <button id="btnLock" class="mt-4 w-full bg-black hover:bg-gray-800 text-white py-2 rounded text-sm font-semibold">
+        🔒 Kunci Konfigurasi (Mulai Lomba)
+      </button>
+    </section>
+
+    <!-- Kolom Kanan: Editor Pos -->
+    <section class="w-2/3 bg-white rounded shadow p-4 flex flex-col h-full overflow-y-auto">
+      <h2 class="font-bold text-lg mb-3 border-b pb-2">Editor Pos</h2>
+
+      <form id="formPos" class="text-sm space-y-4">
+        <!-- Data Utama Pos -->
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-gray-600 font-medium">Nama Pos</span>
+            <input id="f_nama" required class="w-full border rounded px-2 py-1.5 mt-1" />
+          </label>
+          <label class="block">
+            <span class="text-gray-600 font-medium">Urutan</span>
+            <input id="f_urutan" type="number" required class="w-full border rounded px-2 py-1.5 mt-1" />
+          </label>
+          <label class="block">
+            <span class="text-gray-600 font-medium">Induk Pos (Opsional)</span>
+            <select id="f_induk" class="w-full border rounded px-2 py-1.5 mt-1">
+              <option value="">(Tidak ada induk)</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="text-gray-600 font-medium">Metode Hitung</span>
+            <select id="f_metode" class="w-full border rounded px-2 py-1.5 mt-1">
+              <option value="sum">sum</option>
+              <option value="average">average</option>
+              <option value="percentage">percentage</option>
+              <option value="sum_juri">sum_juri</option>
+              <option value="average_juri">average_juri</option>
+              <option value="percentage_juri">percentage_juri</option>
+              <option value="weighted">weighted</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Timer & Bidak -->
+        <div class="grid grid-cols-3 gap-3 items-center bg-gray-50 p-2 rounded">
+          <label class="flex items-center gap-2">
+            <input id="f_timer" type="checkbox" class="w-4 h-4" />
+            <span>Punya Timer</span>
+          </label>
+          <label class="block">
+            <span class="text-gray-600 text-xs">Waktu Maks (menit)</span>
+            <input id="f_waktu" type="number" class="w-full border rounded px-2 py-1 mt-1" />
+          </label>
+          <label class="flex items-center gap-2">
+            <input id="f_bidak" type="checkbox" class="w-4 h-4" />
+            <span>Punya Bidak</span>
+          </label>
+        </div>
+
+        <hr />
+
+        <!-- Kriteria (Tabel: kriteria) -->
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-md">Kriteria Penilaian (Kriteria)</h3>
+          <button type="button" id="btnAddKriteria" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded">+ Tambah Kriteria</button>
+        </div>
+        <div id="kriteriaList" class="space-y-2"></div>
+
+        <hr />
+
+        <!-- Rubrik (Tabel: rubrik) -->
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-md">Komponen Rubrik (Rubrik)</h3>
+          <button type="button" id="btnAddRubrik" class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded">+ Tambah Rubrik</button>
+        </div>
+        <div id="rubrikList" class="space-y-2"></div>
+
+        <!-- Aksi -->
+        <div class="flex gap-2 pt-4 border-t">
+          <button type="button" id="btnSave" class="bg-red-700 hover:bg-red-800 text-white px-6 py-2 rounded font-semibold">Simpan Pos</button>
+          <button type="button" id="btnDelete" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded">Hapus Pos</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    // ==========================================
+    // KONFIGURASI SUPABASE
+    // ==========================================
+    const SUPABASE_URL = "https://tlttlnemwhavhhmevdun.supabase.co"; // Terlihat di screenshot Anda
+    const SUPABASE_ANON_KEY = "SALIN_ANON_KEY_ANDA_DARI_DASHBOARD_SUPABASE"; // <--- GANTI INI
+    const EVENT_ID = "SALIN_UUID_EVENT_AKTIF_DARI_TABEL_EVENT"; // <--- GANTI INI
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let isLocked = false;
+    let posList = [];
+    let currentPosId = null;
+
+    // ==========================================
+    // UI UTILITIES
+    // ==========================================
+    function toast(msg, type = "info") {
+      alert(`[${type.toUpperCase()}] ${msg}`);
+    }
+
+    function applyLockUI() {
+      const badge = document.getElementById("lockBadge");
+      const banner = document.getElementById("lockBanner");
+      const btnLock = document.getElementById("btnLock");
+      
+      if (isLocked) {
+        badge.textContent = "🔒 Terkunci";
+        badge.className = "text-sm bg-gray-200 text-black px-3 py-1 rounded font-bold";
+        banner.classList.remove("hidden");
+        btnLock.disabled = true;
+        btnLock.textContent = "Konfigurasi Terkunci";
+        btnLock.classList.replace("bg-black", "bg-gray-400");
+      } else {
+        badge.textContent = "● Belum Terkunci";
+        badge.className = "text-sm bg-yellow-400 text-black px-3 py-1 rounded font-bold";
+        banner.classList.add("hidden");
+        btnLock.disabled = false;
+      }
+
+      // Disable semua input form jika terkunci
+      document.querySelectorAll("input, select, #btnAddPos, #btnAddKriteria, #btnAddRubrik, #btnSave, #btnDelete")
+        .forEach(el => { 
+          if (el.id !== "btnLock") el.disabled = isLocked; 
+        });
+    }
+
+    // ==========================================
+    // FETCH DATA
+    // ==========================================
+    async function checkLock() {
+      const { data, error } = await sb.from("config_lock").select("locked").eq("event_id", EVENT_ID).maybeSingle();
+      if (error) {
+        console.error("Gagal cek lock:", error);
+        return;
+      }
+      isLocked = data?.locked || false;
+      applyLockUI();
+    }
+
+    async function loadPos() {
+      // Mengambil pos beserta relasi kriteria dan rubrik (karena FK-nya langsung ke pos)
+      const { data, error } = await sb.from("pos")
+        .select("*, kriteria(*), rubrik(*)")
+        .eq("event_id", EVENT_ID)
+        .order("urutan");
+        
+      if (error) return toast(error.message, "error");
+      
+      posList = data || [];
+      renderPosList();
+      renderIndukOptions();
+    }
+
+    // ==========================================
+    // RENDER: DAFTAR POS
+    // ==========================================
+    function renderPosList() {
+      const ul = document.getElementById("posList");
+      ul.innerHTML = "";
+      if (posList.length === 0) {
+        ul.innerHTML = "<li class='text-gray-500 text-center py-4'>Belum ada pos.</li>";
+        return;
+      }
+      
+      posList.forEach(p => {
+        const li = document.createElement("li");
+        const isActive = p.id === currentPosId;
+        li.className = `cursor-pointer px-3 py-2 rounded flex justify-between items-center transition ${isActive ? 'bg-red-100 border-red-300 border' : 'hover:bg-gray-100'}`;
+        li.innerHTML = `
+          <div>
+            <div class="font-semibold">${p.nama}</div>
+            <div class="text-xs text-gray-500">${p.metode_hitung} | Urutan: ${p.urutan}</div>
+          </div>
+        `;
+        li.onclick = () => selectPos(p.id);
+        ul.appendChild(li);
+      });
+    }
+
+    function renderIndukOptions() {
+      const sel = document.getElementById("f_induk");
+      sel.innerHTML = `<option value="">(Tidak ada induk)</option>`;
+      posList.forEach(p => {
+        if (p.id === currentPosId) return; // Cegah siklus mandiri
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.nama;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ==========================================
+    // RENDER: FORM EDITOR
+    // ==========================================
+    function selectPos(id) {
+      currentPosId = id;
+      const p = posList.find(x => x.id === id);
+      if (!p) return clearForm();
+
+      document.getElementById("f_nama").value = p.nama;
+      document.getElementById("f_urutan").value = p.urutan;
+      document.getElementById("f_induk").value = p.induk_pos_id || "";
+      document.getElementById("f_metode").value = p.metode_hitung;
+      
+      document.getElementById("f_timer").checked = p.punya_timer || false;
+      document.getElementById("f_waktu").value = p.waktu_maksimal_menit || "";
+      document.getElementById("f_bidak").checked = p.punya_bidak || false;
+
+      renderKriteria(p.kriteria || []);
+      renderRubrik(p.rubrik || []);
+      
+      renderPosList(); // re-render list untuk highlight
+    }
+
+    function clearForm() {
+      currentPosId = null;
+      document.getElementById("formPos").reset();
+      document.getElementById("kriteriaList").innerHTML = "";
+      document.getElementById("rubrikList").innerHTML = "";
+      renderPosList();
+    }
+
+    // --- Render Baris Kriteria (Tabel: kriteria) ---
+    function renderKriteria(list) {
+      const wrap = document.getElementById("kriteriaList");
+      wrap.innerHTML = "";
+      if (list.length === 0) wrap.innerHTML = "<p class='text-xs text-gray-400'>Belum ada kriteria.</p>";
+      list.forEach(k => wrap.appendChild(kriteriaRow(k)));
+    }
+
+    function kriteriaRow(k = {}) {
+      const div = document.createElement("div");
+      div.className = "border rounded p-2 grid grid-cols-12 gap-2 text-xs bg-gray-50 items-center";
+      div.innerHTML = `
+        <input placeholder="Kode (Cth: K1)" value="${k.kode_kriteria || ''}" data-f="kode_kriteria" class="col-span-2 border rounded px-2 py-1"/>
+        <input placeholder="Nama Kriteria" value="${k.nama_kriteria || ''}" data-f="nama_kriteria" class="col-span-4 border rounded px-2 py-1"/>
+        <select data-f="tipe_nilai" class="col-span-2 border rounded px-2 py-1">
+          ${["numeric","scale","boolean","time","custom"].map(t => `<option value="${t}" ${k.tipe_nilai===t?'selected':''}>${t}</option>`).join("")}
+        </select>
+        <input type="number" placeholder="Max" value="${k.max_val ?? ''}" data-f="max_val" class="col-span-1 border rounded px-2 py-1"/>
+        <input type="number" placeholder="Bobot" value="${k.bobot ?? 1}" data-f="bobot" class="col-span-1 border rounded px-2 py-1"/>
+        <label class="col-span-1 flex items-center justify-center gap-1" title="Wajib?">
+          <input type="checkbox" data-f="wajib" ${k.wajib ? 'checked' : ''}/> Wjb
+        </label>
+        <button type="button" class="col-span-1 bg-red-500 hover:bg-red-600 text-white rounded py-1" onclick="this.parentElement.remove()">✕</button>
+      `;
+      return div;
+    }
+
+    // --- Render Baris Rubrik (Tabel: rubrik) ---
+    // Sesuai kolom: nama_komponen, bobot, skor_maks
+    function renderRubrik(list) {
+      const wrap = document.getElementById("rubrikList");
+      wrap.innerHTML = "";
+      if (list.length === 0) wrap.innerHTML = "<p class='text-xs text-gray-400'>Belum ada rubrik.</p>";
+      list.forEach(r => wrap.appendChild(rubrikRow(r)));
+    }
+
+    function rubrikRow(r = {}) {
+      const div = document.createElement("div");
+      div.className = "border rounded p-2 grid grid-cols-12 gap-2 text-xs bg-gray-50 items-center";
+      div.innerHTML = `
+        <input placeholder="Nama Komponen" value="${r.nama_komponen || ''}" data-f="nama_komponen" class="col-span-6 border rounded px-2 py-1"/>
+        <input type="number" placeholder="Bobot" value="${r.bobot ?? 1}" data-f="bobot" class="col-span-2 border rounded px-2 py-1"/>
+        <input type="number" placeholder="Skor Maks" value="${r.skor_maks ?? ''}" data-f="skor_maks" class="col-span-3 border rounded px-2 py-1"/>
+        <button type="button" class="col-span-1 bg-red-500 hover:bg-red-600 text-white rounded py-1" onclick="this.parentElement.remove()">✕</button>
+      `;
+      return div;
+    }
+
+    // ==========================================
+    // EVENT LISTENERS (TOMBOL)
+    // ==========================================
+    document.getElementById("btnAddPos").onclick = () => {
+      clearForm();
+      toast("Silakan isi form di sebelah kanan, lalu klik Simpan.", "info");
+    };
+
+    document.getElementById("btnAddKriteria").onclick = () => {
+      const list = document.getElementById("kriteriaList");
+      if(list.querySelector('p')) list.innerHTML = ""; // hapus teks kosong
+      list.appendChild(kriteriaRow());
+    };
+
+    document.getElementById("btnAddRubrik").onclick = () => {
+      const list = document.getElementById("rubrikList");
+      if(list.querySelector('p')) list.innerHTML = ""; // hapus teks kosong
+      list.appendChild(rubrikRow());
+    };
+
+    // ==========================================
+    // SIMPAN DATA (POS + KRITERIA + RUBRIK)
+    // ==========================================
+    document.getElementById("btnSave").onclick = async () => {
+      if (isLocked) return toast("Konfigurasi terkunci", "error");
+
+      const nama = document.getElementById("f_nama").value.trim();
+      if (!nama) return toast("Nama Pos wajib diisi", "error");
+
+      // 1. Siapkan payload Pos
+      const payloadPos = {
+        event_id: EVENT_ID,
+        nama: nama,
+        urutan: Number(document.getElementById("f_urutan").value || 0),
+        induk_pos_id: document.getElementById("f_induk").value || null,
+        metode_hitung: document.getElementById("f_metode").value,
+        punya_timer: document.getElementById("f_timer").checked,
+        waktu_maksimal_menit: document.getElementById("f_waktu").value ? Number(document.getElementById("f_waktu").value) : null,
+        punya_bidak: document.getElementById("f_bidak").checked
+      };
+
+      let posId = currentPosId;
+
+      // 2. Insert / Update Pos
+      if (posId) {
+        const { error } = await sb.from("pos").update(payloadPos).eq("id", posId);
+        if (error) return toast("Gagal update pos: " + error.message, "error");
+      } else {
+        const { data, error } = await sb.from("pos").insert(payloadPos).select().single();
+        if (error) return toast("Gagal simpan pos: " + error.message, "error");
+        posId = data.id;
+        currentPosId = posId;
+      }
+
+      // 3. Hapus & Insert Ulang Kriteria (Metode paling aman untuk sinkronisasi UI-DB)
+      await sb.from("kriteria").delete().eq("pos_id", posId);
+      const rowsKriteria = [...document.querySelectorAll("#kriteriaList > div")].map(div => {
+        const get = f => div.querySelector(`[data-f="${f}"]`)?.value ?? "";
+        return {
+          pos_id: posId,
+          kode_kriteria: get("kode_kriteria"),
+          nama_kriteria: get("nama_kriteria"),
+          tipe_nilai: get("tipe_nilai"),
+          max_val: get("max_val") ? Number(get("max_val")) : null,
+          bobot: Number(get("bobot") || 1),
+          wajib: div.querySelector('[data-f="wajib"]').checked
+        };
+      }).filter(r => r.kode_kriteria && r.nama_kriteria);
+
+      if (rowsKriteria.length > 0) {
+        const { error } = await sb.from("kriteria").insert(rowsKriteria);
+        if (error) return toast("Gagal simpan kriteria: " + error.message, "error");
+      }
+
+      // 4. Hapus & Insert Ulang Rubrik
+      await sb.from("rubrik").delete().eq("pos_id", posId);
+      const rowsRubrik = [...document.querySelectorAll("#rubrikList > div")].map(div => {
+        const get = f => div.querySelector(`[data-f="${f}"]`)?.value ?? "";
+        return {
+          pos_id: posId,
+          nama_komponen: get("nama_komponen"),
+          bobot: Number(get("bobot") || 1),
+          skor_maks: get("skor_maks") ? Number(get("skor_maks")) : 0
+        };
+      }).filter(r => r.nama_komponen);
+
+      if (rowsRubrik.length > 0) {
+        const { error } = await sb.from("rubrik").insert(rowsRubrik);
+        if (error) return toast("Gagal simpan rubrik: " + error.message, "error");
+      }
+
+      toast("Data Pos berhasil disimpan!", "success");
+      await loadPos();
+      selectPos(posId);
+    };
+
+    // ==========================================
+    // HAPUS POS
+    // ==========================================
+    document.getElementById("btnDelete").onclick = async () => {
+      if (isLocked) return toast("Konfigurasi terkunci", "error");
+      if (!currentPosId) return toast("Pilih pos terlebih dahulu", "error");
+      
+      if (!confirm("Hapus pos ini? Kriteria dan rubrik terkait juga akan terhapus.")) return;
+
+      // Hapus Pos (Cascade harusnya otomatis menghapus kriteria & rubrik jika FK ON DELETE CASCADE)
+      // Jika tidak, kita hapus manual dulu
+      await sb.from("kriteria").delete().eq("pos_id", currentPosId);
+      await sb.from("rubrik").delete().eq("pos_id", currentPosId);
+      
+      const { error } = await sb.from("pos").delete().eq("id", currentPosId);
+      if (error) return toast("Gagal hapus pos: " + error.message, "error");
+
+      toast("Pos berhasil dihapus!", "success");
+      clearForm();
+      await loadPos();
+    };
+
+    // ==========================================
+    // KUNCI KONFIGURASI (Via Edge Function)
+    // ==========================================
+    document.getElementById("btnLock").onclick = async () => {
+      if (isLocked) return;
+      if (!confirm("Kunci konfigurasi? Form tidak bisa diubah setelah lomba dimulai.")) return;
+
+      const { error } = await sb.functions.invoke("lock-config", {
+        body: { event_id: EVENT_ID }
+      });
+
+      if (error) return toast("Gagal kunci: " + error.message, "error");
+      
+      toast("Konfigurasi berhasil dikunci!", "success");
+      await checkLock();
+    };
+
+    // ==========================================
+    // INIT APLIKASI
+    // ==========================================
+    (async () => {
+      await checkLock();
+      await loadPos();
+    })();
+  </script>
+</body>
+</html>
