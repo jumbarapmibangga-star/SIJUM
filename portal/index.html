@@ -25,43 +25,52 @@
   <script>
     document.getElementById("logout").onclick = () => {
       localStorage.removeItem("jumbara_user_id");
-      localStorage.removeItem("jumbara_user_email");
       logout();
     };
 
     (async () => {
-      // CEK MEMORI BROWSER DULU
       const savedUserId = localStorage.getItem("jumbara_user_id");
       
-      // Jika tidak ada memori, tendang ke login
       if (!savedUserId) {
         location.href = "/login.html";
         return;
       }
 
-      // Ambil profil berdasarkan ID yang disimpan
-      const { data: profile } = await sb.from("profiles")
+      const card = document.getElementById("card");
+
+      // 1. Ambil Profil
+      const { data: profile, error: errProfile } = await sb.from("profiles")
         .select("nama, kontingen_id")
         .eq("user_id", savedUserId)
         .single();
+
+      if (errProfile) {
+        card.innerHTML = `<span class="text-red-500">Gagal ambil profil: ${errProfile.message}</span>`;
+        return;
+      }
 
       if (profile) {
         document.getElementById("nama-user").textContent = profile.nama;
         
         if (profile.kontingen_id) {
-          const { data: k } = await sb.from("master_kontingen")
-            .select("nama,kode,status")
-            .eq("id", profile.kontingen_id).single();
+          // 2. Ambil Kontingen
+          const { data: k, error: errKontingen } = await sb.from("master_kontingen")
+            .select("nama, kode, status")
+            .eq("id", profile.kontingen_id)
+            .single();
             
-          if (k) {
-            document.getElementById("card").innerHTML = `
-              <p class="text-lg font-semibold">${esc(k.nama)} — ${esc(k.kode)}</p>
-              <p class="mt-1">Status Pendaftaran: ${statusBadge(k.status)}</p>
+          if (errKontingen) {
+            card.innerHTML = `<span class="text-red-500">Gagal ambil kontingen: ${errKontingen.message}</span>`;
+          } else if (k) {
+            card.innerHTML = `
+              <p class="text-lg font-semibold text-slate-800">${esc(k.nama)}</p>
+              <p class="text-slate-600 mb-2">Kode: ${esc(k.kode)}</p>
+              <div>Status: ${statusBadge(k.status)}</div>
             `;
           }
+        } else {
+          card.innerHTML = `<span class="text-amber-500">Akun ini belum terhubung ke kontingen mana pun.</span>`;
         }
-      } else {
-        location.href = "/login.html";
       }
     })();
   </script>
