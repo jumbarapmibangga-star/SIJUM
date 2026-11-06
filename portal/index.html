@@ -11,13 +11,11 @@
     <h1 class="font-bold">Portal Kontingen</h1>
     <button id="logout" class="text-sm underline">Keluar</button>
   </header>
+  
   <main class="max-w-2xl mx-auto p-4 space-y-4">
-    <p class="text-slate-700">Halo, <b data-user-nama></b>.</p>
-    <section id="card" class="bg-white p-4 rounded shadow">Memuat…</section>
-    <nav class="grid grid-cols-2 gap-2">
-      <a href="/portal/peserta.html" class="bg-white p-3 rounded shadow text-center">Peserta</a>
-      <a id="submitLink" href="/portal/submit.html" class="hidden bg-red-600 text-white p-3 rounded shadow text-center">Submit Verifikasi</a>
-    </nav>
+    <div id="alert-msg" class="hidden bg-amber-100 text-amber-800 p-3 rounded"></div>
+    <p class="text-slate-700">Halo, <b data-user-nama>Kontingen</b>.</p>
+    <section id="card" class="bg-white p-4 rounded shadow">Memuat data...</section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -26,19 +24,41 @@
   <script src="/assets/auth-guard.js"></script>
   <script>
     document.getElementById("logout").onclick = logout;
+
     (async () => {
-      const p = await getMyProfile();
-      if (!p?.kontingen_id) return document.getElementById("card").textContent = "Akun belum ditautkan ke kontingen.";
-      const { data: k, error } = await sb.from("master_kontingen")
-        .select("id,nama,kode,status,revision_notes,reject_reason")
-        .eq("id", p.kontingen_id).single();
-      if (error || !k) return document.getElementById("card").textContent = "Kontingen tidak ditemukan.";
-      document.getElementById("card").innerHTML = `
-        <p class="text-lg font-semibold">${esc(k.nama)} — ${esc(k.kode)}</p>
-        <p class="mt-1">Status: ${statusBadge(k.status)}</p>
-        ${k.status==="revision" ? `<p class="text-amber-700 mt-2">Catatan: ${esc(k.revision_notes)}</p>` : ""}
-        ${k.status==="rejected" ? `<p class="text-red-700 mt-2">Ditolak: ${esc(k.reject_reason)}</p>` : ""}`;
-      if (["draft","revision"].includes(k.status)) document.getElementById("submitLink").classList.remove("hidden");
+      // Tunggu sebentar agar session Supabase termuat
+      setTimeout(async () => {
+        const profile = await getMyProfile();
+        
+        // Tampilkan nama user
+        if (profile && profile.nama) {
+           document.querySelector('[data-user-nama]').textContent = profile.nama;
+        }
+
+        // Ambil data kontingen
+        if (profile && profile.kontingen_id) {
+          const { data: k, error } = await sb.from("master_kontingen")
+            .select("id,nama,kode,status,revision_notes,reject_reason")
+            .eq("id", profile.kontingen_id).single();
+            
+          if (k) {
+            document.getElementById("card").innerHTML = `
+              <p class="text-lg font-semibold">${esc(k.nama)} — ${esc(k.kode)}</p>
+              <p class="mt-1">Status Pendaftaran: ${statusBadge(k.status)}</p>
+              ${k.status === "revision" ? `<p class="text-amber-700 mt-2">Catatan: ${esc(k.revision_notes)}</p>` : ""}
+              ${k.status === "rejected" ? `<p class="text-red-700 mt-2">Ditolak: ${esc(k.reject_reason)}</p>` : ""}
+            `;
+          } else {
+            document.getElementById("card").textContent = "Data kontingen tidak ditemukan.";
+          }
+        } else {
+          // Jika profil tidak punya kontingen_id (misal baru daftar tapi datanya gagal)
+          document.getElementById("card").innerHTML = `
+            <p class="text-red-600 font-semibold">Akun ini belum terhubung ke data kontingen.</p>
+            <p class="text-sm text-slate-500 mt-2">Kemungkinan pendaftaran sebelumnya gagal tersimpan di database.</p>
+          `;
+        }
+      }, 500);
     })();
   </script>
 </body>
