@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Peserta — Portal Jumbara</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body data-require-role="kontingen" class="bg-slate-50 min-h-screen">
+  <header class="bg-red-700 text-white p-4 flex justify-between items-center">
+    <a href="/portal/index.html" class="underline text-sm">← Kembali</a>
+    <h1 class="font-bold">Daftar Peserta</h1>
+    <button id="logout" class="text-sm underline">Keluar</button>
+  </header>
+  <main class="max-w-2xl mx-auto p-4 space-y-4">
+    <p id="lockNote" class="hidden bg-amber-50 text-amber-700 p-3 rounded text-sm">Data terkunci — status sudah submitted/verified.</p>
+    <table class="w-full bg-white rounded shadow">
+      <thead class="bg-slate-100 text-left"><tr><th class="p-2">#</th><th class="p-2">Nama</th><th class="p-2">JK</th><th class="p-2">Kelas</th><th class="p-2"></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <form id="formTambah" class="bg-white p-4 rounded shadow grid grid-cols-2 gap-2">
+      <input name="nama" required placeholder="Nama" class="border rounded px-3 py-2 col-span-2">
+      <select name="jenis_kelamin" class="border rounded px-3 py-2"><option value="L">L</option><option value="P">P</option></select>
+      <input name="kelas_sekolah" placeholder="Kelas" class="border rounded px-3 py-2">
+      <button class="col-span-2 bg-red-600 text-white py-2 rounded">Tambah Peserta</button>
+    </form>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/supabase.js"></script>
+  <script src="/assets/ui.js"></script>
+  <script src="/assets/auth-guard.js"></script>
+  <script>
+    document.getElementById("logout").onclick = logout;
+    let profile, locked = true;
+
+    async function reload() {
+      profile = await getMyProfile();
+      const { data: k } = await sb.from("master_kontingen").select("status").eq("id", profile.kontingen_id).single();
+      locked = !["draft","revision"].includes(k?.status);
+      document.getElementById("lockNote").classList.toggle("hidden", !locked);
+      document.getElementById("formTambah").classList.toggle("hidden", locked);
+      const { data: rows } = await sb.from("peserta")
+        .select("id,nama,jenis_kelamin,kelas_sekolah,no_urut")
+        .eq("kontingen_id", profile.kontingen_id).order("no_urut");
+      document.getElementById("rows").innerHTML = (rows ?? []).map(r => `
+        <tr class="border-t">
+          <td class="p-2">${r.no_urut ?? ""}</td>
+          <td class="p-2">${esc(r.nama)}</td>
+          <td class="p-2">${esc(r.jenis_kelamin ?? "")}</td>
+          <td class="p-2">${esc(r.kelas_sekolah ?? "")}</td>
+          <td class="p-2 text-right">${locked ? "" : `<button data-del="${r.id}" class="text-red-600 text-sm">Hapus</button>`}</td>
+        </tr>`).join("");
+      document.querySelectorAll("[data-del]").forEach(b => b.onclick = async () => {
+        if (!confirm("Hapus?")) return;
+        const { error } = await sb.from("peserta").delete().eq("id", b.dataset.del);
+        if (error) return toast(error.message, "err");
+        toast("Dihapus", "ok"); reload();
+      });
+    }
+
+    document.getElementById("formTambah").addEventListener("submit", async e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const { data: last } = await sb.from("peserta").select("no_urut")
+        .eq("kontingen_id", profile.kontingen_id).order("no_urut", { ascending: false }).limit(1);
+      const no_urut = (last?.[0]?.no_urut ?? 0) + 1;
+      const { error } = await sb.from("peserta").insert({
+        kontingen_id: profile.kontingen_id, nama: fd.get("nama"),
+        jenis_kelamin: fd.get("jenis_kelamin"),
+        kelas_sekolah: fd.get("kelas_sekolah") || null, no_urut,
+      });
+      if (error) return toast(error.message, "err");
+      e.target.reset(); toast("Ditambahkan", "ok"); reload();
+    });
+    reload();
+  </script>
+</body>
+</html>
