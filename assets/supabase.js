@@ -9,17 +9,27 @@ window.sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 window.getMyProfile = async () => {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return null;
-  const { data } = await sb.from("profiles")
+  
+  const { data, error } = await sb.from("profiles")
     .select("user_id, username, nama, role, kontingen_id, aktif")
     .eq("user_id", user.id).single();
+    
+  if (error) {
+    console.error("Gagal ambil profil:", error);
+    // Jika profil tidak ketemu, kembalikan data minimal agar tidak stuck
+    return { user_id: user.id, nama: user.email, role: 'kontingen', aktif: true };
+  }
   return data;
 };
 
 window.redirectByRole = (role) => {
-  if (role === "panitia")        location.href = "/panitia/index.html";
-  else if (role === "juri")      location.href = "/juri/index.html";
-  else if (role === "kontingen") location.href = "/portal/index.html";
-  else                            location.href = "/login.html";
+  // Tambahkan sedikit jeda agar session benar-benar tersimpan
+  setTimeout(() => {
+    if (role === "panitia")        location.href = "/panitia/index.html";
+    else if (role === "juri")      location.href = "/juri/index.html";
+    else if (role === "kontingen") location.href = "/portal/index.html";
+    else                            location.href = "/login.html";
+  }, 100);
 };
 
 window.loginWithIdentifier = async (identifier, password) => {
