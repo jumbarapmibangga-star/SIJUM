@@ -10,20 +10,29 @@
   <main class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow space-y-3">
     <h1 class="text-xl font-bold text-red-700">Pendaftaran Kontingen</h1>
     <div id="closed" class="hidden text-amber-700 bg-amber-50 p-3 rounded">Pendaftaran sedang ditutup.</div>
+    
     <form id="form" class="space-y-3 hidden">
-      <input name="nama"     required placeholder="Nama Kontingen"          class="w-full border rounded px-3 py-2">
-      <input name="kode"     required placeholder="Kode Kontingen (unik)"   class="w-full border rounded px-3 py-2">
-      <input name="sekolah"           placeholder="Sekolah / Instansi"      class="w-full border rounded px-3 py-2">
-      <input name="alamat"            placeholder="Alamat"                  class="w-full border rounded px-3 py-2">
-      <input name="ketua"             placeholder="Nama Ketua"              class="w-full border rounded px-3 py-2">
-      <input name="phone"             placeholder="No. HP Ketua"            class="w-full border rounded px-3 py-2">
-      <input name="email"    type="email" required placeholder="Email"      class="w-full border rounded px-3 py-2">
+      <!-- Pilihan Tingkatan -->
+      <select id="tingkatan" required class="w-full border rounded px-3 py-2">
+        <option value="">-- Pilih Tingkatan --</option>
+        <option value="MULA">Mula</option>
+        <option value="MADYA">Madya</option>
+        <option value="WIRA">Wira</option>
+      </select>
+
+      <input name="nama" required placeholder="Nama Kontingen / Sekolah" class="w-full border rounded px-3 py-2">
+      <input name="sekolah" placeholder="Sekolah / Instansi (opsional)" class="w-full border rounded px-3 py-2">
+      <input name="alamat" placeholder="Alamat" class="w-full border rounded px-3 py-2">
+      <input name="ketua" placeholder="Nama Ketua" class="w-full border rounded px-3 py-2">
+      <input name="phone" placeholder="No. HP Ketua" class="w-full border rounded px-3 py-2">
+      <input name="email" type="email" required placeholder="Email" class="w-full border rounded px-3 py-2">
       <input name="password" type="password" required minlength="8" placeholder="Password (min 8)" class="w-full border rounded px-3 py-2">
+      
       <p id="err" class="text-red-600 text-sm hidden"></p>
-      <button id="btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Daftar</button>
+      <button id="btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded font-semibold">Daftar</button>
       <p class="text-sm text-center">Sudah punya akun? <a href="/login.html" class="text-red-600 underline">Masuk</a></p>
     </form>
-    <div id="ok" class="hidden text-green-700 bg-green-50 p-3 rounded">Pendaftaran berhasil! Silakan <a href="/login.html" class="underline">login</a>.</div>
+    <div id="ok" class="hidden text-green-700 bg-green-50 p-3 rounded">Pendaftaran berhasil! Silakan <a href="/login.html" class="underline font-bold">login</a>.</div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -36,11 +45,15 @@
 
       const form=document.getElementById("form"), err=document.getElementById("err"), btn=document.getElementById("btn");
       form.addEventListener("submit", async e => {
-        e.preventDefault(); err.classList.add("hidden"); btn.disabled=true; btn.textContent="Mendaftar…";
+        e.preventDefault(); err.classList.add("hidden"); btn.disabled=true; btn.textContent="Mendaftar...";
+        
         const payload = Object.fromEntries(new FormData(form).entries());
+        payload.tingkatan = document.getElementById("tingkatan").value;
+
         const { data, error } = await sb.functions.invoke("register-kontingen", { body: payload });
+        
         btn.disabled=false; btn.textContent="Daftar";
-        if (error || data?.error) { err.textContent = data?.error ?? error?.message ?? "Gagal"; err.classList.remove("hidden"); return; }
+        if (error || data?.error) { err.textContent = data?.error ?? error?.message ?? "Gagal mendaftar"; err.classList.remove("hidden"); return; }
         form.classList.add("hidden"); document.getElementById("ok").classList.remove("hidden");
       });
     })();
