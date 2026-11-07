@@ -1,7 +1,3 @@
-PEDOMAN.md v1.2 — File Lengkap Terbaru untuk GitHub
-Berikut file lengkap PEDOMAN.md v1.2. Copy-paste seluruh isi di bawah ini ke PEDOMAN.md di GitHub (replace semua).
-
-markdown
 # PEDOMAN PROYEK — APLIKASI JUMBARA PMI KABUPATEN PURBALINGGA
 
 **Versi:** 1.2 (Final — Revisi Skema Penilaian, Generalisasi Komponen, Keputusan Teknis, Aturan Cetak Thermal)
