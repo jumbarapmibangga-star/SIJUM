@@ -317,5 +317,34 @@ Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak 
 | Kontingen |	Daftar peserta, submit, lihat status |
 | Publik |	Papan juara, histori peran, papan tergiat, verifikasi QR (jika publikasi aktif) |
 
+## 5. Skema Database
+### 5.1 Tabel Inti
+| Tabel	| Field Kunci |
+| ----- | ----------- |
+| event |	id, tahun, nama, status, pendaftaran_tutup_pada, pendaftaran_status, aula_mode, aula_pesan, urutan_pos_locked, publikasi_nilai |
+| tingkat |	id, nama (Mula/Madya/Wira) |
+sekolah	id, nama
+peserta_master	id, kode_peserta, nama, sekolah_id, tgl_lahir
+peserta_event	id, event_id, peserta_master_id, tim_id, tingkat_id, peran_utama
+tim	id, event_id, nama_tim, sekolah_id, tingkat_id, kode_kontingen, kontingen_event_id
+kontingen_event	id, event_id, akun_id, nama_kontingen, tingkat_id, status, verified_at, verified_by
+pos	id, event_id, kode_pos, nama_pos, urutan, jumlah_juri (≥0), metode_hitung, agregasi_komponen (tidak_ada/normalisasi_bobot), komponen (untuk sub-pos: teori/praktik/... — null untuk pos biasa), total_maks, pakai_timer, pakai_bidak, prioritas_tierbreaker, induk_pos_id, is_aktif, config_locked, locked_at, locked_by
+pos_komponen	id, pos_id, nama, bobot (0–1), urutan — Σ bobot = 1 (validasi config_locked)
+juri	id, user_id, username, nama, is_aktif
+juri_pos	juri_id, pos_id, slot (null/juri1/juri2/juri3/...) — unique (pos_id, slot); satu juri boleh di banyak pos
+rubrik	id, pos_id, nama_item, skor_maksimal, opsi_preset, urutan, is_bidak, komponen (text, merujuk pos_komponen.nama, null untuk agregasi_komponen = tidak_ada)
+penilaian_pos	id, event_id, tim_id, pos_id, nilai_final, status (menunggu_juri/final/direvisi), jumlah_juri_submit, jumlah_juri_wajib, pdf_url, qr_url, pernah_direvisi, locked_at — unique (event_id, tim_id, pos_id)
+penilaian_juri	id, penilaian_pos_id, juri_id, slot_juri, nilai_juri, status (draft/locked), locked_at — unique (penilaian_pos_id, slot_juri)
+penilaian_detail	id, penilaian_juri_id, rubrik_id, nilai — unique (penilaian_juri_id, rubrik_id)
+presensi_peserta	id, penilaian_pos_id, peserta_event_id, kode_peserta, discan_oleh, waktu_scan — unique (penilaian_pos_id, peserta_event_id)
+tierbreaker	id, penilaian_pos_id, jenis (timer/bidak), waktu_mulai_server, waktu_selesai_server, waktu_detik, bidak_petak, status, alasan — unique (penilaian_pos_id, jenis)
+koreksi_nilai	id, penilaian_pos_id, jenis_koreksi, level_koreksi (item_rubrik/nilai_juri/nilai_final), referensi_id, data_lama (jsonb), data_baru (jsonb), alasan, oleh, waktu
+histori_peran	id, event_id, peserta_event_id, peserta_master_id, pos_id, peran
+urutan_pos	id, event_id, tingkat_id, pos_id, urutan, locked_at
+audit_log	id, waktu, user_id, user_role, username, kategori, aksi, entitas, entitas_id, data_lama, data_baru, alasan, ip_address, user_agent
+Catatan revisi v1.5:
 
+presensi_peserta ditambahkan untuk mencatat kehadiran peserta per pos via scan QR.
+
+Tierbreaker Umur ditambahkan sebagai opsi penentu akhir.
 
