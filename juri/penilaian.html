@@ -112,7 +112,7 @@
       const { data: rubrik } = await window.supabaseClient.from('rubrik').select('*').eq('pos_id', currentPosId).order('urutan');
       rubrikList = rubrik || [];
 
-      // Ambil data Event
+      // Ambil data Event Pusat
       const { data: eventData } = await window.supabaseClient.from('event').select('nama, tahun').eq('id', currentEventId).single();
       currentEventData = eventData;
 
@@ -121,7 +121,7 @@
     });
 
     async function loadTim() {
-      const { data: allTim } = await window.supabaseClient.from('tim').select('*').eq('event_id', currentEventId).order('kode_kontingen');
+      const { data: allTim } = await window.supabaseClient.from('tim').select('*, tingkat(nama)').eq('event_id', currentEventId).order('kode_kontingen');
       const { data: sudahDinilai } = await window.supabaseClient.from('penilaian_juri').select('penilaian_pos_id, status, penilaian_pos(tim_id)').eq('juri_id', currentJuriId);
       
       const timSudahDinilaiIds = sudahDinilai
@@ -141,6 +141,7 @@
               <div>
                 <p class="font-mono font-bold text-red-600 text-sm">${t.kode_kontingen}</p>
                 <h3 class="font-bold text-slate-800">${t.nama_tim}</h3>
+                <p class="text-xs text-slate-500 mt-1">Tingkat: ${t.tingkat?.nama || '-'}</p>
               </div>
               <button onclick="bukaFormPenilaian('${t.id}', '${t.nama_tim}', '${t.kode_kontingen}', '${t.tingkat_id}')" class="btn-primary py-2 px-5 shadow-md">Nilai</button>
             </div>
@@ -152,7 +153,6 @@
     window.bukaFormPenilaian = async (timId, namaTim, kodeTim, tingkatId) => {
       currentTim = { id: timId, nama: namaTim, kode: kodeTim };
       
-      // Ambil data Tingkat dari tim
       const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', tingkatId).single();
       currentTingkatData = tk;
 
