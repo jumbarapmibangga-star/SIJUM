@@ -428,7 +428,9 @@ Aturan umum:
 Tiga pola konfigurasi (semua didukung, bukan mode kaku):
 
 Pola 1 — Satu pos, banyak komponen, juri sama:
+```text
 POS-X (agregasi_komponen = normalisasi_bobot, weighted, jumlah_juri = N)
   ├── pos_komponen: teori (0.3), praktik (0.7)
   └── rubrik dengan komponen = teori/praktik
 Juri → POS-X (slot juri1..juriN)
+```
