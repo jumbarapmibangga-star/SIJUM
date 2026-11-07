@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Form Juri — Jumbara PMI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans flex flex-col md:flex-row">
+
+  <aside class="w-full md:w-64 bg-slate-800 text-white flex flex-col min-h-screen">
+    <div class="p-4 bg-slate-900 border-b border-slate-700">
+      <h1 class="text-lg font-bold">Jumbara Panitia</h1>
+      <p id="userRoleDisplay" class="text-xs text-slate-400">Memuat...</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-700">
+      <button id="btnLogout" class="w-full text-left text-sm text-red-400 hover:text-red-300">Keluar (Logout)</button>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-6 md:p-8">
+    <div class="mb-6">
+      <a href="/admin/juri.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Juri</a>
+      <h2 class="text-2xl font-bold text-slate-800" id="formTitle">Tambah Juri Baru</h2>
+      <p class="text-slate-500">Masukkan username yang sudah didaftarkan di Supabase Auth.</p>
+    </div>
+
+    <form id="juriForm" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 max-w-3xl">
+      <input type="hidden" id="juriId" value="">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Username (Email)</label>
+          <input type="text" id="username" required placeholder="Contoh: juri1" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <p class="text-xs text-slate-400 mt-1">Ketik tanpa @jumbara.local (jika pakai email palsu).</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+          <input type="text" id="nama" required placeholder="Contoh: Budi Santoso" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+        </div>
+      </div>
+
+      <div class="border-t pt-4">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Penugasan Pos</h3>
+        <p class="text-sm text-slate-500 mb-4">Pilih pos mana saja yang akan dinilai oleh juri ini. (Bisa lebih dari satu)</p>
+        
+        <div id="posCheckboxList" class="space-y-2">
+          <!-- Checkbox akan diisi JS -->
+          <p class="text-sm text-slate-400 italic">Memuat daftar pos...</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t mt-6">
+        <a href="/admin/juri.html" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">Batal</a>
+        <button type="submit" id="btnSubmit" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-red-700">Simpan Juri</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-client.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    let currentEventId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+      
+      document.getElementById('userRoleDisplay').textContent = 'Panitia';
+      document.getElementById('navMenu').innerHTML = `
+        <a href="/admin/dashboard.html" class="block px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
+        <a href="/admin/pos.html" class="block px-3 py-2 rounded hover:bg-slate-700">Kelola Pos & Rubrik</a>
+        <a href="/admin/juri.html" class="block px-3 py-2 rounded bg-slate-700 font-semibold">Penugasan Juri</a>
+      `;
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+
+      // 1. Ambil Event ID
+      const { data: events } = await window.supabaseClient.from('event').select('id').eq('tahun', 2026).single();
+      if (events) currentEventId = events.id;
+
+      // 2. Ambil daftar Pos untuk Checkbox
+      const { data: posList } = await window.supabaseClient.from('pos').select('*').eq('event_id', currentEventId).order('urutan');
+      const posContainer = document.getElementById('posCheckboxList');
+      
+      if (posList && posList.length > 0) {
+        let html = '';
+        posList.forEach(p => {
+          html += `
+            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-slate-50 cursor-pointer">
+              <input type="checkbox" name="pos_ids" value="${p.id}" class="w-5 h-5 text-red-600 rounded focus:ring-red-500 pos-checkbox">
+              <div>
+                <span class="font-mono font-bold text-red-600">${p.kode_pos}</span> - 
+                <span class="font-medium text-slate-800">${p.nama_pos}</span>
+              </div>
+            </label>
+          `;
+        });
+        posContainer.innerHTML = html;
+      } else {
+        posContainer.innerHTML = '<p class="text-sm text-red-500">Belum ada pos. Buat pos terlebih dahulu.</p>';
+      }
+
+      // 3. Cek Mode Edit
+      const urlParams = new URLSearchParams(window.location.search);
+      const editId = urlParams.get('id');
+      
+      if (editId) {
+        document.getElementById('formTitle').textContent = 'Edit Juri';
+        document.getElementById('juriId').value = editId;
+        
+        // Ambil data juri
+        const { data: juri } = await window.supabaseClient.from('juri').select('*').eq('id', editId).single();
+        if (juri) {
+          document.getElementById('username').value = juri.username;
+          document.getElementById('nama').value = juri.nama;
+          document.getElementById('username').readOnly = true; // Username tidak boleh diubah
+          document.getElementById('username').classList.add('bg-slate-100');
+        }
+
+        // Centang pos yang sudah ditugaskan sebelumnya
+        const { data: penugasan } = await window.supabaseClient.from('juri_pos').select('pos_id').eq('juri_id', editId);
+        if (penugasan) {
+          penugasan.forEach(p => {
+            const cb = document.querySelector(`.pos-checkbox[value="${p.pos_id}"]`);
+            if (cb) cb.checked = true;
+          });
+        }
+      }
+
+      // 4. Submit Form
+      document.getElementById('juriForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        btn.innerHTML = 'Menyimpan...';
+        btn.disabled = true;
+
+        const id = document.getElementById('juriId').value;
+        const username = document.getElementById('username').value.trim();
+        const nama = document.getElementById('nama').value.trim();
+        
+        // Ambil pos yang dicentang
+        const selectedPos = Array.from(document.querySelectorAll('.pos-checkbox:checked')).map(cb => cb.value);
+
+        let juriId = id;
+        let error;
+
+        // Step A: Simpan ke tabel JURI (Insert atau Update)
+        if (id) {
+          const res = await window.supabaseClient.from('juri').update({ nama }).eq('id', id);
+          error = res.error;
+        } else {
+          // Pastikan user sudah ada di auth.users (kamu harus buat manual di Supabase Dashboard dulu)
+          // Kita simpan profilnya ke tabel public.juri
+          const res = await window.supabaseClient.from('juri').insert([{ 
+            username: username, 
+            nama: nama,
+            user_id: crypto.randomUUID() // Dummy UUID, nanti akan dihubungkan ke auth.users.id asli jika login
+          }]).select().single();
+          
+          if (res.error) error = res.error;
+          else juriId = res.data.id;
+        }
+
+        if (error) {
+          alert('Gagal simpan profil juri: ' + error.message);
+          btn.innerHTML = 'Simpan Juri';
+          btn.disabled = false;
+          return;
+        }
+
+        // Step B: Simpan Penugasan Pos (Hapus yang lama, Insert yang baru)
+        if (juriId) {
+          // Hapus penugasan lama (jika edit)
+          if (id) await window.supabaseClient.from('juri_pos').delete().eq('juri_id', juriId);
+          
+          // Insert penugasan baru
+          if (selectedPos.length > 0) {
+            const posPayload = selectedPos.map(posId => ({
+              juri_id: juriId,
+              pos_id: posId
+            }));
+            const resPos = await window.supabaseClient.from('juri_pos').insert(posPayload);
+            if (resPos.error) {
+              alert('Gagal simpan penugasan pos: ' + resPos.error.message);
+              btn.innerHTML = 'Simpan Juri';
+              btn.disabled = false;
+              return;
+            }
+          }
+        }
+
+        window.location.href = '/admin/juri.html';
+      });
+    });
+  </script>
+</body>
+</html>
