@@ -600,11 +600,10 @@ Juri non-digital: didampingi panitia/relawan, device khusus, UI sederhana, tombo
 ## 6.8 Koreksi
 - Juri tidak bisa edit setelah simpan (langsung locked).
 - Panitia bisa koreksi dengan jejak berlevel:
- - level_koreksi = item_rubrik → koreksi satu nilai rubrik (referensi_id = penilaian_detail.id)
- - level_koreksi = nilai_juri → koreksi total juri (referensi_id = penilaian_juri.id)
- - level_koreksi = nilai_final → koreksi nilai final pos (referensi_id = penilaian_pos.id)
-
-data_lama / data_baru disimpan sebagai jsonb
+-- level_koreksi = item_rubrik → koreksi satu nilai rubrik (referensi_id = penilaian_detail.id)
+-- level_koreksi = nilai_juri → koreksi total juri (referensi_id = penilaian_juri.id)
+-- level_koreksi = nilai_final → koreksi nilai final pos (referensi_id = penilaian_pos.id)
+--data_lama / data_baru disimpan sebagai jsonb
 
 Regenerate PDF setelah koreksi.
 
