@@ -1,5 +1,5 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v3.1)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v4.0)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -147,57 +147,6 @@ body {
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 9999px;
-}
-
-/* =========================================================
-   SISTEM LAYOUT RESPONSIF (ANTI-ATAS-BAWAH)
-   ========================================================= */
-.main-wrapper {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  min-height: 100vh;
-}
-
-.sidebar-admin {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .sidebar-admin {
-    display: flex;
-    flex-direction: column;
-    width: 16rem;
-    flex-shrink: 0;
-    background-color: white;
-    border-right: 1px solid #E2E8F0;
-    height: 100vh;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-}
-
-.main-content {
-  flex: 1;
-  width: 100%;
-  min-width: 0;
-  padding: 1rem;
-}
-
-@media (min-width: 768px) {
-  .main-content {
-    padding: 2rem;
-  }
-}
-
-.header-mobile {
-  display: flex;
-}
-@media (min-width: 768px) {
-  .header-mobile {
-    display: none;
-  }
 }
 
 /* =========================================================
