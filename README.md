@@ -1,14 +1,20 @@
+# Jumbara PMI Purbalingga
 
----
+Aplikasi **PWA** untuk mengelola lomba Jumbara PMR Mula Ke-4 Purbalingga.
 
-## Langkah Berikutnya
+## Teknologi
+HTML murni + vanilla JS + Tailwind CDN + Supabase + Vercel + PWA.
 
-`PEDOMAN.md` v1.2 sudah final. Tinggal:
+## Dokumentasi
+📘 **[PEDOMAN.md](./PEDOMAN.md)** — acuan tunggal: skema DB, aturan bisnis, keputusan teknis, rencana coding (v1.2).
 
-1. **Konfirmasi poin 12 & 13** §13.1 (jumlah pos aktual & konfigurasi 2026) — atau pakai default placeholder.
-2. **Generate `schema.sql`** final (Chat 1).
-3. **Generate `rls.sql`** lengkap.
-4. **Generate `seed.sql`** placeholder.
-5. **Mulai Chat 2** (PWA shell).
+## Cara Jalankan
+1. Clone repo.
+2. Buka `index.html` di browser, atau deploy ke Vercel.
+3. Isi `assets/js/supabase-client.js` dengan URL & anon key Supabase.
 
-Mau lanjut ke **`schema.sql` final** sekarang?
+## Status
+🚧 Dalam pengembangan — lihat [PEDOMAN.md §13](./PEDOMAN.md#13-rencana-implementasi) untuk rencana.
+
+## Lisensi
+Private — internal PMI Kabupaten Purbalingga.
