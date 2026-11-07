@@ -103,3 +103,25 @@ Aplikasi Jumbara PMI Kabupaten Purbalingga adalah **PWA (Progressive Web App)** 
   <script src="assets/js/utils.js"></script>
 </body>
 </html>
+
+{
+  "id": "/",
+  "name": "Jumbara PMR Mula Ke-4 Purbalingga",
+  "short_name": "JuriPMR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0F172A",
+  "theme_color": "#DC2626",
+  "icons": [
+    { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Portal Juri", "url": "/login.html?role=juri" },
+    { "name": "Dashboard Aula", "url": "/dashboard-aula.html" },
+    { "name": "Verifikasi QR", "url": "/verifikasi.html" }
+  ]
+}
