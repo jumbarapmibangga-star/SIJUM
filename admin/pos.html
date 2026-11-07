@@ -3,83 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Form Pos — Jumbara PMI</title>
+  <title>Kelola Pos & Rubrik — Jumbara PMI</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-100 min-h-screen font-sans flex flex-col md:flex-row">
 
-  <!-- Sidebar (Sama seperti dashboard) -->
+  <!-- Sidebar -->
   <aside class="w-full md:w-64 bg-slate-800 text-white flex flex-col min-h-screen">
     <div class="p-4 bg-slate-900 border-b border-slate-700">
       <h1 class="text-lg font-bold">Jumbara Panitia</h1>
       <p id="userRoleDisplay" class="text-xs text-slate-400">Memuat...</p>
     </div>
-    <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="navMenu"></nav>
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="navMenu">
+      <!-- Akan diisi JS -->
+    </nav>
     <div class="p-4 border-t border-slate-700">
       <button id="btnLogout" class="w-full text-left text-sm text-red-400 hover:text-red-300">Keluar (Logout)</button>
     </div>
   </aside>
 
+  <!-- Main Content -->
   <main class="flex-1 p-6 md:p-8">
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-slate-800" id="formTitle">Tambah Pos Baru</h2>
-      <p class="text-slate-500">Isi detail konfigurasi pos di bawah ini.</p>
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Kelola Pos & Rubrik</h2>
+        <p class="text-slate-500">Atur daftar lomba, jumlah juri, dan kriteria penilaian.</p>
+      </div>
+      <a href="/admin/pos-form.html" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-red-700">
+        + Tambah Pos
+      </a>
     </div>
 
-    <form id="posForm" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 max-w-3xl">
-      <!-- Hidden Input untuk Edit -->
-      <input type="hidden" id="posId" value="">
-      <input type="hidden" id="eventId" value="">
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Kode Pos</label>
-          <input type="text" id="kodePos" required placeholder="Contoh: POS-01" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Pos</label>
-          <input type="text" id="namaPos" required placeholder="Contoh: Lomba Cerdas Tangkas" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Jumlah Juri</label>
-          <input type="number" id="jumlahJuri" min="0" value="1" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-          <p class="text-xs text-slate-400 mt-1">Isi 0 jika ini pos induk (juri di sub-pos).</p>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Metode Hitung</label>
-          <select id="metodeHitung" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-            <option value="sum">Sum (Total Nilai)</option>
-            <option value="average">Average (Rata-rata)</option>
-            <option value="percentage">Percentage (Persen)</option>
-            <option value="weighted">Weighted (Normalisasi Bobot)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Urutan Tampil</label>
-          <input type="number" id="urutan" value="0" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-        </div>
-      </div>
-
-      <!-- Opsi Tambahan -->
-      <div class="border-t pt-4 space-y-3">
-        <label class="flex items-center space-x-3">
-          <input type="checkbox" id="pakaiTimer" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
-          <span class="text-sm font-medium text-slate-700">Gunakan Timer</span>
-        </label>
-        <label class="flex items-center space-x-3">
-          <input type="checkbox" id="pakaiBidak" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
-          <span class="text-sm font-medium text-slate-700">Gunakan Bidak (Pion)</span>
-        </label>
-      </div>
-
-      <div class="flex justify-end gap-3 pt-4">
-        <a href="/admin/pos.html" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">Batal</a>
-        <button type="submit" id="btnSubmit" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-red-700">Simpan Pos</button>
-      </div>
-    </form>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+            <th class="p-4 font-semibold">Urutan</th>
+            <th class="p-4 font-semibold">Kode</th>
+            <th class="p-4 font-semibold">Nama Pos</th>
+            <th class="p-4 font-semibold">Jumlah Juri</th>
+            <th class="p-4 font-semibold">Metode Hitung</th>
+            <th class="p-4 font-semibold">Status</th>
+            <th class="p-4 font-semibold text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="posTableBody">
+          <tr>
+            <td colspan="7" class="p-8 text-center text-slate-500">Memuat data pos...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -87,80 +61,71 @@
   <script src="/assets/js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Proteksi & Render Menu Sidebar
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
       
-      // Render Sidebar (Sama seperti dashboard)
       const roleLabels = { 'super_admin': 'Super Admin', 'koordinator': 'Koordinator', 'admin_event': 'Admin Event' };
       document.getElementById('userRoleDisplay').textContent = roleLabels[auth.role] || auth.role;
+      
       document.getElementById('navMenu').innerHTML = `
         <a href="/admin/dashboard.html" class="block px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
         <a href="/admin/pos.html" class="block px-3 py-2 rounded bg-slate-700 font-semibold">Kelola Pos & Rubrik</a>
         <a href="/admin/verifikasi.html" class="block px-3 py-2 rounded hover:bg-slate-700">Verifikasi Kontingen</a>
         <a href="/admin/juri.html" class="block px-3 py-2 rounded hover:bg-slate-700">Penugasan Juri</a>
+        <a href="/admin/cetak-qr.html" class="block px-3 py-2 rounded hover:bg-slate-700">Cetak QR Peserta</a>
+        <a href="/dashboard-tracker.html" class="block px-3 py-2 rounded hover:bg-slate-700">Tracker Status</a>
       `;
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
-      // Ambil Event ID
+      // 2. Ambil data Event Aktif (2026)
       const { data: events } = await window.supabaseClient.from('event').select('id').eq('tahun', 2026).single();
-      if (events) document.getElementById('eventId').value = events.id;
-
-      // Cek apakah mode Edit (ada ID di URL)
-      const urlParams = new URLSearchParams(window.location.search);
-      const editId = urlParams.get('id');
-      
-      if (editId) {
-        document.getElementById('formTitle').textContent = 'Edit Pos';
-        document.getElementById('posId').value = editId;
-        
-        // Ambil data pos yang mau diedit
-        const { data: pos } = await window.supabaseClient.from('pos').select('*').eq('id', editId).single();
-        if (pos) {
-          document.getElementById('kodePos').value = pos.kode_pos;
-          document.getElementById('namaPos').value = pos.nama_pos;
-          document.getElementById('jumlahJuri').value = pos.jumlah_juri;
-          document.getElementById('metodeHitung').value = pos.metode_hitung;
-          document.getElementById('urutan').value = pos.urutan;
-          document.getElementById('pakaiTimer').checked = pos.pakai_timer;
-          document.getElementById('pakaiBidak').checked = pos.pakai_bidak;
-        }
+      if (!events) {
+        document.getElementById('posTableBody').innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Event 2026 tidak ditemukan.</td></tr>`;
+        return;
       }
 
-      // Submit Form
-      document.getElementById('posForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('btnSubmit');
-        btn.innerHTML = 'Menyimpan...';
-        btn.disabled = true;
+      // 3. Ambil data Pos dari database
+      const { data: posList, error } = await window.supabaseClient
+        .from('pos')
+        .select('*')
+        .eq('event_id', events.id)
+        .order('urutan', { ascending: true });
 
-        const payload = {
-          event_id: document.getElementById('eventId').value,
-          kode_pos: document.getElementById('kodePos').value,
-          nama_pos: document.getElementById('namaPos').value,
-          jumlah_juri: parseInt(document.getElementById('jumlahJuri').value),
-          metode_hitung: document.getElementById('metodeHitung').value,
-          urutan: parseInt(document.getElementById('urutan').value),
-          pakai_timer: document.getElementById('pakaiTimer').checked,
-          pakai_bidak: document.getElementById('pakaiBidak').checked,
-        };
+      if (error) {
+        document.getElementById('posTableBody').innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+        return;
+      }
 
-        let error;
-        if (editId) {
-          const res = await window.supabaseClient.from('pos').update(payload).eq('id', editId);
-          error = res.error;
-        } else {
-          const res = await window.supabaseClient.from('pos').insert([payload]);
-          error = res.error;
-        }
-
-        if (error) {
-          alert('Gagal menyimpan: ' + error.message);
-          btn.innerHTML = 'Simpan Pos';
-          btn.disabled = false;
-        } else {
-          window.location.href = '/admin/pos.html';
-        }
-      });
+      // 4. Render ke Tabel
+      const tbody = document.getElementById('posTableBody');
+      if (posList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Belum ada pos. Silakan klik "+ Tambah Pos".</td></tr>`;
+      } else {
+        let html = '';
+        posList.forEach((pos, index) => {
+          html += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="p-4 text-sm text-slate-600">${index + 1}</td>
+              <td class="p-4 font-mono text-sm font-semibold text-red-600">${pos.kode_pos}</td>
+              <td class="p-4 text-sm text-slate-800 font-medium">${pos.nama_pos}</td>
+              <td class="p-4 text-sm text-slate-600">${pos.jumlah_juri} Juri</td>
+              <td class="p-4 text-sm text-slate-600 capitalize">${pos.metode_hitung}</td>
+              <td class="p-4">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full ${pos.config_locked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                  ${pos.config_locked ? 'Terkunci' : 'Draft'}
+                </span>
+              </td>
+              <td class="p-4 text-right space-x-2">
+                <!-- INI TOMBOL YANG KAMU CARI -->
+                <a href="/admin/rubrik.html?pos_id=${pos.id}" class="text-green-600 hover:underline text-sm font-semibold">Atur Rubrik</a>
+                <a href="/admin/pos-form.html?id=${pos.id}" class="text-blue-600 hover:underline text-sm font-semibold">Edit</a>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html;
+      }
     });
   </script>
 </body>
