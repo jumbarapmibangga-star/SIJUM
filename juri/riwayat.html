@@ -9,7 +9,6 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-  <!-- Header Mobile -->
   <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
     <div>
       <h1 class="text-xl font-bold">Riwayat</h1>
@@ -19,7 +18,6 @@
   </div>
 
   <div class="flex flex-1">
-    <!-- Sidebar Desktop -->
     <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm">
       <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
         <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
@@ -37,7 +35,6 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
     <main class="flex-1 p-4 md:p-8">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
@@ -167,16 +164,15 @@
       const r = riwayatData[index];
       const penPos = r.penilaian_pos;
       
-      // Gunakan optional chaining (?.) dan nilai default (||)
       const tim = penPos?.tim || {};
       const pos = penPos?.pos || {};
       const eventData = tim?.event || {};
       const tingkatData = tim?.tingkat || {};
 
       dataCetak = {
-        namaEvent: eventData.nama || 'JUMBARA PMI',
-        tahun: eventData.tahun || '-',
-        tingkat: tingkatData.nama || '-',
+        namaEvent: eventData.nama || 'JUMBARA PMR MULA KE-4 PMI PURBALINGGA', 
+        tahun: eventData.tahun || '2026',
+        tingkat: tingkatData.nama || 'MULA', 
         namaPos: pos.nama_pos || '-',
         kodePos: pos.kode_pos || '-',
         namaTim: tim.nama_tim || 'Tim Terhapus',
