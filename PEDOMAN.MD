@@ -251,16 +251,15 @@ json
   ]
 }
 assets/js/supabase-client.js:
-'''
-'''javascript
+javascript
 const SUPABASE_URL = 'https://xxx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-'''
+```
 Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak boleh ada di sini.
 
-3.5 Alur Deploy
-text
+###3.5 Alur Deploy
+```text
 1. Push kode ke GitHub (private)
    ↓
 2. Vercel otomatis detect & deploy
@@ -274,7 +273,8 @@ text
 6. Uji service worker (offline)
    ↓
 7. Uji CSP (tidak ada error di console)
-4. Aktor & Hak Akses
+```
+##4. Aktor & Hak Akses
 Aktor	Hak Akses
 Super Admin	Semua, kelola user, buka kunci, ekspor audit log
 Koordinator	Kelola event, verifikasi, koreksi, kontrol aula
