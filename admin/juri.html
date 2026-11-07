@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kelola Juri — Jumbara PMI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans flex flex-col md:flex-row">
+
+  <aside class="w-full md:w-64 bg-slate-800 text-white flex flex-col min-h-screen">
+    <div class="p-4 bg-slate-900 border-b border-slate-700">
+      <h1 class="text-lg font-bold">Jumbara Panitia</h1>
+      <p id="userRoleDisplay" class="text-xs text-slate-400">Memuat...</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-700">
+      <button id="btnLogout" class="w-full text-left text-sm text-red-400 hover:text-red-300">Keluar (Logout)</button>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-6 md:p-8">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Kelola Juri</h2>
+        <p class="text-slate-500">Daftar juri dan penugasan pos.</p>
+      </div>
+      <a href="/admin/juri-form.html" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold shadow hover:bg-red-700">
+        + Tambah Juri
+      </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+            <th class="p-4 font-semibold">No</th>
+            <th class="p-4 font-semibold">Nama Juri</th>
+            <th class="p-4 font-semibold">Username</th>
+            <th class="p-4 font-semibold">Pos yang Ditugaskan</th>
+            <th class="p-4 font-semibold">Status</th>
+            <th class="p-4 font-semibold text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="juriTableBody">
+          <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data juri...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-client.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+      
+      document.getElementById('userRoleDisplay').textContent = 'Panitia';
+      document.getElementById('navMenu').innerHTML = `
+        <a href="/admin/dashboard.html" class="block px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
+        <a href="/admin/pos.html" class="block px-3 py-2 rounded hover:bg-slate-700">Kelola Pos & Rubrik</a>
+        <a href="/admin/verifikasi.html" class="block px-3 py-2 rounded hover:bg-slate-700">Verifikasi Kontingen</a>
+        <a href="/admin/juri.html" class="block px-3 py-2 rounded bg-slate-700 font-semibold">Penugasan Juri</a>
+      `;
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+
+      // Ambil data juri beserta pos yang ditugaskan
+      const { data: juriList, error } = await window.supabaseClient
+        .from('juri')
+        .select(`
+          *,
+          juri_pos (
+            pos (kode_pos, nama_pos)
+          )
+        `)
+        .order('nama', { ascending: true });
+
+      const tbody = document.getElementById('juriTableBody');
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (juriList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Belum ada juri terdaftar.</td></tr>`;
+      } else {
+        let html = '';
+        juriList.forEach((juri, index) => {
+          // Gabungkan nama pos jika juri ditugaskan di lebih dari 1 pos
+          const posList = juri.juri_pos.map(jp => jp.pos ? jp.pos.kode_pos : '').filter(Boolean).join(', ');
+          
+          html += `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="p-4 text-sm text-slate-600">${index + 1}</td>
+              <td class="p-4 text-sm font-semibold text-slate-800">${juri.nama}</td>
+              <td class="p-4 text-sm text-slate-600 font-mono">${juri.username}</td>
+              <td class="p-4 text-sm text-slate-600">${posList || '<span class="text-red-400 italic">Belum ditugaskan</span>'}</td>
+              <td class="p-4">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full ${juri.is_aktif ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                  ${juri.is_aktif ? 'Aktif' : 'Non-aktif'}
+                </span>
+              </td>
+              <td class="p-4 text-right">
+                <a href="/admin/juri-form.html?id=${juri.id}" class="text-blue-600 hover:underline text-sm font-semibold">Edit</a>
+              </td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html;
+      }
+    });
+  </script>
+</body>
+</html>
