@@ -434,3 +434,21 @@ POS-X (agregasi_komponen = normalisasi_bobot, weighted, jumlah_juri = N)
   └── rubrik dengan komponen = teori/praktik
 Juri → POS-X (slot juri1..juriN)
 ```
+Pola 2 — Pos induk + sub-pos, juri terpisah (bisa >2 sub-pos):
+
+```text
+POS-Y (induk, agregasi_komponen = normalisasi_bobot, weighted, jumlah_juri = 0)
+  ├── POS-Y-T (sub, komponen = teori, sum, jumlah_juri = 1)
+  ├── POS-Y-P (sub, komponen = praktik, sum, jumlah_juri = 2)
+  └── POS-Y-W (sub, komponen = wawancara, sum, jumlah_juri = 1)
+  pos_komponen: teori (0.3), praktik (0.5), wawancara (0.2)
+Juri → sub-pos masing-masing via juri_pos
+```
+Pola 3 — Juri sama di beberapa pos terpisah:
+
+```text
+POS-A (sum, jumlah_juri = 1)
+POS-B (sum, jumlah_juri = 1)
+Juri X → POS-A (juri1) dan POS-B (juri1)  ← via juri_pos
+```
+Prinsip: tidak ada batasan jumlah pos, sub-pos, komponen, atau juri per pos. Semua diatur data (pos, pos_komponen, juri_pos), bukan kode.
