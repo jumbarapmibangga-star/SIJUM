@@ -41,7 +41,7 @@
     <main class="flex-1 p-4 md:p-8">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
-        <p class="text-slate-500">Daftar tim yang sudah Anda nilai.</p>
+        <p class="text-slate-500">Daftar tim yang sudah Anda nilai. Anda dapat mencetak ulang struk di sini.</p>
       </div>
 
       <div id="riwayatContainer" class="space-y-4">
@@ -55,6 +55,10 @@
   <script src="/assets/js/auth.js"></script>
   <script src="/assets/js/theme.js"></script>
   <script>
+    let bluetoothDevice = null;
+    let bluetoothCharacteristic = null;
+    let riwayatData = []; // Simpan data untuk keperluan cetak
+
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['juri']);
       if (!auth) return;
@@ -65,13 +69,15 @@
       document.getElementById('userNameDisplay').textContent = juri.nama;
       document.getElementById('userNameDisplayMobile').textContent = juri.nama;
 
-      // AMBIL DATA NILAI YANG SUDAH DI-LOCK
+      // Ambil data riwayat
       const { data: riwayat, error } = await window.supabaseClient
         .from('penilaian_juri')
         .select(`
+          id,
           nilai_juri,
           locked_at,
           penilaian_pos (
+            id,
             tim (nama_tim, kode_kontingen),
             pos (nama_pos, kode_pos)
           )
@@ -90,35 +96,119 @@
       if (!riwayat || riwayat.length === 0) {
         container.innerHTML = `<p class="text-slate-500 text-center py-10">Belum ada riwayat penilaian.</p>`;
       } else {
-        container.innerHTML = '';
-        riwayat.forEach(r => {
+        riwayatData = riwayat;
+        let html = '';
+        
+        riwayat.forEach((r, index) => {
           const penPos = r.penilaian_pos;
           const tim = penPos ? penPos.tim : null;
           const pos = penPos ? penPos.pos : null;
           
           if (tim && pos) {
-            container.innerHTML += `
-              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
-                <div class="flex justify-between items-start">
+            // Format tanggal
+            const tgl = r.locked_at ? new Date(r.locked_at).toLocaleString('id-ID') : '-';
+
+            html += `
+              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-5">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  
+                  <!-- Info Tim & Pos -->
                   <div>
                     <p class="text-xs font-bold text-red-600 mb-1">${pos.nama_pos} (${pos.kode_pos})</p>
                     <h3 class="font-bold text-lg text-slate-800">${tim.nama_tim}</h3>
                     <p class="font-mono text-sm text-slate-500">${tim.kode_kontingen}</p>
+                    <p class="text-xs text-slate-400 mt-1">Dinilai: ${tgl}</p>
                   </div>
-                  <div class="text-right">
-                    <p class="text-xs text-slate-400">Nilai Akhir</p>
-                    <p class="text-2xl font-bold text-red-600">${r.nilai_juri}</p>
+                  
+                  <!-- Nilai & Tombol Aksi -->
+                  <div class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
+                    <div class="text-left md:text-right">
+                      <p class="text-xs text-slate-400 font-semibold uppercase">Nilai Akhir</p>
+                      <p class="text-3xl font-bold text-red-600">${r.nilai_juri}</p>
+                    </div>
+                    <button onclick="cetakUlang(${index})" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-slate-900 transition">
+                      🖨️ Cetak Ulang
+                    </button>
                   </div>
-                </div>
-                <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-400">
-                  Dinilai pada: ${new Date(r.locked_at).toLocaleString('id-ID')}
+
                 </div>
               </div>
             `;
           }
         });
+        container.innerHTML = html;
       }
     });
+
+    // Fungsi Cetak Ulang
+    window.cetakUlang = async (index) => {
+      const r = riwayatData[index];
+      const penPos = r.penilaian_pos;
+      const tim = penPos.tim;
+      const pos = penPos.pos;
+
+      // Jika belum terhubung, minta hubungkan dulu
+      if (!bluetoothCharacteristic) {
+        if(!confirm('Printer belum terhubung. Hubungkan sekarang?')) return;
+        const connected = await connectPrinter();
+        if (!connected) return; // Batal jika gagal konek
+      }
+
+      // Cetak struk
+      await prosesCetakStruk(pos.nama_pos, pos.kode_pos, tim.nama_tim, tim.kode_kontingen, r.nilai_juri);
+    };
+
+    // Fungsi Koneksi Bluetooth (Sama seperti di penilaian.html)
+    async function connectPrinter() {
+      if (!navigator.bluetooth) {
+        alert('Browser Anda tidak mendukung Web Bluetooth. Gunakan Chrome di Android.');
+        return false;
+      }
+      try {
+        bluetoothDevice = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
+        });
+        const server = await bluetoothDevice.gatt.connect();
+        const services = await server.getPrimaryServices();
+        const service = services[0];
+        const characteristics = await service.getCharacteristics();
+        bluetoothCharacteristic = characteristics[0];
+
+        alert('Printer Bluetooth berhasil terhubung: ' + bluetoothDevice.name);
+        return true;
+      } catch (error) {
+        alert('Gagal konek printer: ' + error.message);
+        return false;
+      }
+    }
+
+    // Fungsi Mengirim Teks ke Printer
+    async function prosesCetakStruk(namaPos, kodePos, namaTim, kodeTim, nilai) {
+      const teksStruk = `
+================================
+JUMBARA PMR MULA KE-4
+PMI KABUPATEN PURBALINGGA
+================================
+POS: ${namaPos} (${kodePos})
+Tim: ${kodeTim} - ${namaTim}
+--------------------------------
+NILAI AKHIR: ${nilai}
+--------------------------------
+Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
+================================
+
+`;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(teksStruk);
+      
+      try {
+        await bluetoothCharacteristic.writeValue(data);
+        alert('Struk sedang dicetak...');
+      } catch (error) {
+        alert('Gagal mencetak: ' + error.message);
+      }
+    }
   </script>
 </body>
 </html>
