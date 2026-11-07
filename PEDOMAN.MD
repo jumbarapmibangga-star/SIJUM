@@ -125,3 +125,54 @@ Aplikasi Jumbara PMI Kabupaten Purbalingga adalah **PWA (Progressive Web App)** 
     { "name": "Verifikasi QR", "url": "/verifikasi.html" }
   ]
 }
+```
+##3.3 Struktur Folder
+jumbara-purbalingga/
+├── index.html
+├── login.html
+├── portal-kontingen.html
+├── dashboard-aula.html
+├── dashboard-tracker.html
+├── dashboard-laporan.html
+├── verifikasi.html
+├── offline.html
+├── admin/
+│   ├── dashboard.html
+│   ├── pos.html
+│   ├── kontingen.html
+│   ├── juri.html
+│   ├── juara.html
+│   ├── koreksi.html
+│   ├── cetak-qr.html
+│   ├── users.html
+│   └── audit.html
+├── juri/
+│   ├── pos.html
+│   ├── tim.html
+│   ├── penilaian.html
+│   ├── riwayat.html
+│   └── aktivitas.html
+├── assets/
+│   ├── css/
+│   │   └── custom.css
+│   ├── js/
+│   │   ├── supabase-client.js
+│   │   ├── auth.js
+│   │   ├── timer.js
+│   │   ├── penilaian.js
+│   │   ├── scanner-qr.js
+│   │   ├── cetak-thermal.js
+│   │   ├── qr.js
+│   │   ├── pdf.js
+│   │   └── utils.js
+│   └── img/
+│       ├── logo.png
+│       ├── icon-192.png
+│       ├── icon-512.png
+│       └── icon-maskable-512.png
+├── manifest.json
+├── sw.js
+├── vercel.json
+├── .gitignore
+├── README.md
+└── PEDOMAN.md
