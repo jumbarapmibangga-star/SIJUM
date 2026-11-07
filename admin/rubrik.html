@@ -7,67 +7,69 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col">
 
-  <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col min-h-screen shadow-sm">
-    <div class="p-5 bg-red-700 text-white shadow-md">
-      <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-      <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
-    </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors" onclick="toggleTheme()">
-        <span id="themeIcon"></span>
-      </button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-    </div>
-  </aside>
+  <div class="main-wrapper">
+    <aside class="sidebar-admin">
+      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+        <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+        <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
+          <span id="themeIcon"></span>
+        </button>
+        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+      </div>
+    </aside>
 
-  <main class="flex-1 p-6 md:p-8">
-    <div class="mb-6">
-      <a href="/admin/pos.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Pos</a>
-      <h2 class="text-2xl font-bold text-slate-800" id="posTitle">Memuat...</h2>
-      <p class="text-slate-500">Atur soal dan bobot komponen untuk pos ini.</p>
-    </div>
-
-    <div id="komponenPanel" class="hidden form-card mb-6">
-      <h3 class="text-lg font-semibold text-slate-800 mb-4">Pengaturan Komponen (Metode Weighted)</h3>
-      <form id="komponenForm" class="flex flex-wrap gap-4 items-end">
-        <div>
-          <label class="input-label">Nama Komponen</label>
-          <input type="text" id="namaKomponen" required placeholder="Contoh: Teori" class="input-field w-48">
-        </div>
-        <div>
-          <label class="input-label">Bobot (Desimal)</label>
-          <input type="number" id="bobotKomponen" step="0.01" min="0" max="1" required placeholder="Contoh: 0.3" class="input-field w-32">
-        </div>
-        <button type="submit" class="btn-primary bg-slate-800 hover:bg-slate-900">Tambah Komponen</button>
-      </form>
-      <div id="komponenList" class="mt-4 flex gap-2 flex-wrap"></div>
-    </div>
-
-    <div class="form-card">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-slate-800">Daftar Soal (Rubrik)</h3>
-        <button id="btnTambahRubrik" class="btn-primary text-sm py-1.5 px-3">+ Tambah Soal</button>
+    <main class="flex-1 p-4 md:p-8">
+      <div class="mb-6">
+        <a href="/admin/pos.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Pos</a>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800" id="posTitle">Memuat...</h2>
+        <p class="text-sm md:text-base text-slate-500">Atur soal dan bobot komponen untuk pos ini.</p>
       </div>
 
-      <table class="table-custom">
-        <thead>
-          <tr>
-            <th>Urutan</th>
-            <th>Nama Soal / Item</th>
-            <th>Skor Maksimal</th>
-            <th>Komponen</th>
-            <th class="text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="rubrikTableBody">
-          <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat rubrik...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </main>
+      <div id="komponenPanel" class="hidden form-card mb-6">
+        <h3 class="text-lg font-semibold text-slate-800 mb-4">Pengaturan Komponen (Metode Weighted)</h3>
+        <form id="komponenForm" class="flex flex-wrap gap-4 items-end">
+          <div>
+            <label class="input-label">Nama Komponen</label>
+            <input type="text" id="namaKomponen" required placeholder="Contoh: Teori" class="input-field w-48">
+          </div>
+          <div>
+            <label class="input-label">Bobot (Desimal)</label>
+            <input type="number" id="bobotKomponen" step="0.01" min="0" max="1" required placeholder="Contoh: 0.3" class="input-field w-32">
+          </div>
+          <button type="submit" class="btn-primary bg-slate-800 hover:bg-slate-900">Tambah Komponen</button>
+        </form>
+        <div id="komponenList" class="mt-4 flex gap-2 flex-wrap"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-slate-800">Daftar Soal (Rubrik)</h3>
+          <button id="btnTambahRubrik" class="btn-primary text-sm py-1.5 px-3">+ Tambah Soal</button>
+        </div>
+
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>Urutan</th>
+              <th>Nama Soal / Item</th>
+              <th>Skor Maksimal</th>
+              <th>Komponen</th>
+              <th class="text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rubrikTableBody">
+            <tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat rubrik...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
 
   <div id="modalRubrik" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 form-card">
