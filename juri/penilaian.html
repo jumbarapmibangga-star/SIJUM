@@ -120,16 +120,16 @@
       container.innerHTML = '';
 
       if (timBelumDinilai.length === 0) {
-        container.innerHTML = `<p class="text-green-600 font-bold text-lg p-4 bg-green-50 rounded-lg">🎉 Semua tim di pos ini sudah Anda nilai!</p>`;
+        container.innerHTML = `<p class="text-green-600 font-bold text-lg p-4 bg-green-50 rounded-lg col-span-full">🎉 Semua tim di pos ini sudah Anda nilai!</p>`;
       } else {
         timBelumDinilai.forEach(t => {
           container.innerHTML += `
-            <div class="form-card flex justify-between items-center">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex justify-between items-center">
               <div>
                 <p class="font-mono font-bold text-red-600 text-sm">${t.kode_kontingen}</p>
                 <h3 class="font-bold text-slate-800">${t.nama_tim}</h3>
               </div>
-              <button onclick="bukaFormPenilaian('${t.id}', '${t.nama_tim}', '${t.kode_kontingen}')" class="btn-primary py-2 px-4 shadow-md">Nilai</button>
+              <button onclick="bukaFormPenilaian('${t.id}', '${t.nama_tim}', '${t.kode_kontingen}')" class="btn-primary py-2 px-5 shadow-md">Nilai</button>
             </div>
           `;
         });
@@ -141,7 +141,6 @@
       document.getElementById('timListContainer').classList.add('hidden');
       document.getElementById('formPenilaianContainer').classList.remove('hidden');
       
-      // Scroll ke atas saat form dibuka
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       let formHtml = `
@@ -150,7 +149,7 @@
             <h3 class="text-xl font-bold text-slate-800">${namaTim}</h3>
             <p class="font-mono text-sm text-red-600 font-bold">${kodeTim}</p>
           </div>
-          <button onclick="kembaliKeDaftarTim()" class="text-slate-500 hover:text-red-600 text-sm font-bold bg-slate-100 px-3 py-2 rounded-lg">&larr; Batal</button>
+          <button onclick="kembaliKeDaftarTim()" class="text-slate-500 hover:text-red-600 text-sm font-bold bg-slate-100 px-4 py-2 rounded-lg">&larr; Batal</button>
         </div>
 
         <!-- Tombol Koneksi Printer -->
@@ -192,16 +191,13 @@
       formHtml += `<h4 class="font-bold text-slate-800 mb-3 border-b pb-2">Form Penilaian</h4><form id="formNilai" class="space-y-5">`;
       
       rubrikList.forEach(r => {
-        // Buat tombol preset (misal 1,2,3,4,5) berdasarkan skor maksimal
         let presetButtons = '';
         const max = parseFloat(r.skor_maksimal);
-        // Jika maksimal <= 10, tampilkan tombol 1 sampai maks. Jika lebih, tampilkan per 10an.
         if (max <= 10) {
           for(let i=1; i<=max; i++) {
             presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
           }
         } else {
-          // Untuk skor besar (misal 100), sediakan tombol kelipatan 10
           for(let i=10; i<=max; i+=10) {
             presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
           }
@@ -215,10 +211,8 @@
             </div>
             
             <div class="flex gap-3 items-center mt-3">
-              <!-- Input Manual -->
               <input type="number" name="rubrik_${r.id}" id="input_${r.id}" step="0.5" required min="0" max="${r.skor_maksimal}" class="input-field w-24 text-center font-bold text-lg border-2 focus:border-red-600" placeholder="0">
               
-              <!-- Tombol Cepat -->
               <div class="flex-1 flex flex-wrap gap-1.5 overflow-x-auto pb-1">
                 ${presetButtons}
               </div>
@@ -239,6 +233,7 @@
 
       if (currentPos.pakai_timer) mulaiTimer(timId);
 
+      // SUBMIT FORM
       document.getElementById('formNilai').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -261,54 +256,75 @@
           detailsPayload.push({ rubrik_id: r.id, nilai: nilai });
         });
 
-        // Simpan ke Penilaian Pos
-        let { data: penPos } = await window.supabaseClient.from('penilaian_pos').select('id').eq('event_id', currentEventId).eq('tim_id', timId).eq('pos_id', currentPosId).maybeSingle();
-        if (!penPos) {
-          const { data: newPenPos, error: errPP } = await window.supabaseClient.from('penilaian_pos').insert({
-            event_id: currentEventId, tim_id: timId, pos_id: currentPosId, jumlah_juri_wajib: currentPos.jumlah_juri, status: 'menunggu_juri'
-          }).select().single();
-          if (errPP) { alert('Error: ' + errPP.message); btn.innerHTML = 'Simpan'; btn.disabled = false; return; }
-          penPos = newPenPos;
-        }
-
-        // Simpan Penilaian Juri
-        const { data: penJuri, error: errPJ } = await window.supabaseClient.from('penilaian_juri').insert({
-          penilaian_pos_id: penPos.id, juri_id: currentJuriId, slot_juri: `juri_${currentJuriId.substring(0,4)}`, nilai_juri: totalNilai, status: 'locked'
-        }).select().single();
-        if (errPJ) { alert('Error: ' + errPJ.message); btn.innerHTML = 'Simpan'; btn.disabled = false; return; }
-
-        // Simpan Detail Rubrik
-        const finalDetails = detailsPayload.map(d => ({ penilaian_juri_id: penJuri.id, rubrik_id: d.rubrik_id, nilai: d.nilai }));
-        await window.supabaseClient.from('penilaian_detail').insert(finalDetails);
-
-        // Simpan Presensi
-        const listHadir = document.querySelectorAll('.badge-hadir');
-        if (listHadir.length > 0) {
-          const presensiPayload = Array.from(listHadir).map(el => ({
-            penilaian_pos_id: penPos.id, peserta_event_id: el.dataset.pesertaId, kode_peserta: el.dataset.kode, discan_oleh: currentJuriId
-          }));
-          await window.supabaseClient.from('presensi_peserta').insert(presensiPayload);
-        }
-
-        // Stop Timer
-        if (currentPos.pakai_timer) {
-          await window.supabaseClient.from('tierbreaker').upsert({
-            penilaian_pos_id: penPos.id, jenis: 'timer', waktu_selesai_server: new Date().toISOString(), status: 'final'
-          }, { onConflict: 'penilaian_pos_id, jenis' });
-        }
-
-        alert('Nilai berhasil disimpan dan dikunci!');
-        
-        // Tawarkan Cetak Struk jika printer terhubung
-        if (bluetoothDevice && bluetoothCharacteristic) {
-          if(confirm('Nilai tersimpan. Cetak struk sekarang?')) {
-            await cetakStruk(namaTim, kodeTim, totalNilai);
+        try {
+          // 1. Simpan ke Penilaian Pos
+          let { data: penPos } = await window.supabaseClient.from('penilaian_pos').select('id').eq('event_id', currentEventId).eq('tim_id', timId).eq('pos_id', currentPosId).maybeSingle();
+          if (!penPos) {
+            const { data: newPenPos, error: errPP } = await window.supabaseClient.from('penilaian_pos').insert({
+              event_id: currentEventId, 
+              tim_id: timId, 
+              pos_id: currentPosId, 
+              jumlah_juri_wajib: currentPos.jumlah_juri, 
+              status: 'menunggu_juri' // Menggunakan string biasa, DB akan konversi otomatis
+            }).select().single();
+            if (errPP) throw errPP;
+            penPos = newPenPos;
           }
-        }
 
-        window.location.reload();
+          // 2. Simpan Penilaian Juri
+          const { data: penJuri, error: errPJ } = await window.supabaseClient.from('penilaian_juri').insert({
+            penilaian_pos_id: penPos.id, 
+            juri_id: currentJuriId, 
+            slot_juri: `juri_${currentJuriId.substring(0,4)}`, 
+            nilai_juri: totalNilai, 
+            status: 'locked'
+          }).select().single();
+          if (errPJ) throw errPJ;
+
+          // 3. Simpan Detail Rubrik
+          const finalDetails = detailsPayload.map(d => ({ penilaian_juri_id: penJuri.id, rubrik_id: d.rubrik_id, nilai: d.nilai }));
+          await window.supabaseClient.from('penilaian_detail').insert(finalDetails);
+
+          // 4. Simpan Presensi
+          const listHadir = document.querySelectorAll('.badge-hadir');
+          if (listHadir.length > 0) {
+            const presensiPayload = Array.from(listHadir).map(el => ({
+              penilaian_pos_id: penPos.id, 
+              peserta_event_id: el.dataset.pesertaId, 
+              kode_peserta: el.dataset.kode, 
+              discan_oleh: currentJuriId
+            }));
+            await window.supabaseClient.from('presensi_peserta').insert(presensiPayload);
+          }
+
+          // 5. Stop Timer
+          if (currentPos.pakai_timer) {
+            await window.supabaseClient.from('tierbreaker').upsert({
+              penilaian_pos_id: penPos.id, 
+              jenis: 'timer', 
+              waktu_selesai_server: new Date().toISOString(), 
+              status: 'final'
+            }, { onConflict: 'penilaian_pos_id, jenis' });
+          }
+
+          alert('Nilai berhasil disimpan dan dikunci!');
+          
+          // Tawarkan Cetak Struk
+          if (bluetoothDevice && bluetoothCharacteristic) {
+            if(confirm('Nilai tersimpan. Cetak struk sekarang?')) {
+              await cetakStruk(namaTim, kodeTim, totalNilai);
+            }
+          }
+
+          window.location.reload();
+
+        } catch (err) {
+          alert('Error: ' + err.message);
+          btn.innerHTML = 'Simpan & Kunci Nilai'; btn.disabled = false;
+        }
       });
 
+      // Scan Manual via Enter
       document.getElementById('qrInput').addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -318,12 +334,10 @@
       });
     };
 
-    // Fungsi untuk mengisi nilai lewat tombol preset
     window.setNilai = (rubrikId, val) => {
       const input = document.getElementById(`input_${rubrikId}`);
       if (input) {
         input.value = val;
-        // Efek getar di HP (opsional)
         if (navigator.vibrate) navigator.vibrate(50);
       }
     };
@@ -334,7 +348,6 @@
       document.getElementById('timListContainer').classList.remove('hidden');
     };
 
-    // FUNGSI SCAN KAMERA
     window.scanKamera = () => {
       const scannerArea = document.getElementById('scannerArea');
       scannerArea.classList.remove('hidden');
@@ -382,9 +395,6 @@
       window.kembaliKeDaftarTim = () => { clearInterval(interval); originalKembali(); };
     }
 
-    // ==========================================
-    // FITUR BLUETOOTH PRINTER (Web Bluetooth)
-    // ==========================================
     window.connectPrinter = async () => {
       if (!navigator.bluetooth) {
         alert('Browser Anda tidak mendukung Web Bluetooth. Gunakan Chrome di Android.');
@@ -397,9 +407,9 @@
         });
         const server = await bluetoothDevice.gatt.connect();
         const services = await server.getPrimaryServices();
-        const service = services[0]; // Ambil service pertama (biasanya printer)
+        const service = services[0];
         const characteristics = await service.getCharacteristics();
-        bluetoothCharacteristic = characteristics[0]; // Ambil characteristic pertama
+        bluetoothCharacteristic = characteristics[0];
 
         document.getElementById('printerStatusText').textContent = 'Printer Terhubung: ' + bluetoothDevice.name;
         document.getElementById('printerStatusText').classList.add('text-green-400');
@@ -426,7 +436,6 @@ Waktu: ${new Date().toLocaleTimeString('id-ID')}
 ================================
 
 `;
-      // Encode teks ke ESC/POS (Sederhananya pakai text encoder)
       const encoder = new TextEncoder();
       const data = encoder.encode(teksStruk);
       
