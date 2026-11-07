@@ -129,7 +129,7 @@
         }
       }
 
-      // 4. Submit Form
+            // 4. Submit Form
       document.getElementById('juriForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
@@ -137,26 +137,38 @@
         btn.disabled = true;
 
         const id = document.getElementById('juriId').value;
-        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('username').value.trim() + '@jumbara.local'; // Paksa domain lokal
         const nama = document.getElementById('nama').value.trim();
         
-        // Ambil pos yang dicentang
         const selectedPos = Array.from(document.querySelectorAll('.pos-checkbox:checked')).map(cb => cb.value);
 
         let juriId = id;
         let error;
 
-        // Step A: Simpan ke tabel JURI (Insert atau Update)
+        // STEP A: Cari User UID dari tabel auth.users menggunakan RPC (Fungsi Database)
+        // (Kita butuh ini agar user_id di tabel juri sesuai dengan auth.users)
+        const { data: userIdData, error: userError } = await window.supabaseClient
+          .rpc('get_user_id_by_email', { email_input: email });
+
+        if (userError || !userIdData) {
+          alert('Error: Akun login untuk email tersebut belum dibuat di Supabase Authentication, atau RPC belum dibuat.');
+          btn.innerHTML = 'Simpan Juri';
+          btn.disabled = false;
+          return;
+        }
+
+        const finalUserId = userIdData;
+
+        // STEP B: Simpan ke tabel JURI
         if (id) {
-          const res = await window.supabaseClient.from('juri').update({ nama }).eq('id', id);
+          const res = await window.supabaseClient.from('juri').update({ nama, email, user_id: finalUserId }).eq('id', id);
           error = res.error;
         } else {
-          // Pastikan user sudah ada di auth.users (kamu harus buat manual di Supabase Dashboard dulu)
-          // Kita simpan profilnya ke tabel public.juri
           const res = await window.supabaseClient.from('juri').insert([{ 
-            username: username, 
+            username: document.getElementById('username').value.trim(), // Simpan username tanpa domain
+            email: email,
             nama: nama,
-            user_id: crypto.randomUUID() // Dummy UUID, nanti akan dihubungkan ke auth.users.id asli jika login
+            user_id: finalUserId 
           }]).select().single();
           
           if (res.error) error = res.error;
@@ -170,17 +182,12 @@
           return;
         }
 
-        // Step B: Simpan Penugasan Pos (Hapus yang lama, Insert yang baru)
+        // STEP C: Simpan Penugasan Pos
         if (juriId) {
-          // Hapus penugasan lama (jika edit)
           if (id) await window.supabaseClient.from('juri_pos').delete().eq('juri_id', juriId);
           
-          // Insert penugasan baru
           if (selectedPos.length > 0) {
-            const posPayload = selectedPos.map(posId => ({
-              juri_id: juriId,
-              pos_id: posId
-            }));
+            const posPayload = selectedPos.map(posId => ({ juri_id: juriId, pos_id: posId }));
             const resPos = await window.supabaseClient.from('juri_pos').insert(posPayload);
             if (resPos.error) {
               alert('Gagal simpan penugasan pos: ' + resPos.error.message);
@@ -192,7 +199,6 @@
         }
 
         window.location.href = '/admin/juri.html';
-      });
     });
   </script>
 </body>
