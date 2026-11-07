@@ -452,3 +452,23 @@ POS-B (sum, jumlah_juri = 1)
 Juri X → POS-A (juri1) dan POS-B (juri1)  ← via juri_pos
 ```
 Prinsip: tidak ada batasan jumlah pos, sub-pos, komponen, atau juri per pos. Semua diatur data (pos, pos_komponen, juri_pos), bukan kode.
+
+### 6.3.2 Rumus weighted (Generalisasi N Komponen)
+```text
+untuk setiap komponen k di pos_komponen:
+  normal_k = (Σ_i Σnilai_k_juri_i / N) / maks_k × 100
+  kontribusi_k = normal_k × bobot_k
+```
+nilai_final = Σ_k kontribusi_k
+- N = jumlah juri submit (locked) di pos/sub-pos terkait.
+- maks_k = Σ skor_maksimal rubrik dengan komponen = k.
+- Σ bobot_k = 1.
+- Normalisasi per komponen + rata-rata lintas juri.
+- Untuk pos induk (juri di sub-pos): nilai_final = Σ (normalisasi nilai sub-pos × bobot komponen).
+
+Catatan:
+- Wajib minimal satu rubrik per komponen di pos_komponen.
+- Jika hanya satu komponen, paksa bobot = 1 dan metode = sum/average (bukan weighted).
+- Tidak menormalisasi skala global; normalisasi per komponen sudah menyerap perbedaan skala.
+
+## 6.4 Tierbreaker
