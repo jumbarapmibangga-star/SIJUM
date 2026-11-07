@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Portal Kontingen — Jumbara PMI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/custom.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
+    <div class="max-w-4xl mx-auto flex justify-between items-center p-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold" style="background-color: #B71C1C;">PMI</div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-800 leading-tight">Portal Kontingen</h1>
+          <p id="namaKontingenHeader" class="text-xs text-slate-500">Memuat...</p>
+        </div>
+      </div>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 px-3 py-2 rounded-lg hover:bg-red-50 transition">Keluar</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-20">
+    
+    <!-- Status Badge -->
+    <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm"></div>
+
+    <div id="formSection" class="space-y-6">
+      
+      <!-- Card 1: Data Tim -->
+      <div class="form-card">
+        <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">1. Identitas Tim</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="input-label">Nama Sekolah / Kontingen</label>
+            <input type="text" id="namaKontingen" required placeholder="Contoh: SD N 1 Purbalingga" class="input-field">
+          </div>
+          <div>
+            <label class="input-label">Kode Kontingen</label>
+            <input type="text" id="kodeKontingen" required placeholder="Contoh: MU-01" class="input-field uppercase">
+            <p class="text-xs text-slate-400 mt-1">Isi sesuai kode yang diberikan panitia.</p>
+          </div>
+          <div class="md:col-span-2">
+            <label class="input-label">Tingkat Perlombaan</label>
+            <select id="tingkatId" required class="input-field">
+              <option value="">-- Pilih Tingkat --</option>
+              <!-- Diisi JS -->
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Data Peserta -->
+      <div class="form-card">
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+          <h2 class="text-xl font-bold text-slate-800">2. Daftar Peserta</h2>
+          <button type="button" id="btnTambahPeserta" class="btn-primary text-sm py-1.5 px-3">+ Tambah Peserta</button>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="table-custom min-w-full">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama Lengkap</th>
+                <th>Tanggal Lahir</th>
+                <th>Peran Utama</th>
+                <th class="text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="pesertaTableBody">
+              <!-- Baris peserta diisi JS -->
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">* Minimal 1 peserta. Pastikan nama dan tanggal lahir sesuai dengan akta/dokumen resmi.</p>
+      </div>
+
+      <!-- Tombol Aksi -->
+      <div class="flex flex-col md:flex-row justify-end gap-3 pt-4">
+        <button type="button" id="btnSimpanDraft" class="btn-secondary w-full md:w-auto">Simpan sebagai Draft</button>
+        <button type="button" id="btnSubmit" class="btn-primary w-full md:w-auto text-lg py-3 px-8">Submit & Kunci Data</button>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-client.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script>
+    let currentEventId = null;
+    let currentKontingenId = null;
+    let currentTimId = null;
+    let listTingkat = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['kontingen']);
+      if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+
+      // 1. Ambil Event ID Aktif
+      const { data: events } = await window.supabaseClient.from('event').select('id').order('tahun', { ascending: false }).limit(1);
+      if (!events || events.length === 0) { alert('Event belum dibuka oleh panitia.'); return logoutUser(); }
+      currentEventId = events[0].id;
+
+      // 2. Ambil Master Tingkat
+      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      listTingkat = tingkatData || [];
+      const selectTingkat = document.getElementById('tingkatId');
+      listTingkat.forEach(t => {
+        selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+      });
+
+      // 3. Cek apakah akun ini sudah pernah mendaftar
+      const { data: kontingen } = await window.supabaseClient
+        .from('kontingen_event')
+        .select('*')
+        .eq('event_id', currentEventId)
+        .eq('akun_id', auth.user.id)
+        .maybeSingle();
+
+      if (kontingen) {
+        currentKontingenId = kontingen.id;
+        document.getElementById('namaKontingen').value = kontingen.nama_kontingen;
+        document.getElementById('tingkatId').value = kontingen.tingkat_id;
+        document.getElementById('namaKontingenHeader').textContent = kontingen.nama_kontingen;
+
+        // Ambil data tim
+        const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
+        if (tim) {
+          currentTimId = tim.id;
+          document.getElementById('kodeKontingen').value = tim.kode_kontingen;
+        }
+
+        // Jika status sudah submit/verified, kunci form
+        if (kontingen.status !== 'draft') {
+          lockForm(kontingen.status);
+        } else {
+          document.getElementById('statusBanner').classList.add('hidden');
+        }
+
+        // Load data peserta jika sudah ada
+        if (currentTimId) {
+          const { data: peserta } = await window.supabaseClient
+            .from('peserta_event')
+            .select(`id, peran_utama, peserta_master (nama, tgl_lahir)`)
+            .eq('tim_id', currentTimId);
+          
+          if (peserta && peserta.length > 0) {
+            peserta.forEach(p => {
+              addPesertaRow({
+                nama: p.peserta_master.nama,
+                tgl_lahir: p.peserta_master.tgl_lahir,
+                peran: p.peran_utama
+              });
+            });
+          }
+        }
+      } else {
+        document.getElementById('statusBanner').classList.add('hidden');
+      }
+
+      // Jika belum ada baris peserta, tambahkan 1 baris kosong
+      if (document.getElementById('pesertaTableBody').children.length === 0) {
+        addPesertaRow();
+      }
+
+      // Event Listener
+      document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
+      document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
+      document.getElementById('btnSubmit').addEventListener('click', () => {
+        if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Pastikan semua data sudah benar. Lanjutkan?')) {
+          saveData('submitted');
+        }
+      });
+    });
+
+    // Fungsi Tambah Baris Peserta
+    function addPesertaRow(data = null) {
+      const tbody = document.getElementById('pesertaTableBody');
+      const tr = document.createElement('tr');
+      
+      tr.innerHTML = `
+        <td class="text-center font-bold text-slate-400">#</td>
+        <td><input type="text" class="input-field text-sm" placeholder="Nama Lengkap" value="${data ? data.nama : ''}" required></td>
+        <td><input type="date" class="input-field text-sm" value="${data ? data.tgl_lahir : ''}" required></td>
+        <td>
+          <select class="input-field text-sm">
+            <option value="narator" ${data && data.peran === 'narator' ? 'selected' : ''}>Narator</option>
+            <option value="pelaku_praktik" ${data && data.peran === 'pelaku_praktik' ? 'selected' : ''}>Pelaku Praktik</option>
+            <option value="teori" ${data && data.peran === 'teori' ? 'selected' : ''}>Teori</option>
+            <option value="cadangan" ${data && data.peran === 'cadangan' ? 'selected' : ''}>Cadangan</option>
+            <option value="lainnya" ${data && data.peran === 'lainnya' ? 'selected' : ''}>Lainnya</option>
+          </select>
+        </td>
+        <td class="text-right">
+          <button type="button" class="text-red-600 hover:underline text-sm font-semibold" onclick="this.closest('tr').remove()">Hapus</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    // Fungsi Kunci Form (Jika sudah disubmit)
+    function lockForm(status) {
+      const banner = document.getElementById('statusBanner');
+      banner.classList.remove('hidden');
+      
+      if (status === 'submitted') {
+        banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800';
+        banner.innerHTML = '⏳ Data Anda sudah disubmit dan sedang menunggu verifikasi dari Panitia.';
+      } else if (status === 'verified') {
+        banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800';
+        banner.innerHTML = '✅ Selamat! Pendaftaran tim Anda telah diverifikasi oleh Panitia.';
+      } else if (status === 'rejected') {
+        banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800';
+        banner.innerHTML = '❌ Pendaftaran ditolak. Silakan hubungi panitia untuk keterangan lebih lanjut.';
+      }
+
+      // Disable semua input
+      document.querySelectorAll('input, select, button').forEach(el => {
+        if (el.id !== 'btnLogout') el.disabled = true;
+      });
+      document.getElementById('btnTambahPeserta').classList.add('hidden');
+      document.getElementById('btnSimpanDraft').classList.add('hidden');
+      document.getElementById('btnSubmit').classList.add('hidden');
+    }
+
+    // Fungsi Simpan Data
+    async function saveData(actionStatus) {
+      const btn = actionStatus === 'draft' ? document.getElementById('btnSimpanDraft') : document.getElementById('btnSubmit');
+      btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+      const namaKontingen = document.getElementById('namaKontingen').value;
+      const kodeKontingen = document.getElementById('kodeKontingen').value.toUpperCase();
+      const tingkatId = document.getElementById('tingkatId').value;
+
+      if (!namaKontingen || !kodeKontingen || !tingkatId) {
+        alert('Lengkapi Identitas Tim terlebih dahulu!');
+        btn.innerHTML = actionStatus === 'draft' ? 'Simpan sebagai Draft' : 'Submit & Kunci Data'; btn.disabled = false;
+        return;
+      }
+
+      try {
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        let kontingenId = currentKontingenId;
+
+        // A. Simpan Kontingen
+        if (!kontingenId) {
+          const { data: newK, error: errK } = await window.supabaseClient.from('kontingen_event').insert([{
+            event_id: currentEventId, akun_id: session.user.id, nama_kontingen: namaKontingen, tingkat_id: tingkatId, status: actionStatus
+          }]).select().single();
+          if (errK) throw errK;
+          kontingenId = newK.id;
+          currentKontingenId = kontingenId;
+        } else {
+          const { error: errK } = await window.supabaseClient.from('kontingen_event').update({
+            nama_kontingen: namaKontingen, tingkat_id: tingkatId, status: actionStatus
+          }).eq('id', kontingenId);
+          if (errK) throw errK;
+        }
+
+        // B. Simpan Tim
+        let timId = currentTimId;
+        if (!timId) {
+          const { data: newT, error: errT } = await window.supabaseClient.from('tim').insert([{
+            event_id: currentEventId, kontingen_event_id: kontingenId, nama_tim: namaKontingen, tingkat_id: tingkatId, kode_kontingen: kodeKontingen
+          }]).select().single();
+          if (errT) throw errT;
+          timId = newT.id;
+          currentTimId = timId;
+        } else {
+          const { error: errT } = await window.supabaseClient.from('tim').update({ 
+            nama_tim: namaKontingen, kode_kontingen: kodeKontingen, tingkat_id: tingkatId 
+          }).eq('id', timId);
+          if (errT) throw errT;
+        }
+
+        // C. Hapus peserta lama, insert peserta baru
+        await window.supabaseClient.from('peserta_event').delete().eq('tim_id', timId);
+
+        const rows = document.querySelectorAll('#pesertaTableBody tr');
+        if (rows.length === 0) throw new Error('Minimal harus ada 1 peserta.');
+
+        for (const row of rows) {
+          const inputs = row.querySelectorAll('input, select');
+          const nama = inputs[0].value;
+          const tgl = inputs[1].value;
+          const peran = inputs[2].value;
+
+          if (nama && tgl) {
+            // Cek/Insert Peserta Master
+            let { data: pm } = await window.supabaseClient.from('peserta_master').select('id').eq('nama', nama).eq('tgl_lahir', tgl).maybeSingle();
+            if (!pm) {
+              // Generate kode peserta otomatis: KODE_KONTINGEN-URUT
+              const kodePeserta = `${kodeKontingen}-0${Math.floor(Math.random() * 90) + 10}`; // Random sementara
+              const { data: newPm, error: errPm } = await window.supabaseClient.from('peserta_master')
+                .insert([{ nama, tgl_lahir: tgl, kode_peserta: kodePeserta }]).select().single();
+              if (errPm) throw errPm;
+              pm = newPm;
+            }
+
+            // Insert ke Peserta Event
+            await window.supabaseClient.from('peserta_event').insert([{
+              event_id: currentEventId, peserta_master_id: pm.id, tim_id: timId, tingkat_id: tingkatId, peran_utama: peran
+            }]);
+          }
+        }
+
+        alert(actionStatus === 'draft' ? 'Draft berhasil disimpan.' : 'Pendaftaran berhasil dikirim! Menunggu verifikasi panitia.');
+        window.location.reload();
+
+      } catch (err) {
+        alert('Error: ' + err.message);
+        btn.innerHTML = actionStatus === 'draft' ? 'Simpan sebagai Draft' : 'Submit & Kunci Data'; btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
