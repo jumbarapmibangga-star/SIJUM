@@ -8,17 +8,8 @@
   <link rel="stylesheet" href="/assets/css/custom.css">
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    /* Khusus Mobile: Input angka jadi lebih besar agar mudah disentuh */
-    input[type="number"] {
-      -moz-appearance: textfield;
-      font-size: 1.25rem !important; /* Teks lebih besar */
-      height: 3rem; /* Tinggi kotak lebih lega */
-    }
-    input[type="number"]::-webkit-outer-spin-button,
-    input[type="number"]::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
+    input[type="number"] { -moz-appearance: textfield; font-size: 1.25rem !important; height: 3rem; }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   </style>
 </head>
 <body class="min-h-screen flex flex-col md:flex-row">
@@ -39,7 +30,6 @@
     </div>
   </aside>
 
-  <!-- Header Mobile -->
   <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
     <div>
       <h1 class="text-lg font-bold">Juri PMI</h1>
@@ -54,16 +44,32 @@
       <p class="text-sm md:text-base text-slate-500" id="posSubtitle">Pilih tim untuk dinilai.</p>
     </div>
 
-    <!-- Daftar Tim -->
     <div id="timListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <p class="text-slate-500">Memuat daftar tim...</p>
     </div>
 
-    <!-- Area Form Penilaian -->
-    <div id="formPenilaianContainer" class="hidden">
-      <!-- Konten form dirender JS -->
-    </div>
+    <div id="formPenilaianContainer" class="hidden"></div>
   </main>
+
+  <!-- Modal Pilihan Cetak -->
+  <div id="modalCetak" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 text-center form-card">
+      <h3 class="text-xl font-bold text-slate-800 mb-2">Nilai Tersimpan!</h3>
+      <p class="text-slate-500 mb-6">Pilih metode cetak struk untuk tim ini.</p>
+      
+      <div class="space-y-3">
+        <button onclick="cetakViaBluetooth()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg shadow flex justify-center items-center gap-2 hover:bg-slate-900 transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+          Cetak via Bluetooth
+        </button>
+        <button onclick="cetakViaBrowser()" class="w-full bg-white text-slate-700 border border-slate-300 font-bold py-3 rounded-lg shadow hover:bg-slate-50 transition flex justify-center items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Cetak / Simpan PDF
+        </button>
+        <button onclick="tutupModalDanReload()" class="w-full text-slate-400 font-semibold py-2 text-sm hover:text-slate-600">Lewati (Tidak Cetak)</button>
+      </div>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
@@ -76,10 +82,13 @@
     let currentEventId = null;
     let currentPos = null;
     let currentTim = null;
+    let currentEventData = null; 
+    let currentTingkatData = null;
     let rubrikList = [];
     let html5QrCode = null;
     let bluetoothDevice = null;
     let bluetoothCharacteristic = null;
+    let dataCetak = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['juri']);
@@ -102,6 +111,10 @@
 
       const { data: rubrik } = await window.supabaseClient.from('rubrik').select('*').eq('pos_id', currentPosId).order('urutan');
       rubrikList = rubrik || [];
+
+      // Ambil data Event
+      const { data: eventData } = await window.supabaseClient.from('event').select('nama, tahun').eq('id', currentEventId).single();
+      currentEventData = eventData;
 
       loadTim();
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
@@ -129,18 +142,22 @@
                 <p class="font-mono font-bold text-red-600 text-sm">${t.kode_kontingen}</p>
                 <h3 class="font-bold text-slate-800">${t.nama_tim}</h3>
               </div>
-              <button onclick="bukaFormPenilaian('${t.id}', '${t.nama_tim}', '${t.kode_kontingen}')" class="btn-primary py-2 px-5 shadow-md">Nilai</button>
+              <button onclick="bukaFormPenilaian('${t.id}', '${t.nama_tim}', '${t.kode_kontingen}', '${t.tingkat_id}')" class="btn-primary py-2 px-5 shadow-md">Nilai</button>
             </div>
           `;
         });
       }
     }
 
-    window.bukaFormPenilaian = async (timId, namaTim, kodeTim) => {
+    window.bukaFormPenilaian = async (timId, namaTim, kodeTim, tingkatId) => {
       currentTim = { id: timId, nama: namaTim, kode: kodeTim };
+      
+      // Ambil data Tingkat dari tim
+      const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', tingkatId).single();
+      currentTingkatData = tk;
+
       document.getElementById('timListContainer').classList.add('hidden');
       document.getElementById('formPenilaianContainer').classList.remove('hidden');
-      
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       let formHtml = `
@@ -152,7 +169,6 @@
           <button onclick="kembaliKeDaftarTim()" class="text-slate-500 hover:text-red-600 text-sm font-bold bg-slate-100 px-4 py-2 rounded-lg">&larr; Batal</button>
         </div>
 
-        <!-- Tombol Koneksi Printer -->
         <div class="mb-4">
           <button type="button" onclick="connectPrinter()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 shadow-md">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -160,34 +176,27 @@
           </button>
         </div>
 
-        <!-- SCAN QR PRESENSI -->
         <div class="bg-red-50 border border-red-200 p-4 rounded-lg mb-6">
           <h4 class="font-bold text-red-800 mb-2">Scan Kehadiran Peserta</h4>
           <p class="text-xs text-red-600 mb-3">Wajib scan minimal 1 peserta.</p>
-          
           <div class="flex gap-2">
             <input type="text" id="qrInput" placeholder="Kode (cth: MU-01-01)" class="input-field flex-1 bg-white border-red-300 text-sm">
             <button type="button" onclick="scanKamera()" class="btn-secondary bg-white text-red-700 border-red-300 px-4">Scan</button>
           </div>
-          
           <div id="scannerArea" class="hidden mt-4 w-full max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-red-400"></div>
           <div id="listHadir" class="mt-4 flex flex-wrap gap-2"></div>
         </div>
       `;
 
-      // FITUR TIMER
       if (currentPos.pakai_timer) {
         formHtml += `
           <div class="bg-slate-800 text-white p-4 rounded-xl mb-6 flex justify-between items-center shadow-inner">
-            <div>
-              <h4 class="font-bold">Timer Berjalan</h4>
-            </div>
+            <div><h4 class="font-bold">Timer Berjalan</h4></div>
             <div class="text-3xl font-mono font-bold" id="timerDisplay">00:00</div>
           </div>
         `;
       }
 
-      // FORM RUBRIK
       formHtml += `<h4 class="font-bold text-slate-800 mb-3 border-b pb-2">Form Penilaian</h4><form id="formNilai" class="space-y-5">`;
       
       rubrikList.forEach(r => {
@@ -202,20 +211,15 @@
             presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
           }
         }
-
         formHtml += `
           <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
             <div class="flex justify-between items-start mb-2">
               <label class="font-bold text-slate-800 leading-tight pr-2">${r.nama_item}</label>
               <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded whitespace-nowrap">Maks: ${r.skor_maksimal}</span>
             </div>
-            
             <div class="flex gap-3 items-center mt-3">
               <input type="number" name="rubrik_${r.id}" id="input_${r.id}" step="0.5" required min="0" max="${r.skor_maksimal}" class="input-field w-24 text-center font-bold text-lg border-2 focus:border-red-600" placeholder="0">
-              
-              <div class="flex-1 flex flex-wrap gap-1.5 overflow-x-auto pb-1">
-                ${presetButtons}
-              </div>
+              <div class="flex-1 flex flex-wrap gap-1.5 overflow-x-auto pb-1">${presetButtons}</div>
             </div>
           </div>
         `;
@@ -223,25 +227,17 @@
 
       formHtml += `
         <div class="pt-6 mt-6 border-t border-slate-200 pb-10">
-          <button type="submit" id="btnSimpanNilai" class="w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
-            Simpan & Kunci Nilai
-          </button>
+          <button type="submit" id="btnSimpanNilai" class="w-full bg-red-600 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">Simpan & Kunci Nilai</button>
         </div>
       </form>`;
-
       document.getElementById('formPenilaianContainer').innerHTML = formHtml;
 
       if (currentPos.pakai_timer) mulaiTimer(timId);
 
-      // SUBMIT FORM
       document.getElementById('formNilai').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const jumlahHadir = document.querySelectorAll('.badge-hadir').length;
-        if (jumlahHadir === 0) {
-          alert('Harap scan QR peserta terlebih dahulu sebelum menyimpan nilai!');
-          return;
-        }
+        if (jumlahHadir === 0) { alert('Harap scan QR peserta terlebih dahulu sebelum menyimpan nilai!'); return; }
 
         const btn = document.getElementById('btnSimpanNilai');
         btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
@@ -257,66 +253,47 @@
         });
 
         try {
-          // 1. Simpan ke Penilaian Pos
           let { data: penPos } = await window.supabaseClient.from('penilaian_pos').select('id').eq('event_id', currentEventId).eq('tim_id', timId).eq('pos_id', currentPosId).maybeSingle();
           if (!penPos) {
             const { data: newPenPos, error: errPP } = await window.supabaseClient.from('penilaian_pos').insert({
-              event_id: currentEventId, 
-              tim_id: timId, 
-              pos_id: currentPosId, 
-              jumlah_juri_wajib: currentPos.jumlah_juri, 
-              status: 'menunggu_juri' // Menggunakan string biasa, DB akan konversi otomatis
+              event_id: currentEventId, tim_id: timId, pos_id: currentPosId, jumlah_juri_wajib: currentPos.jumlah_juri, status: 'menunggu_juri'
             }).select().single();
             if (errPP) throw errPP;
             penPos = newPenPos;
           }
 
-          // 2. Simpan Penilaian Juri
           const { data: penJuri, error: errPJ } = await window.supabaseClient.from('penilaian_juri').insert({
-            penilaian_pos_id: penPos.id, 
-            juri_id: currentJuriId, 
-            slot_juri: `juri_${currentJuriId.substring(0,4)}`, 
-            nilai_juri: totalNilai, 
-            status: 'locked'
+            penilaian_pos_id: penPos.id, juri_id: currentJuriId, slot_juri: `juri_${currentJuriId.substring(0,4)}`, nilai_juri: totalNilai, status: 'locked'
           }).select().single();
           if (errPJ) throw errPJ;
 
-          // 3. Simpan Detail Rubrik
           const finalDetails = detailsPayload.map(d => ({ penilaian_juri_id: penJuri.id, rubrik_id: d.rubrik_id, nilai: d.nilai }));
           await window.supabaseClient.from('penilaian_detail').insert(finalDetails);
 
-          // 4. Simpan Presensi
           const listHadir = document.querySelectorAll('.badge-hadir');
           if (listHadir.length > 0) {
             const presensiPayload = Array.from(listHadir).map(el => ({
-              penilaian_pos_id: penPos.id, 
-              peserta_event_id: el.dataset.pesertaId, 
-              kode_peserta: el.dataset.kode, 
-              discan_oleh: currentJuriId
+              penilaian_pos_id: penPos.id, peserta_event_id: el.dataset.pesertaId, kode_peserta: el.dataset.kode, discan_oleh: currentJuriId
             }));
             await window.supabaseClient.from('presensi_peserta').insert(presensiPayload);
           }
 
-          // 5. Stop Timer
           if (currentPos.pakai_timer) {
             await window.supabaseClient.from('tierbreaker').upsert({
-              penilaian_pos_id: penPos.id, 
-              jenis: 'timer', 
-              waktu_selesai_server: new Date().toISOString(), 
-              status: 'final'
+              penilaian_pos_id: penPos.id, jenis: 'timer', waktu_selesai_server: new Date().toISOString(), status: 'final'
             }, { onConflict: 'penilaian_pos_id, jenis' });
           }
 
-          alert('Nilai berhasil disimpan dan dikunci!');
-          
-          // Tawarkan Cetak Struk
-          if (bluetoothDevice && bluetoothCharacteristic) {
-            if(confirm('Nilai tersimpan. Cetak struk sekarang?')) {
-              await cetakStruk(namaTim, kodeTim, totalNilai);
-            }
-          }
-
-          window.location.reload();
+          // TAMPILKAN MODAL CETAK (Data Lengkap)
+          dataCetak = { 
+            namaEvent: currentEventData.nama,
+            tahun: currentEventData.tahun,
+            tingkat: currentTingkatData ? currentTingkatData.nama : '-',
+            namaTim: namaTim, 
+            kodeTim: kodeTim, 
+            totalNilai: totalNilai 
+          };
+          document.getElementById('modalCetak').classList.remove('hidden');
 
         } catch (err) {
           alert('Error: ' + err.message);
@@ -324,7 +301,6 @@
         }
       });
 
-      // Scan Manual via Enter
       document.getElementById('qrInput').addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -336,10 +312,7 @@
 
     window.setNilai = (rubrikId, val) => {
       const input = document.getElementById(`input_${rubrikId}`);
-      if (input) {
-        input.value = val;
-        if (navigator.vibrate) navigator.vibrate(50);
-      }
+      if (input) { input.value = val; if (navigator.vibrate) navigator.vibrate(50); }
     };
 
     window.kembaliKeDaftarTim = () => {
@@ -352,15 +325,10 @@
       const scannerArea = document.getElementById('scannerArea');
       scannerArea.classList.remove('hidden');
       if (!html5QrCode) { html5QrCode = new Html5Qrcode("scannerArea"); }
-
       html5QrCode.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          prosesScan(decodedText);
-          html5QrCode.stop();
-          scannerArea.classList.add('hidden');
-        },
+        (decodedText) => { prosesScan(decodedText); html5QrCode.stop(); scannerArea.classList.add('hidden'); },
         (errorMessage) => { }
       ).catch(err => alert('Gagal buka kamera: ' + err));
     };
@@ -390,61 +358,89 @@
         const s = (detik % 60).toString().padStart(2, '0');
         display.textContent = `${m}:${s}`;
       }, 1000);
-      
       const originalKembali = window.kembaliKeDaftarTim;
       window.kembaliKeDaftarTim = () => { clearInterval(interval); originalKembali(); };
     }
 
-    window.connectPrinter = async () => {
-      if (!navigator.bluetooth) {
-        alert('Browser Anda tidak mendukung Web Bluetooth. Gunakan Chrome di Android.');
-        return;
+    // --- FUNGSI CETAK DENGAN DATA LENGKAP ---
+    window.tutupModalDanReload = () => { document.getElementById('modalCetak').classList.add('hidden'); window.location.reload(); };
+
+    window.cetakViaBluetooth = async () => {
+      document.getElementById('modalCetak').classList.add('hidden');
+      if (!bluetoothCharacteristic) {
+        const connected = await connectPrinter();
+        if (!connected) {
+           if(confirm('Gagal/ Batal konek Bluetooth. Cetak via Browser (PDF) saja?')) { cetakViaBrowser(); } else { window.location.reload(); }
+           return;
+        }
       }
+      await prosesCetakData(dataCetak);
+      window.location.reload();
+    };
+
+    window.cetakViaBrowser = () => {
+      document.getElementById('modalCetak').classList.add('hidden');
+      cetakStrukBrowser(dataCetak);
+      window.location.reload();
+    };
+
+    window.connectPrinter = async () => {
+      if (!navigator.bluetooth) { alert('Browser Anda tidak mendukung Web Bluetooth. Gunakan Chrome di Android.'); return false; }
       try {
-        bluetoothDevice = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2']
-        });
+        bluetoothDevice = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'] });
         const server = await bluetoothDevice.gatt.connect();
         const services = await server.getPrimaryServices();
         const service = services[0];
         const characteristics = await service.getCharacteristics();
         bluetoothCharacteristic = characteristics[0];
-
         document.getElementById('printerStatusText').textContent = 'Printer Terhubung: ' + bluetoothDevice.name;
         document.getElementById('printerStatusText').classList.add('text-green-400');
         alert('Printer Bluetooth berhasil terhubung!');
-      } catch (error) {
-        alert('Gagal konek printer: ' + error.message);
-      }
+        return true;
+      } catch (error) { alert('Gagal konek printer: ' + error.message); return false; }
     };
 
-    async function cetakStruk(namaTim, kodeTim, totalNilai) {
+    async function prosesCetakData(data) {
       if (!bluetoothCharacteristic) return;
-      
       const teksStruk = `
 ================================
-JUMBARA PMR MULA KE-4
-PMI KABUPATEN PURBALINGGA
+${data.namaEvent.toUpperCase()}
+${data.tingkat.toUpperCase()}
 ================================
 POS: ${currentPos.nama_pos}
-Tim: ${kodeTim} - ${namaTim}
+Tim: ${data.kodeTim} - ${data.namaTim}
 --------------------------------
-NILAI AKHIR: ${totalNilai}
+NILAI AKHIR: ${data.totalNilai}
 --------------------------------
 Waktu: ${new Date().toLocaleTimeString('id-ID')}
 ================================
 
 `;
       const encoder = new TextEncoder();
-      const data = encoder.encode(teksStruk);
-      
-      try {
-        await bluetoothCharacteristic.writeValue(data);
-        alert('Struk sedang dicetak...');
-      } catch (error) {
-        alert('Gagal mencetak: ' + error.message);
-      }
+      const dataBytes = encoder.encode(teksStruk);
+      try { await bluetoothCharacteristic.writeValue(dataBytes); alert('Struk sedang dicetak...'); } catch (error) { alert('Gagal mencetak: ' + error.message); }
+    }
+
+    window.cetakStrukBrowser = (data) => {
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html><head><title>Struk Jumbara</title>
+        <style> body { font-family: monospace; width: 58mm; padding: 10px; text-align: left; font-size: 12px; } hr { border-top: 1px dashed black; } .center { text-align: center; } </style>
+        </head><body onload="window.print()">
+          <div class="center">
+            <strong>${data.namaEvent.toUpperCase()}</strong><br>
+            TINGKAT ${data.tingkat.toUpperCase()}
+          </div>
+          <hr>
+          POS: ${currentPos ? currentPos.nama_pos : '-'}<br>
+          Tim: ${data.kodeTim} - ${data.namaTim}<br>
+          <hr>
+          NILAI AKHIR: <strong>${data.totalNilai}</strong><br>
+          <hr>
+          Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
+        </body></html>
+      `);
+      win.document.close();
     }
   </script>
 </body>
