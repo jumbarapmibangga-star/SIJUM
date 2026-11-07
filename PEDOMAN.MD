@@ -152,8 +152,7 @@ jumbara-purbalingga/
 
 ### 3.4 File Konfigurasi Penting
 manifest.json:
-
-json
+```json
 {
   "id": "/",
   "name": "Jumbara PMR Mula Ke-4 Purbalingga",
@@ -252,11 +251,12 @@ json
   ]
 }
 assets/js/supabase-client.js:
-
-javascript
+'''
+'''javascript
 const SUPABASE_URL = 'https://xxx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+'''
 Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak boleh ada di sini.
 
 3.5 Alur Deploy
