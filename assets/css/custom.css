@@ -1,0 +1,16 @@
+/* assets/css/custom.css */
+
+/* Sembunyikan scrollbar bawaan untuk tampilan HP */
+::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Font monospace untuk timer */
+.font-mono-timer {
+  font-family: 'JetBrains Mono', monospace;
+}
