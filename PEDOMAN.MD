@@ -74,7 +74,6 @@ Aplikasi Jumbara PMI Kabupaten Purbalingga adalah **PWA (Progressive Web App)** 
 
 ### 3.2 Cara Muat Library (CDN)
 
-```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
