@@ -7,49 +7,51 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col">
 
-  <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col min-h-screen shadow-sm">
-    <div class="p-5 bg-red-700 text-white shadow-md">
-      <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-      <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
-    </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors" onclick="toggleTheme()">
-        <span id="themeIcon"></span>
-      </button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-    </div>
-  </aside>
-
-  <main class="flex-1 p-6 md:p-8">
-    <div class="flex justify-between items-center mb-6">
-      <div>
-        <h2 class="text-2xl font-bold text-slate-800">Kelola Juri</h2>
-        <p class="text-slate-500">Daftar juri dan penugasan pos.</p>
+  <div class="main-wrapper">
+    <aside class="sidebar-admin">
+      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+        <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+        <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
       </div>
-      <a href="/admin/juri-form.html" class="btn-primary">+ Tambah Juri</a>
-    </div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
+          <span id="themeIcon"></span>
+        </button>
+        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+      </div>
+    </aside>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <table class="table-custom">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Nama Juri</th>
-            <th>Username</th>
-            <th>Pos yang Ditugaskan</th>
-            <th>Status</th>
-            <th class="text-right">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="juriTableBody">
-          <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data juri...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </main>
+    <main class="flex-1 p-4 md:p-8">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola Juri</h2>
+          <p class="text-sm md:text-base text-slate-500">Daftar juri dan penugasan pos.</p>
+        </div>
+        <a href="/admin/juri-form.html" class="btn-primary">+ Tambah Juri</a>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Juri</th>
+              <th>Username</th>
+              <th>Pos yang Ditugaskan</th>
+              <th>Status</th>
+              <th class="text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="juriTableBody">
+            <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data juri...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
