@@ -426,4 +426,5 @@ Aturan umum:
 | normalisasi_bobot	| Pos dengan komponen (teori, praktik, wawancara, ...) |	metode_hitung = 'weighted', pos_komponen terisi, rubrik.komponen merujuk pos_komponen.nama
 
 Tiga pola konfigurasi (semua didukung, bukan mode kaku):
+
 Pola 1 — Satu pos, banyak komponen, juri sama:
