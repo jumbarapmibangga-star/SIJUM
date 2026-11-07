@@ -416,15 +416,14 @@ Validasi config_locked:
 
 
 Aturan umum:
+- sum_juri / average_juri / percentage_juri — wajib semua juri submit sebelum final (Opsi A).
+- Nilai final pos dihitung via fn_hitung_nilai_final.
 
-sum_juri / average_juri / percentage_juri — wajib semua juri submit sebelum final (Opsi A).
+## 6.3.1 Agregasi Komponen (agregasi_komponen)
+| Nilai | Arti	| Struktur |
+| ---- | ---- | ---- |
+| tidak_ada	| Pos tanpa komponen teori/praktik |	metode_hitung bebas, rubrik.komponen = null
+| normalisasi_bobot	| Pos dengan komponen (teori, praktik, wawancara, ...) |	metode_hitung = 'weighted', pos_komponen terisi, rubrik.komponen merujuk pos_komponen.nama
 
-Nilai final pos dihitung via fn_hitung_nilai_final.
-
-6.3.1 Agregasi Komponen (agregasi_komponen)
-Nilai	Arti	Struktur
-tidak_ada	Pos tanpa komponen teori/praktik	metode_hitung bebas, rubrik.komponen = null
-normalisasi_bobot	Pos dengan komponen (teori, praktik, wawancara, ...)	metode_hitung = 'weighted', pos_komponen terisi, rubrik.komponen merujuk pos_komponen.nama
 Tiga pola konfigurasi (semua didukung, bukan mode kaku):
-
 Pola 1 — Satu pos, banyak komponen, juri sama:
