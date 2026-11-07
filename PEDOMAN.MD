@@ -395,27 +395,26 @@ Catatan revisi v1.5:
 | prioritas_tierbreaker |	bidak_dulu / timer_dulu / umur_dulu
 | induk_pos_id |	Opsional — membentuk pohon pos
 | total_maks |	Untuk percentage (≥ Σ skor_maksimal rubrik)
-| Validasi | config_locked:
 
-jumlah_juri >= 0.
+Validasi config_locked:
+- jumlah_juri >= 0.
+- Minimal satu komponen nilai aktif (rubrik ada).
+- agregasi_komponen = 'normalisasi_bobot' → metode_hitung = 'weighted', pos_komponen terisi, Σ bobot = 1, minimal satu rubrik per komponen.
+- agregasi_komponen = 'tidak_ada' → rubrik.komponen = null.
+- percentage → total_maks >= Σ skor_maksimal.
 
-Minimal satu komponen nilai aktif (rubrik ada).
+## 6.3 Metode Hitung Nilai
+| Metode |	Rumus |
+| ------ | ------ |
+| sum	| Σ nilai per soal
+| average |	Σ nilai / jumlah soal
+| percentage |	(Σ nilai / total_maks) × 100
+| sum_juri |	Σ total juri1 + juri2 + ...
+| average_juri |	(Σ total juri) / jumlah_juri
+| percentage_juri |	(Σ total juri) / (jumlah_juri × total_maks) × 100
+| weighted |	Lihat §6.3.2
 
-agregasi_komponen = 'normalisasi_bobot' → metode_hitung = 'weighted', pos_komponen terisi, Σ bobot = 1, minimal satu rubrik per komponen.
 
-agregasi_komponen = 'tidak_ada' → rubrik.komponen = null.
-
-percentage → total_maks >= Σ skor_maksimal.
-
-6.3 Metode Hitung Nilai
-Metode	Rumus
-sum	Σ nilai per soal
-average	Σ nilai / jumlah soal
-percentage	(Σ nilai / total_maks) × 100
-sum_juri	Σ total juri1 + juri2 + ...
-average_juri	(Σ total juri) / jumlah_juri
-percentage_juri	(Σ total juri) / (jumlah_juri × total_maks) × 100
-weighted	Lihat §6.3.2
 Aturan umum:
 
 sum_juri / average_juri / percentage_juri — wajib semua juri submit sebelum final (Opsi A).
