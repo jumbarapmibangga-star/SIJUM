@@ -278,12 +278,12 @@ Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak 
 ## 4. Aktor & Hak Akses
 ```text
 Aktor	          Hak Akses
-Super Admin	    Semua, kelola user, buka kunci, ekspor audit log
-Koordinator	    Kelola event, verifikasi, koreksi, kontrol aula
-Admin Event	    Kelola data event-nya
-Juri	          Input nilai pos yang ditugaskan; tidak bisa edit setelah locked
-Kontingen	      Daftar peserta, submit, lihat status
-Publik	        Papan juara, histori peran, verifikasi QR (jika publikasi aktif)
+Super Admin    Semua, kelola user, buka kunci, ekspor audit log
+Koordinator    Kelola event, verifikasi, koreksi, kontrol aula
+Admin Event    Kelola data event-nya
+Juri    Input nilai pos yang ditugaskan; tidak bisa edit setelah locked
+Kontingen    Daftar peserta, submit, lihat status
+Publik    Papan juara, histori peran, verifikasi QR (jika publikasi aktif)
 ```
 ## 5. Skema Database
 5.1 Tabel Inti
