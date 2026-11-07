@@ -126,7 +126,7 @@ Aplikasi Jumbara PMI Kabupaten Purbalingga adalah **PWA (Progressive Web App)** 
   ]
 }
 ```
-##3.3 Struktur Folder
+### 3.3 Struktur Folder
 ```text
 jumbara-purbalingga/
 ├── index.html
