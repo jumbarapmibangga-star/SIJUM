@@ -1,13 +1,13 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v2.3 PMI Theme)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v3.0)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
 :root {
-  --pmi-red: #D32F2F;       /* Merah PMI (tegas) */
-  --pmi-red-dark: #B71C1C;  /* Merah Gelap untuk Hover */
-  --pmi-dark: #212121;      /* Hitam keabu-abuan untuk teks */
-  --pmi-bg: #F4F6F8;        /* Abu-abu sangat muda untuk background */
+  --pmi-red: #D32F2F;       /* Merah PMI */
+  --pmi-red-dark: #B71C1C;  /* Merah Gelap */
+  --pmi-dark: #212121;      
+  --pmi-bg: #F4F6F8;        
 }
 
 body {
@@ -17,10 +17,12 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
   transition: background-color 0.3s, color 0.3s;
+  margin: 0;
+  padding: 0;
 }
 ::-webkit-scrollbar { display: none; }
 
-/* --- 2. Komponen Tombol (Button) --- */
+/* --- 2. Komponen Tombol --- */
 .btn-primary {
   background-color: var(--pmi-red);
   color: white;
@@ -29,11 +31,12 @@ body {
   border-radius: 0.5rem;
   box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
   transition: all 0.2s;
+  border: none;
+  cursor: pointer;
 }
 .btn-primary:hover {
   background-color: var(--pmi-red-dark);
   box-shadow: 0 4px 6px rgba(211, 47, 47, 0.3);
-  transform: translateY(-1px);
 }
 .btn-secondary {
   background-color: white;
@@ -43,6 +46,7 @@ body {
   padding: 0.5rem 1.25rem;
   border-radius: 0.5rem;
   transition: all 0.2s;
+  cursor: pointer;
 }
 .btn-secondary:hover {
   background-color: #FFEBEE;
@@ -115,6 +119,7 @@ body {
   border-radius: 0.5rem;
   transition: all 0.2s;
   margin-bottom: 0.25rem;
+  text-decoration: none;
 }
 .sidebar-link:hover {
   background-color: #FFEBEE;
@@ -145,13 +150,51 @@ body {
 }
 
 /* =========================================================
+   SISTEM LAYOUT RESPONSIF (AUTO SIDEBAR & HEADER)
+   ========================================================= */
+
+/* Wrapper Utama */
+.main-wrapper {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  min-height: 100vh;
+}
+
+/* Sidebar Admin: Sembunyi di HP, Muncul di PC */
+.sidebar-admin {
+  display: none;
+}
+@media (min-width: 768px) {
+  .sidebar-admin {
+    display: flex;
+    width: 16rem;
+    flex-direction: column;
+    background-color: white;
+    border-right: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    z-index: 10;
+  }
+}
+
+/* Header Mobile: Muncul di HP, Sembunyi di PC */
+.header-mobile {
+  display: flex;
+}
+@media (min-width: 768px) {
+  .header-mobile {
+    display: none;
+  }
+}
+
+/* =========================================================
    DARK MODE (MODE GELAP)
    ========================================================= */
 html.dark body {
   background-color: #121212;
   color: #ECEFF1;
 }
-html.dark .bg-white, html.dark .form-card {
+html.dark .bg-white, html.dark .form-card, html.dark .sidebar-admin {
   background-color: #1E1E1E !important;
   border-color: #333333 !important;
 }
@@ -173,10 +216,6 @@ html.dark .input-field {
 html.dark .input-label { color: #B0BEC5; }
 
 /* Sidebar di Dark Mode */
-html.dark aside.bg-white {
-  background-color: #1A1A1A !important;
-  border-color: #2C2C2C !important;
-}
 html.dark .sidebar-link { color: #B0BEC5; }
 html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
 html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
