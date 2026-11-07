@@ -403,7 +403,7 @@ Validasi config_locked:
 - agregasi_komponen = 'tidak_ada' → rubrik.komponen = null.
 - percentage → total_maks >= Σ skor_maksimal.
 
-## 6.3 Metode Hitung Nilai
+### 6.3 Metode Hitung Nilai
 | Metode |	Rumus |
 | ------ | ------ |
 | sum	| Σ nilai per soal
@@ -419,7 +419,7 @@ Aturan umum:
 - sum_juri / average_juri / percentage_juri — wajib semua juri submit sebelum final (Opsi A).
 - Nilai final pos dihitung via fn_hitung_nilai_final.
 
-## 6.3.1 Agregasi Komponen (agregasi_komponen)
+### 6.3.1 Agregasi Komponen (agregasi_komponen)
 | Nilai | Arti	| Struktur |
 | ---- | ---- | ---- |
 | tidak_ada	| Pos tanpa komponen teori/praktik |	metode_hitung bebas, rubrik.komponen = null
@@ -600,61 +600,39 @@ Juri non-digital: didampingi panitia/relawan, device khusus, UI sederhana, tombo
 ## 6.8 Koreksi
 - Juri tidak bisa edit setelah simpan (langsung locked).
 - Panitia bisa koreksi dengan jejak berlevel:
--- level_koreksi = item_rubrik → koreksi satu nilai rubrik (referensi_id = penilaian_detail.id)
--- level_koreksi = nilai_juri → koreksi total juri (referensi_id = penilaian_juri.id)
--- level_koreksi = nilai_final → koreksi nilai final pos (referensi_id = penilaian_pos.id)
---data_lama / data_baru disimpan sebagai jsonb
+    - level_koreksi = item_rubrik → koreksi satu nilai rubrik (referensi_id = penilaian_detail.id)
+    - level_koreksi = nilai_juri → koreksi total juri (referensi_id = penilaian_juri.id)
+    - level_koreksi = nilai_final → koreksi nilai final pos (referensi_id = penilaian_pos.id)
+    - data_lama / data_baru disimpan sebagai jsonb
+- Regenerate PDF setelah koreksi.
+- QR lama menampilkan "DIREVISI" + nilai terbaru.
+- Cetak ulang opsional dengan watermark "REVISI".
+- Timer/bidak bisa dikoreksi dengan alasan + verifikasi.
+- Konfigurasi pos dikunci setelah lomba mulai.
 
-Regenerate PDF setelah koreksi.
-
-QR lama menampilkan "DIREVISI" + nilai terbaru.
-
-Cetak ulang opsional dengan watermark "REVISI".
-
-Timer/bidak bisa dikoreksi dengan alasan + verifikasi.
-
-Konfigurasi pos dikunci setelah lomba mulai.
-
-6.9 Cetak Thermal
+## 6.9 Cetak Thermal
 Spesifikasi:
-
-58mm, Bluetooth, ESC/POS.
-
-QR ke halaman verifikasi (/verifikasi/{penilaian_pos_id}), 25×25mm, tanpa logo.
-
-Fallback window.print() jika Bluetooth gagal.
-
-Menu cetak ulang dari server.
-
-Struk POS 2+ juri menampilkan total per juri + hasil akhir.
-
-Struk hanya dicetak setelah semua juri submit (pos 2+ juri).
-
-Struk pos induk dicetak setelah semua sub-pos final; menampilkan gabungan komponen.
-
-Device standar juri = Android (Chrome). iOS Safari tidak mendukung Web Bluetooth.
-
-Fallback window.print() wajib diuji di gladi.
-
-Struk thermal diregenerate dari data saat cetak ulang (bukan simpan gambar).
-
-PDF A4 laporan disimpan di Storage; struk thermal tidak.
+- 58mm, Bluetooth, ESC/POS.
+- QR ke halaman verifikasi (/verifikasi/{penilaian_pos_id}), 25×25mm, tanpa logo.
+- Fallback window.print() jika Bluetooth gagal.
+- Menu cetak ulang dari server.
+- Struk POS 2+ juri menampilkan total per juri + hasil akhir.
+- Struk hanya dicetak setelah semua juri submit (pos 2+ juri).
+- Struk pos induk dicetak setelah semua sub-pos final; menampilkan gabungan komponen.
+- Device standar juri = Android (Chrome). iOS Safari tidak mendukung Web Bluetooth.
+- Fallback window.print() wajib diuji di gladi.
+- Struk thermal diregenerate dari data saat cetak ulang (bukan simpan gambar).
+- PDF A4 laporan disimpan di Storage; struk thermal tidak.
 
 Aturan siapa yang cetak (pos 2+ juri):
+- Juri terakhir yang submit → otomatis dapat tombol "Cetak Struk" di halaman sukses submit.
+- Juri lain (submit lebih awal) → tidak dapat tombol saat submit; bisa cetak ulang dari menu Riwayat & Cetak Ulang setelah status final.
+- Panitia → selalu bisa cetak ulang dari menu Cetak Ulang (device khusus di lokasi).
+- Struk yang dicetak = struk yang sama (dari penilaian_pos, bukan per juri) — menampilkan total per juri + hasil akhir.
+- Juri non-digital → didampingi relawan/panitia; panitia yang cetak.
+- Format struk (satu struk per tim per pos):
 
-Juri terakhir yang submit → otomatis dapat tombol "Cetak Struk" di halaman sukses submit.
-
-Juri lain (submit lebih awal) → tidak dapat tombol saat submit; bisa cetak ulang dari menu Riwayat & Cetak Ulang setelah status final.
-
-Panitia → selalu bisa cetak ulang dari menu Cetak Ulang (device khusus di lokasi).
-
-Struk yang dicetak = struk yang sama (dari penilaian_pos, bukan per juri) — menampilkan total per juri + hasil akhir.
-
-Juri non-digital → didampingi relawan/panitia; panitia yang cetak.
-
-Format struk (satu struk per tim per pos):
-
-text
+```text
 ================================
 JUMBARA PMR MULA KE-4
 PMI KABUPATEN PURBALINGGA
@@ -675,51 +653,38 @@ Waktu: 12:34:56
 [QR CODE]
 Verifikasi: /verifikasi/{penilaian_pos_id}
 ================================
+```
 Catatan:
+- Struk sama untuk semua juri (bukan struk per juri).
+- Menampilkan total per juri + nilai akhir.
+- QR ke halaman verifikasi penilaian_pos (bukan per juri).
+- Untuk pos 1 juri, bagian "NILAI PER JURI" bisa disembunyikan (hanya nilai akhir).
 
-Struk sama untuk semua juri (bukan struk per juri).
+## 6.10 Dashboard
 
-Menampilkan total per juri + nilai akhir.
-
-QR ke halaman verifikasi penilaian_pos (bukan per juri).
-
-Untuk pos 1 juri, bagian "NILAI PER JURI" bisa disembunyikan (hanya nilai akhir).
-
-6.10 Dashboard
 Tracker Panitia (status-only):
-
-Matriks tim × pos, status per juri.
-
-Filter per tingkat, pos, kontingen.
-
-Highlight pos/tim tertinggal.
-
-Tanpa nilai mentah.
+-  Matriks tim × pos, status per juri.
+-  Filter per tingkat, pos, kontingen.
+-  Highlight pos/tim tertinggal.
+- Tanpa nilai mentah.
 
 Aula:
+- Semua nilai per pos, urutan kode kontingen.
+- Tanpa perangkingan.
+- Tierbreaker sebagai catatan.
+- Hanya nilai locked.
+- 9 tema visual, tanpa highlight nilai baru.
+- Kontrol panitia (mode, pesan, panic button).
+- Grid harus bisa dibaca dari jauh (uji di gladi).
 
-Semua nilai per pos, urutan kode kontingen.
-
-Tanpa perangkingan.
-
-Tierbreaker sebagai catatan.
-
-Hanya nilai locked.
-
-9 tema visual, tanpa highlight nilai baru.
-
-Kontrol panitia (mode, pesan, panic button).
-
-Grid harus bisa dibaca dari jauh (uji di gladi).
-
-6.11 Histori Peran
+## 6.11 Histori Peran
 Peserta + peran per tahun (join peserta_master).
 
 Bisa dicari per nama (publik).
 
 Beda dengan Peserta Tergiat: Histori Peran mencatat peran spesifik yang dijalankan (misal: jadi Narator di tahun 2025, jadi Pelaku di tahun 2026). Sedangkan Peserta Tergiat dihitung dari frekuensi kehadiran (berapa banyak pos yang diikuti) di tahun berjalan.
 
-6.12 Audit Log
+## 6.12 Audit Log
 Append-only, tidak bisa edit/hapus.
 
 Mencatat semua aktivitas.
