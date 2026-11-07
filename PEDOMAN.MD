@@ -365,7 +365,8 @@ Catatan revisi v1.5:
 | v_histori_peran	| View |	Histori peran peserta lintas tahun (join peserta_master) |
 
 ### 5.3 RLS (Ringkas)
-| Role |Akses |
+| Role | Akses |
+| ---- | ----- |
 | Super Admin |	Semua
 | Koordinator |	Semua kecuali kelola user
 | Admin Event	| Data event-nya
