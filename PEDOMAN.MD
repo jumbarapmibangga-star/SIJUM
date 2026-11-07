@@ -311,10 +311,11 @@ Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak 
 | Aktor |	Hak Akses |
 | ----- | --------- |
 |Super Admin | Semua, kelola user, buka kunci, ekspor audit log |
-Koordinator	Kelola event, verifikasi, koreksi, kontrol aula
-Admin Event	Kelola data event-nya
-Juri	Input presensi (Scan QR), input nilai pos yang ditugaskan; tidak bisa edit setelah locked
-Kontingen	Daftar peserta, submit, lihat status
-Publik	Papan juara, histori peran, papan tergiat, verifikasi QR (jika publikasi aktif)
+| Koordinator |	Kelola event, verifikasi, koreksi, kontrol aula |
+| Admin Event |	Kelola data event-nya |
+| Juri |	Input presensi (Scan QR), input nilai pos yang ditugaskan; tidak bisa edit setelah locked |
+| Kontingen |	Daftar peserta, submit, lihat status |
+| Publik |	Papan juara, histori peran, papan tergiat, verifikasi QR (jika publikasi aktif) |
+
 
 
