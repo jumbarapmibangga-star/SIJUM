@@ -1,140 +1,146 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v2.2 Vanilla CSS)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v2.3 PMI Theme)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
+:root {
+  --pmi-red: #D32F2F;       /* Merah PMI (tegas) */
+  --pmi-red-dark: #B71C1C;  /* Merah Gelap untuk Hover */
+  --pmi-dark: #212121;      /* Hitam keabu-abuan untuk teks */
+  --pmi-bg: #F4F6F8;        /* Abu-abu sangat muda untuk background */
+}
+
 body {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  background-color: #F8FAFC; /* bg-slate-50 */
-  color: #1E293B; /* text-slate-800 */
+  background-color: var(--pmi-bg);
+  color: var(--pmi-dark);
   -ms-overflow-style: none;
   scrollbar-width: none;
   transition: background-color 0.3s, color 0.3s;
 }
 ::-webkit-scrollbar { display: none; }
 
-/* --- 2. Warna Identitas PMI --- */
-:root {
-  --pmi-red: #DC2626;
-  --pmi-red-hover: #B91C1C;
-}
-
-/* --- 3. Komponen Tombol (Button) --- */
+/* --- 2. Komponen Tombol (Button) --- */
 .btn-primary {
-  background-color: #DC2626;
+  background-color: var(--pmi-red);
   color: white;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
+  font-weight: 700;
+  padding: 0.5rem 1.25rem;
   border-radius: 0.5rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
+  transition: all 0.2s;
 }
 .btn-primary:hover {
-  background-color: #B91C1C;
+  background-color: var(--pmi-red-dark);
+  box-shadow: 0 4px 6px rgba(211, 47, 47, 0.3);
+  transform: translateY(-1px);
 }
 .btn-secondary {
   background-color: white;
-  color: #334155;
-  border: 1px solid #CBD5E1;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
+  color: var(--pmi-red);
+  border: 2px solid var(--pmi-red);
+  font-weight: 700;
+  padding: 0.5rem 1.25rem;
   border-radius: 0.5rem;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 .btn-secondary:hover {
-  background-color: #F8FAFC;
+  background-color: #FFEBEE;
 }
 
-/* --- 4. Komponen Form --- */
+/* --- 3. Komponen Form --- */
 .input-field {
   width: 100%;
-  padding: 0.5rem 1rem;
-  border: 1px solid #CBD5E1;
+  padding: 0.6rem 1rem;
+  border: 1px solid #CFD8DC;
   border-radius: 0.5rem;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
 }
 .input-field:focus {
-  border-color: #EF4444;
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+  border-color: var(--pmi-red);
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
 }
 .input-label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #334155;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  color: #455A64;
+  margin-bottom: 0.3rem;
 }
 .form-card {
   background-color: white;
   padding: 1.5rem;
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  border: 1px solid #E0E0E0;
 }
 
-/* --- 5. Komponen Tabel --- */
+/* --- 4. Komponen Tabel --- */
 .table-custom {
   width: 100%;
   text-align: left;
   border-collapse: collapse;
 }
 .table-custom thead {
-  background-color: #F8FAFC;
-  border-bottom: 1px solid #E2E8F0;
-  color: #475569;
-  font-size: 0.875rem;
+  background-color: #F5F5F5;
+  border-bottom: 2px solid #E0E0E0;
+  color: #455A64;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .table-custom th {
   padding: 1rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 .table-custom td {
   padding: 1rem;
-  border-bottom: 1px solid #F1F5F9;
-  font-size: 0.875rem;
+  border-bottom: 1px solid #EEEEEE;
+  font-size: 0.9rem;
 }
 .table-custom tbody tr:hover {
-  background-color: #F8FAFC;
+  background-color: #FAFAFA;
 }
 
-/* --- 6. Sidebar Menu --- */
+/* --- 5. Sidebar Menu --- */
 .sidebar-link {
   display: flex;
   align-items: center;
   padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #546E7A;
   border-radius: 0.5rem;
-  transition: background-color 0.2s, color 0.2s;
+  transition: all 0.2s;
   margin-bottom: 0.25rem;
 }
 .sidebar-link:hover {
-  background-color: #FEF2F2;
-  color: #B91C1C;
+  background-color: #FFEBEE;
+  color: var(--pmi-red);
 }
 .sidebar-link.active {
-  background-color: #FEE2E2;
-  color: #B91C1C;
-  font-weight: 600;
+  background-color: var(--pmi-red);
+  color: white;
+  box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
 }
 
-/* --- 7. Badge Status --- */
+/* --- 6. Badge Status --- */
 .badge-active {
-  background-color: #DCFCE7;
-  color: #15803D;
-  padding: 0.25rem 0.5rem;
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  padding: 0.25rem 0.6rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 9999px;
 }
 .badge-locked {
-  background-color: #FEE2E2;
-  color: #B91C1C;
-  padding: 0.25rem 0.5rem;
+  background-color: #FFEBEE;
+  color: var(--pmi-red-dark);
+  padding: 0.25rem 0.6rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 9999px;
 }
 
@@ -142,36 +148,35 @@ body {
    DARK MODE (MODE GELAP)
    ========================================================= */
 html.dark body {
-  background-color: #0F172A;
-  color: #F8FAFC;
+  background-color: #121212;
+  color: #ECEFF1;
 }
-html.dark .bg-white {
-  background-color: #1E293B !important;
-  border-color: #334155 !important;
+html.dark .bg-white, html.dark .form-card {
+  background-color: #1E1E1E !important;
+  border-color: #333333 !important;
 }
-html.dark .text-slate-800 { color: #F8FAFC !important; }
-html.dark .text-slate-700 { color: #CBD5E1 !important; }
-html.dark .text-slate-600 { color: #94A3B8 !important; }
-html.dark .text-slate-500 { color: #64748B !important; }
-html.dark .border-slate-200 { border-color: #334155 !important; }
+html.dark .text-slate-800, html.dark .text-slate-700 { color: #ECEFF1 !important; }
+html.dark .text-slate-600 { color: #B0BEC5 !important; }
+html.dark .border-slate-200 { border-color: #333333 !important; }
 
 /* Tabel di Dark Mode */
-html.dark .table-custom thead { background-color: #1E293B; color: #CBD5E1; border-color: #334155; }
-html.dark .table-custom td { border-color: #334155; }
-html.dark .table-custom tbody tr:hover { background-color: #1E293B; }
+html.dark .table-custom thead { background-color: #2C2C2C; color: #B0BEC5; border-color: #424242; }
+html.dark .table-custom td { border-color: #333333; }
+html.dark .table-custom tbody tr:hover { background-color: #2C2C2C; }
 
 /* Input di Dark Mode */
 html.dark .input-field {
-  background-color: #1E293B;
-  border-color: #475569;
+  background-color: #2C2C2C;
+  border-color: #424242;
   color: white;
 }
+html.dark .input-label { color: #B0BEC5; }
 
 /* Sidebar di Dark Mode */
 html.dark aside.bg-white {
-  background-color: #0F172A !important;
-  border-color: #1E293B !important;
+  background-color: #1A1A1A !important;
+  border-color: #2C2C2C !important;
 }
-html.dark .sidebar-link { color: #CBD5E1; }
-html.dark .sidebar-link:hover { background-color: #1E293B; color: #F87171; }
-html.dark .sidebar-link.active { background-color: #1E293B; color: #F87171; }
+html.dark .sidebar-link { color: #B0BEC5; }
+html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
+html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
