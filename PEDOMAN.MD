@@ -150,7 +150,7 @@ jumbara-purbalingga/
 └── PEDOMAN.md
 ```
 
-3.4 File Konfigurasi Penting
+### 3.4 File Konfigurasi Penting
 manifest.json:
 
 json
