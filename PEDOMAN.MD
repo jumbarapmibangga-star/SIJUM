@@ -692,43 +692,35 @@ Aula:
 - ip_address diisi via Edge Function atau client (jangan janji akurasi 100%).
 
 ## 6.13 Menu Laporan
-1. 10 laporan panitia:
-2. Rekap Juara Umum
-3.  Rekap Juara per Pos
 
-Rekap Nilai per Kontingen
+10 laporan panitia:
 
-Rekap Nilai per Pos
-
-Detail per Kontingen
-
-Rekap Tierbreaker
-
-Rekap Histori Peran
-
-Log Aktivitas
-
-Sertifikat Peserta
-
-Rekap Presensi & Peserta Tergiat
+1. Rekap Juara Umum
+2.  Rekap Juara per Pos
+3. Rekap Nilai per Kontingen
+4. Rekap Nilai per Pos
+5. Detail per Kontingen
+6. Rekap Tierbreaker
+7. Rekap Histori Peran
+8. Log Aktivitas
+9. Sertifikat Peserta
+10. Rekap Presensi & Peserta Tergiat
 
 3 laporan publik:
-
-Papan Juara
-
-Histori Peran Peserta
-
-Papan Peserta Tergiat
+11. Papan Juara
+12. Histori Peran Peserta
+13. Papan Peserta Tergiat
 
 Format: PDF (A4) + CSV.
 Generate: On-demand.
 Audit: Setiap generate/export tercatat.
 Sertifikat: Disimpan di Supabase Storage.
 
-6.14 Keputusan Teknis (Final)
-#	Keputusan	Alasan
-A	Device juri standar = Android (Chrome)	Web Bluetooth tidak didukung iOS Safari & Firefox.
-B	Timer & bidak = shared per tim per pos	Menghindari ambiguitas. Disimpan di tierbreaker.penilaian_pos_id.
+## 6.14 Keputusan Teknis (Final)
+| # |	Keputusan	| Alasan |
+| - | - | - |
+| A |	Device juri standar = Android (Chrome) |	Web Bluetooth tidak didukung iOS Safari & Firefox.
+| B	| Timer & bidak = shared per tim per pos |	Menghindari ambiguitas. Disimpan di tierbreaker.penilaian_pos_id.
 C	Nilai final pos = wajib semua juri submit (Opsi A)	Mencegah nilai tidak adil. Status menunggu_juri → final.
 D	Penilaian dipecah 3 tabel: penilaian_pos / penilaian_juri / penilaian_detail	Memisahkan nilai final pos dari nilai per juri.
 E	Juara umum = hanya pos induk (induk_pos_id = null)	Sub-pos sudah terwakili di nilai gabungan induk.
