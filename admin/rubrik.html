@@ -5,17 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Atur Rubrik — Jumbara PMI</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/custom.css">
 </head>
-<body class="bg-slate-100 min-h-screen font-sans flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col md:flex-row">
 
-  <aside class="w-full md:w-64 bg-slate-800 text-white flex flex-col min-h-screen">
-    <div class="p-4 bg-slate-900 border-b border-slate-700">
-      <h1 class="text-lg font-bold">Jumbara Panitia</h1>
-      <p id="userRoleDisplay" class="text-xs text-slate-400">Memuat...</p>
+  <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col min-h-screen shadow-sm">
+    <div class="p-5 bg-red-700 text-white shadow-md">
+      <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+      <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
     </div>
-    <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-700">
-      <button id="btnLogout" class="w-full text-left text-sm text-red-400 hover:text-red-300">Keluar (Logout)</button>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors" onclick="toggleTheme()">
+        <span id="themeIcon"></span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
     </div>
   </aside>
 
@@ -26,38 +30,36 @@
       <p class="text-slate-500">Atur soal dan bobot komponen untuk pos ini.</p>
     </div>
 
-    <div id="komponenPanel" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+    <div id="komponenPanel" class="hidden form-card mb-6">
       <h3 class="text-lg font-semibold text-slate-800 mb-4">Pengaturan Komponen (Metode Weighted)</h3>
       <form id="komponenForm" class="flex flex-wrap gap-4 items-end">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Komponen</label>
-          <input type="text" id="namaKomponen" required placeholder="Contoh: Teori" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Nama Komponen</label>
+          <input type="text" id="namaKomponen" required placeholder="Contoh: Teori" class="input-field w-48">
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Bobot (Desimal)</label>
-          <input type="number" id="bobotKomponen" step="0.01" min="0" max="1" required placeholder="Contoh: 0.3" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Bobot (Desimal)</label>
+          <input type="number" id="bobotKomponen" step="0.01" min="0" max="1" required placeholder="Contoh: 0.3" class="input-field w-32">
         </div>
-        <button type="submit" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-slate-900">Tambah Komponen</button>
+        <button type="submit" class="btn-primary bg-slate-800 hover:bg-slate-900">Tambah Komponen</button>
       </form>
       <div id="komponenList" class="mt-4 flex gap-2 flex-wrap"></div>
     </div>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <div class="form-card">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold text-slate-800">Daftar Soal (Rubrik)</h3>
-        <button id="btnTambahRubrik" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-red-700">
-          + Tambah Soal
-        </button>
+        <button id="btnTambahRubrik" class="btn-primary text-sm py-1.5 px-3">+ Tambah Soal</button>
       </div>
 
-      <table class="w-full text-left border-collapse">
+      <table class="table-custom">
         <thead>
-          <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
-            <th class="p-4 font-semibold">Urutan</th>
-            <th class="p-4 font-semibold">Nama Soal / Item</th>
-            <th class="p-4 font-semibold">Skor Maksimal</th>
-            <th class="p-4 font-semibold">Komponen</th>
-            <th class="p-4 font-semibold text-right">Aksi</th>
+          <tr>
+            <th>Urutan</th>
+            <th>Nama Soal / Item</th>
+            <th>Skor Maksimal</th>
+            <th>Komponen</th>
+            <th class="text-right">Aksi</th>
           </tr>
         </thead>
         <tbody id="rubrikTableBody">
@@ -68,25 +70,25 @@
   </main>
 
   <div id="modalRubrik" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 form-card">
       <h3 class="text-lg font-bold text-slate-800 mb-4" id="modalTitle">Tambah Soal</h3>
       <form id="rubrikForm" class="space-y-4">
         <input type="hidden" id="rubrikId" value="">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Item / Soal</label>
-          <input type="text" id="namaItem" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Nama Item / Soal</label>
+          <input type="text" id="namaItem" required class="input-field">
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Skor Maksimal</label>
-          <input type="number" id="skorMaksimal" required min="1" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Skor Maksimal</label>
+          <input type="number" id="skorMaksimal" required min="1" class="input-field">
         </div>
         <div id="komponenSelectWrapper" class="hidden">
-          <label class="block text-sm font-medium text-slate-700 mb-1">Masuk Komponen</label>
-          <select id="komponenSelect" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none"></select>
+          <label class="input-label">Masuk Komponen</label>
+          <select id="komponenSelect" class="input-field"></select>
         </div>
         <div class="flex justify-end gap-3 pt-4">
-          <button type="button" id="btnBatalModal" class="px-4 py-2 border rounded-lg text-slate-700 hover:bg-slate-50">Batal</button>
-          <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700">Simpan</button>
+          <button type="button" id="btnBatalModal" class="btn-secondary">Batal</button>
+          <button type="submit" class="btn-primary">Simpan</button>
         </div>
       </form>
     </div>
@@ -95,19 +97,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/theme.js"></script>
   <script>
     let currentPosId = null;
     let currentMetode = 'sum';
-    let currentKomponen = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
       
-      document.getElementById('userRoleDisplay').textContent = 'Panitia';
+      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
       document.getElementById('navMenu').innerHTML = `
-        <a href="/admin/dashboard.html" class="block px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
-        <a href="/admin/pos.html" class="block px-3 py-2 rounded bg-slate-700 font-semibold">Kelola Pos & Rubrik</a>
+        <a href="/admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="/admin/pos.html" class="sidebar-link active">Kelola Pos & Rubrik</a>
+        <a href="/admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="/admin/juri.html" class="sidebar-link">Penugasan Juri</a>
       `;
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
@@ -134,9 +138,7 @@
         const nama = document.getElementById('namaKomponen').value;
         const bobot = parseFloat(document.getElementById('bobotKomponen').value);
 
-        const { error } = await window.supabaseClient.from('pos_komponen').insert([{
-          pos_id: currentPosId, nama: nama, bobot: bobot
-        }]);
+        const { error } = await window.supabaseClient.from('pos_komponen').insert([{ pos_id: currentPosId, nama, bobot }]);
 
         if (error) { alert(error.message); } 
         else {
@@ -186,40 +188,34 @@
 
     async function loadKomponen() {
       const { data } = await window.supabaseClient.from('pos_komponen').select('*').eq('pos_id', currentPosId).order('urutan');
-      currentKomponen = data || [];
-      
       const list = document.getElementById('komponenList');
       const select = document.getElementById('komponenSelect');
+      list.innerHTML = ''; select.innerHTML = '';
       
-      list.innerHTML = '';
-      select.innerHTML = '';
-      
-      currentKomponen.forEach(k => {
-        list.innerHTML += `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">${k.nama} (${k.bobot})</span>`;
-        select.innerHTML += `<option value="${k.nama}">${k.nama}</option>`;
-      });
+      if (data) {
+        data.forEach(k => {
+          list.innerHTML += `<span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">${k.nama} (${k.bobot})</span>`;
+          select.innerHTML += `<option value="${k.nama}">${k.nama}</option>`;
+        });
+      }
     }
 
     async function loadRubrik() {
-      const { data: rubrikList } = await window.supabaseClient
-        .from('rubrik')
-        .select('*')
-        .eq('pos_id', currentPosId)
-        .order('urutan', { ascending: true });
-
+      const { data: rubrikList } = await window.supabaseClient.from('rubrik').select('*').eq('pos_id', currentPosId).order('urutan', { ascending: true });
       const tbody = document.getElementById('rubrikTableBody');
+      
       if (!rubrikList || rubrikList.length === 0) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada soal. Klik "+ Tambah Soal".</td></tr>`;
       } else {
         let html = '';
         rubrikList.forEach((r, i) => {
           html += `
-            <tr class="border-b border-slate-100 hover:bg-slate-50">
-              <td class="p-4 text-sm text-slate-600">${i + 1}</td>
-              <td class="p-4 text-sm text-slate-800 font-medium">${r.nama_item}</td>
-              <td class="p-4 text-sm text-slate-600">${r.skor_maksimal}</td>
-              <td class="p-4 text-sm text-slate-600">${r.komponen || '-'}</td>
-              <td class="p-4 text-right">
+            <tr>
+              <td class="text-slate-600">${i + 1}</td>
+              <td class="font-medium text-slate-800">${r.nama_item}</td>
+              <td class="text-slate-600">${r.skor_maksimal}</td>
+              <td class="text-slate-600">${r.komponen || '-'}</td>
+              <td class="text-right">
                 <button onclick="hapusRubrik('${r.id}')" class="text-red-600 hover:underline text-sm font-semibold">Hapus</button>
               </td>
             </tr>
