@@ -516,3 +516,510 @@ Untuk setiap pos utama (induk_pos_id = null), per tingkat:
   4. Jika masih sama → fallback
   5. Ambil 1, 2, 3 → Juara 1, 2, 3
 ```
+Catatan:
+- Hanya pos induk (induk_pos_id = null) yang masuk perangkingan juara pos.
+- Sub-pos sudah terwakili di nilai gabungan induk.
+- Implementasi: fn_juara_pos(event_id, tingkat_id).
+
+## 6.6 Aturan Juara Umum
+```text
+Untuk setiap tingkat:
+  1. Pastikan semua peringkat per pos final (locked)
+  2. Ambil urutan pos yang ditetapkan panitia (urutan_pos)
+  3. Bandingkan tim secara leksikografis:
+     - Pos prioritas 1: peringkat lebih kecil menang
+     - Jika sama → pos prioritas 2
+     - ... sampai semua pos
+  4. Jika masih sama → fallback:
+     a. Timer total (akumulasi waktu tierbreaker timer)
+     b. Usia lebih muda (rata-rata tanggal lahir anggota)
+     c. Keputusan panitia (tercatat di audit)
+  5. Hasil: Juara umum 1, 2, 3
+```
+Catatan:
+- Hanya pos induk yang masuk leksikografis.
+- Tim tidak ikut pos → peringkat terbawah = jumlah_tim_tingkat + 1 (konsisten).
+- Implementasi: fn_juara_umum(event_id, tingkat_id) — fungsi dinamis, bukan view.
+
+## 6.7 Alur Juri
+Pos jumlah_juri = 1:
+
+```text
+Login → pilih pos → lihat tim belum dinilai
+   ↓
+Pilih tim → Scan QR Presensi Peserta (wajib, minimal 1 orang)
+   ↓
+start timer (jika pakai_timer)
+   ↓
+Form rubrik (1 kolom nilai)
+   ↓
+Stop timer → simpan (locked) → penilaian_pos.status = final
+   ↓
+Tim hilang dari dropdown semua juri pos ini
+   ↓
+Generate PDF + QR → cetak thermal
+```
+Pos jumlah_juri = 2+:
+
+```text
+Login → pilih pos → lihat tim belum dinilai lengkap
+   ↓
+Pilih tim → Scan QR Presensi Peserta (wajib, minimal 1 orang)
+   ↓
+start timer (jika pakai_timer, jika belum di-start juri lain)
+   ↓
+Form rubrik (kolom sesuai slot juri yang login)
+   ↓
+Isi nilai → simpan (locked) → penilaian_juri.status = locked
+   ↓
+Trigger update penilaian_pos:
+   - jika semua juri submit → status = final, locked_at = now()
+   - jika belum → status = menunggu_juri
+   ↓
+Tim hilang dari dropdown setelah status = final
+   ↓
+Nilai final dihitung via fn_hitung_nilai_final
+   ↓
+Generate PDF + QR → cetak thermal (setelah semua juri submit)
+```
+Aturan wajib: nilai final pos hanya dihitung setelah semua juri submit (Opsi A).
+- Catatan Presensi (Fitur Baru v1.3):
+- Sebelum menilai, juri wajib menscan QR Code peserta yang hadir di pos tersebut.
+- QR Code berisi kode_peserta (contoh: MU-01-01).
+- 1 tim bisa menurunkan 2 orang untuk lomba tertentu, dan 10 orang untuk lomba lainnya. Semua di-scan.
+- Data ini masuk ke tabel presensi_peserta dan digunakan untuk menghitung Peserta Tergiat.
+- Panitia mencetak kartu QR untuk dibagikan ke peserta sebelum lomba.
+
+Pos induk (juri di sub-pos):
+- Juri melihat sub-pos yang ditugaskan (-T, -P, ...).
+- Nilai sub-pos final → induk dihitung via fn_hitung_nilai_gabungan.
+- Struk induk dicetak setelah semua sub-pos final.
+-Juri non-digital: didampingi panitia/relawan, device khusus, UI sederhana, tombol "Minta Bantuan".
+
+## 6.8 Koreksi
+Juri tidak bisa edit setelah simpan (langsung locked).
+
+Panitia bisa koreksi dengan jejak berlevel:
+
+level_koreksi = item_rubrik → koreksi satu nilai rubrik (referensi_id = penilaian_detail.id)
+
+level_koreksi = nilai_juri → koreksi total juri (referensi_id = penilaian_juri.id)
+
+level_koreksi = nilai_final → koreksi nilai final pos (referensi_id = penilaian_pos.id)
+
+data_lama / data_baru disimpan sebagai jsonb
+
+Regenerate PDF setelah koreksi.
+
+QR lama menampilkan "DIREVISI" + nilai terbaru.
+
+Cetak ulang opsional dengan watermark "REVISI".
+
+Timer/bidak bisa dikoreksi dengan alasan + verifikasi.
+
+Konfigurasi pos dikunci setelah lomba mulai.
+
+6.9 Cetak Thermal
+Spesifikasi:
+
+58mm, Bluetooth, ESC/POS.
+
+QR ke halaman verifikasi (/verifikasi/{penilaian_pos_id}), 25×25mm, tanpa logo.
+
+Fallback window.print() jika Bluetooth gagal.
+
+Menu cetak ulang dari server.
+
+Struk POS 2+ juri menampilkan total per juri + hasil akhir.
+
+Struk hanya dicetak setelah semua juri submit (pos 2+ juri).
+
+Struk pos induk dicetak setelah semua sub-pos final; menampilkan gabungan komponen.
+
+Device standar juri = Android (Chrome). iOS Safari tidak mendukung Web Bluetooth.
+
+Fallback window.print() wajib diuji di gladi.
+
+Struk thermal diregenerate dari data saat cetak ulang (bukan simpan gambar).
+
+PDF A4 laporan disimpan di Storage; struk thermal tidak.
+
+Aturan siapa yang cetak (pos 2+ juri):
+
+Juri terakhir yang submit → otomatis dapat tombol "Cetak Struk" di halaman sukses submit.
+
+Juri lain (submit lebih awal) → tidak dapat tombol saat submit; bisa cetak ulang dari menu Riwayat & Cetak Ulang setelah status final.
+
+Panitia → selalu bisa cetak ulang dari menu Cetak Ulang (device khusus di lokasi).
+
+Struk yang dicetak = struk yang sama (dari penilaian_pos, bukan per juri) — menampilkan total per juri + hasil akhir.
+
+Juri non-digital → didampingi relawan/panitia; panitia yang cetak.
+
+Format struk (satu struk per tim per pos):
+
+text
+================================
+JUMBARA PMR MULA KE-4
+PMI KABUPATEN PURBALINGGA
+================================
+POS: POS-03 (Lomba Gabungan)
+Tim: MU-05 — SD N 1 Purbalingga
+Tingkat: Mula
+--------------------------------
+NILAI PER JURI:
+  Juri 1 (Budi):     85.50
+  Juri 2 (Sari):     90.00
+--------------------------------
+NILAI AKHIR:         87.75
+(metode: average_juri)
+--------------------------------
+Waktu: 12:34:56
+================================
+[QR CODE]
+Verifikasi: /verifikasi/{penilaian_pos_id}
+================================
+Catatan:
+
+Struk sama untuk semua juri (bukan struk per juri).
+
+Menampilkan total per juri + nilai akhir.
+
+QR ke halaman verifikasi penilaian_pos (bukan per juri).
+
+Untuk pos 1 juri, bagian "NILAI PER JURI" bisa disembunyikan (hanya nilai akhir).
+
+6.10 Dashboard
+Tracker Panitia (status-only):
+
+Matriks tim × pos, status per juri.
+
+Filter per tingkat, pos, kontingen.
+
+Highlight pos/tim tertinggal.
+
+Tanpa nilai mentah.
+
+Aula:
+
+Semua nilai per pos, urutan kode kontingen.
+
+Tanpa perangkingan.
+
+Tierbreaker sebagai catatan.
+
+Hanya nilai locked.
+
+9 tema visual, tanpa highlight nilai baru.
+
+Kontrol panitia (mode, pesan, panic button).
+
+Grid harus bisa dibaca dari jauh (uji di gladi).
+
+6.11 Histori Peran
+Peserta + peran per tahun (join peserta_master).
+
+Bisa dicari per nama (publik).
+
+Beda dengan Peserta Tergiat: Histori Peran mencatat peran spesifik yang dijalankan (misal: jadi Narator di tahun 2025, jadi Pelaku di tahun 2026). Sedangkan Peserta Tergiat dihitung dari frekuensi kehadiran (berapa banyak pos yang diikuti) di tahun berjalan.
+
+6.12 Audit Log
+Append-only, tidak bisa edit/hapus.
+
+Mencatat semua aktivitas.
+
+Juri bisa lihat log sendiri.
+
+Percobaan akses ditolak dicatat.
+
+Retensi 5 tahun, backup CSV harian.
+
+ip_address diisi via Edge Function atau client (jangan janji akurasi 100%).
+
+6.13 Menu Laporan
+10 laporan panitia:
+
+Rekap Juara Umum
+
+Rekap Juara per Pos
+
+Rekap Nilai per Kontingen
+
+Rekap Nilai per Pos
+
+Detail per Kontingen
+
+Rekap Tierbreaker
+
+Rekap Histori Peran
+
+Log Aktivitas
+
+Sertifikat Peserta
+
+Rekap Presensi & Peserta Tergiat
+
+3 laporan publik:
+
+Papan Juara
+
+Histori Peran Peserta
+
+Papan Peserta Tergiat
+
+Format: PDF (A4) + CSV.
+Generate: On-demand.
+Audit: Setiap generate/export tercatat.
+Sertifikat: Disimpan di Supabase Storage.
+
+6.14 Keputusan Teknis (Final)
+#	Keputusan	Alasan
+A	Device juri standar = Android (Chrome)	Web Bluetooth tidak didukung iOS Safari & Firefox.
+B	Timer & bidak = shared per tim per pos	Menghindari ambiguitas. Disimpan di tierbreaker.penilaian_pos_id.
+C	Nilai final pos = wajib semua juri submit (Opsi A)	Mencegah nilai tidak adil. Status menunggu_juri → final.
+D	Penilaian dipecah 3 tabel: penilaian_pos / penilaian_juri / penilaian_detail	Memisahkan nilai final pos dari nilai per juri.
+E	Juara umum = hanya pos induk (induk_pos_id = null)	Sub-pos sudah terwakili di nilai gabungan induk.
+F	fn_juara_umum = fungsi SQL dinamis, bukan view statis	Jumlah pos tak terbatas.
+G	Pos tak terbatas, sub-pos tak terbatas, komponen tak terbatas	Prinsip §2.
+H	pos.agregasi_komponen = tidak_ada/normalisasi_bobot	Generalisasi, bukan enum mode kaku.
+I	pos_komponen tabel terpisah (bukan bobot_teori/bobot_praktik di pos)	Dukung 3+ komponen.
+J	weighted = normalisasi per komponen + rata-rata lintas juri	Adil antar pos dengan jumlah juri berbeda & skala berbeda.
+K	pos.komponen untuk sub-pos menandai komponennya	Memudahkan agregasi induk.
+L	jumlah_juri >= 0 — 0 diizinkan untuk induk (juri di sub-pos)	Fleksibel.
+M	Juri bisa melekat di pos mana pun via juri_pos	Prinsip §2.
+N	Struk thermal: pos induk cetak setelah semua sub-pos final	Hindari struk ganda.
+O	weighted wajib kedua komponen ada (validasi config_locked)	Cegah nilai hangus.
+P	maks_k dihitung dari Σ skor_maksimal rubrik, bukan pos.total_maks	Normalisasi benar.
+Q	Koreksi berlevel (item_rubrik/nilai_juri/nilai_final) + jsonb	Fleksibel & auditable.
+R	nilai_final dihitung via view/fungsi dulu, materialize jika lambat	Hindari trigger kompleks di awal.
+S	Backup: manual CSV harian selama event (kecuali Supabase Pro)	Free tier tidak punya automated backup.
+T	Reset password juri via Edge Function admin-reset-password	service_role hanya di Edge Function.
+U	Service worker: network-first untuk HTML dinamis, cache-first untuk asset statis	Halaman dashboard harus selalu fresh.
+V	Cetak thermal pos 2+ juri: juri terakhir submit otomatis dapat tombol cetak; juri lain & panitia via cetak ulang	Natural, tidak perlu koordinasi. Struk sama untuk semua.
+W	Struk thermal = satu struk per tim per pos (bukan per juri) — menampilkan total per juri + nilai akhir; QR ke penilaian_pos	Hindari duplikasi.
+X	Presensi via Scan QR Code oleh juri sebelum menilai (berisi kode_peserta)	Menjawab kebutuhan 1 tim ikut banyak lomba di waktu bersamaan.
+Y	Peserta Tergiat dihitung dari frekuensi kehadiran (scan) di presensi_peserta	Objektif dan otomatis.
+Z	Tierbreaker Umur: Opsi umur_dulu di prioritas_tierbreaker, dihitung dari rata-rata usia tim (tgl_lahir)	Menyelesaikan nilai seri jika timer/bidak juga seri.
+AA	Menu Panitia dibedakan berdasarkan Role di 1 halaman HTML (admin/dashboard.html), dirender kondisional via JS, dilindungi RLS Supabase	Efisien, tidak perlu buat 3 file dashboard berbeda.
+7. Akun Juri
+Username + password + nama (bukan email, bukan PIN).
+
+Email palsu di Supabase: {username}@jumbara.local.
+
+Admin buat akun → sampaikan username & password manual.
+
+Reset password manual oleh admin (via Edge Function admin-reset-password).
+
+Multi-device login.
+
+Satu orang bisa ditugaskan ke >1 pos via juri_pos.
+
+8. Halaman Aplikasi
+text
+Publik
+├── Beranda / info Jumbara
+├── Papan Skor (jika publikasi aktif)
+├── Papan Peserta Tergiat (Baru)
+├── Histori Peran Peserta
+├── Verifikasi QR
+└── Dashboard Aula
+
+Portal Kontingen (login)
+├── Dashboard
+├── Form Tim & Peserta
+└── Submit Verifikasi
+
+Juri (login)
+├── Daftar Pos Saya
+├── Daftar Tim Belum Dinilai
+├── Scan QR Presensi (Baru)
+├── Form Penilaian
+├── Cetak Struk
+├── Riwayat & Cetak Ulang
+└── Aktivitas Saya
+
+Panitia (login)
+├── Dashboard (1 file, menu dirender sesuai Role)
+│   ├── Super Admin & Koordinator: Kelola Event, Verifikasi, Koreksi, Kontrol Aula
+│   ├── Admin Event: Kelola Pos, Penugasan Juri, Cetak QR
+│   └── Super Admin: Kelola User, Audit Log
+├── Kelola Pos & Rubrik
+├── Verifikasi Kontingen
+├── Penugasan Juri
+├── Cetak Kartu QR Peserta
+├── Dashboard Tracker
+├── Koreksi Nilai (Koordinator & Super Admin)
+├── Rekap Juara
+├── Menu Laporan
+├── Kontrol Dashboard Aula (Koordinator & Super Admin)
+└── Audit Log (Super Admin)
+9. Design System
+Komponen	Spesifikasi
+Warna primer	Merah #DC2626
+Font	Inter / system sans-serif
+Font monospace	JetBrains Mono (timer)
+Ikon	Font Awesome 6
+Border radius	8px / 12px / 16px
+Shadow	shadow-md / shadow-xl
+Breakpoint	640px / 768px / 1024px / 1280px
+Tema	Terang (default), Gelap (opsional)
+10. Keamanan
+Aspek	Keputusan
+RLS	Aktif di semua tabel
+PIN	Dihapus
+Password	Hash bcrypt (Supabase Auth)
+service_role key	Hanya di Edge Function
+CSP	Header via vercel.json
+Vercel	Aktifkan Vercel Authentication
+MFA	Aktifkan di akun Supabase Super Admin
+Audit log	Append-only, retensi 5 tahun
+10.1 Catatan Keamanan Tambahan
+Aspek	Keputusan
+Web Bluetooth	Hanya Chrome/Edge Android/Desktop. iOS Safari & Firefox tidak didukung. Tetapkan device standar juri = Android.
+Fallback cetak	window.print() → PDF → printer biasa. Wajib diuji di gladi.
+RLS slot_juri	Policy insert penilaian_juri harus cek slot_juri = juri_pos.slot milik juri. Butuh fungsi RLS. Uji di tahap 1.
+Reset password	Edge Function admin-reset-password (verifikasi role admin).
+audit_log.ip_address	Tidak otomatis diisi Supabase. Isi via Edge Function (x-forwarded-for) atau client. Jangan janji akurasi 100%.
+Backup	Free tier = manual CSV harian. Pro = automated. Putuskan sebelum event.
+Rate limiting	Supabase RLS tidak punya rate limit. Monitor via audit log, atau Edge Function.
+CSP unsafe-inline	Untuk MVP OK (Tailwind CDN). Hindari inline onclick — pakai addEventListener.
+11. Migrasi Data
+Data	Migrasi?
+KONTINGEN (18 tim)	✅ Ya
+POS (8 kode — konfirmasi: hanya 8 atau ada tambahan?)	✅ Ya
+JURI (16 juri)	✅ Ya (password hash)
+RUBRIK (semua soal)	✅ Ya
+NILAI (historis)	❌ Tidak
+12. Referensi File & Sheet
+12.1 File yang Sudah Direview
+File	Status
+dashboardx.html	✅ 9 tema dipertahankan, perangkingan dihilangkan
+dashboard1.html	✅ Diganti jadi tracker status-only + laporan
+index.html	✅ Alur juri & timer dipertahankan, backend diganti Supabase
+manifest.json	✅ Perlu update (start_url, orientation, ikon)
+sw.js	✅ Perlu update: network-first untuk HTML dinamis, cache-first untuk asset statis; bypass Supabase
+gs.html	✅ Backend diganti Supabase, token Telegram di-revoke
+12.2 Sheet yang Dimigrasi
+Sheet	Migrasi?
+RUBRIK	✅ Ya
+POS	✅ Ya
+KONTINGEN	✅ Ya
+JURI	✅ Ya (password hash)
+NILAI	❌ Tidak (historis)
+12.3 Data Master 2026
+Data	Jumlah
+Kontingen	18 tim (MU-01 s/d MU-18)
+Pos	8 kode (POS-01, 02, 03-T, 03-P, 04-T, 04-P, 05, 06) — konfirmasi: struktur aktual?
+Juri	16 baris (14 orang unik, karena Kukuh & Adit double)
+Rubrik	±100 soal (dari sheet)
+Catatan: Data master 2026 belum dikonfirmasi untuk konfigurasi agregasi_komponen, pos_komponen, dan juri_pos. Seed dibuat terpisah setelah konfirmasi.
+
+13. Rencana Implementasi
+13.1 Prasyarat Sebelum Coding
+Sebelum tahap 1 dimulai, wajib diputuskan:
+
+Device juri = Android (Web Bluetooth) — setuju?
+
+Timer & bidak shared per tim per pos — setuju?
+
+Nilai final = wajib semua juri submit — setuju?
+
+Pisah penilaian_pos / penilaian_juri / penilaian_detail — setuju?
+
+Juara umum = hanya pos induk — setuju?
+
+agregasi_komponen + pos_komponen + pos.komponen — setuju?
+
+weighted = normalisasi per komponen + rata-rata lintas juri — setuju?
+
+Backup: manual CSV atau Supabase Pro?
+
+Edge Function admin-reset-password — siap?
+
+Service worker network-first untuk HTML dinamis — setuju?
+
+Koreksi berlevel — setuju?
+
+Jumlah pos aktual 2026 — hanya 8 kode, atau ada tambahan?
+
+Konfigurasi aktual 2026: POS-03/POS-04 pola 1 atau 2? POS-01/02/05/06 metode apa? juri_pos aktual? Timer/bidak?
+
+Cetak thermal pos 2+ juri: juri terakhir yang cetak, juri lain via cetak ulang — setuju?
+
+Struk thermal = satu struk per tim per pos (bukan per juri), QR ke penilaian_pos — setuju?
+
+Presensi QR wajib sebelum menilai, untuk hitung peserta tergiat — setuju?
+
+Tierbreaker Umur diaktifkan (dihitung dari rata-rata tgl_lahir tim) — setuju?
+
+Tanpa keputusan ini, coding skema berisiko rework.
+
+13.2 Tahapan Implementasi
+Tahap	Aktivitas	Estimasi
+1	Setup Supabase (skema, RLS, view, fungsi, seed placeholder)	2 hari
+2	Setup GitHub + Vercel + PWA shell	1 hari
+3	Auth + Portal Kontingen + Cetak QR Peserta	3 hari
+4	Set Pos & Rubrik	2 hari
+5	Form Penilaian Juri + Scan QR	5 hari
+6	Cetak Thermal & QR	2 hari
+7	Juara & Koreksi	4 hari
+8	Dashboard Tracker & Aula	6 hari
+9	Histori & Audit Log	3 hari
+10	Laporan & Sertifikat (termasuk Tergiat)	4 hari
+11	Uji Coba & Deploy	3 hari
+Total estimasi: ±35–45 hari kerja.
+
+14. Rencana Chat Coding
+Chat	Judul	Isi
+1	Skema SQL & Supabase	DDL semua tabel (penilaian_pos/penilaian_juri/penilaian_detail, pos_komponen, presensi_peserta), RLS lengkap, view + fungsi (fn_hitung_nilai_final, fn_hitung_nilai_gabungan, fn_juara_pos, fn_juara_umum, fn_hitung_rata_rata_umur), seed placeholder
+2	PWA Shell & Repositori	Struktur folder, manifest, sw, vercel, deploy
+3	Auth & Portal Kontingen	Login, role, portal, verifikasi, generate QR cetak
+4	Set Pos & Rubrik	Form pos fleksibel (agregasi_komponen, pos_komponen), CRUD rubrik
+5	Form Penilaian Juri	Alur juri, timer, rubrik, locked, trigger status, scanner QR
+6	Cetak Thermal & QR	Web Bluetooth, QR, verifikasi
+7	Juara & Koreksi	Hitung nilai (fn_*), peringkat, koreksi berlevel, tierbreaker (termasuk umur)
+8	Dashboard Tracker & Aula	Tracker, aula, 9 tema
+9	Histori & Audit Log	Histori, audit, ekspor
+10	Laporan & Sertifikat	10 laporan + 3 publik
+11	Deploy & Uji Coba	Vercel, gladi, bug fix
+15. Template Pembuka Chat Coding
+Setiap chat baru, kirim:
+
+"Lanjutan Jumbara PMI Purbalingga. Dokumen final: PEDOMAN.md v1.5 (di repositori GitHub). Teknologi: HTML murni + vanilla JS + Tailwind CDN + Supabase + Vercel + PWA. Prinsip: semua fleksibel (pos tak terbatas, sub-pos tak terbatas, komponen tak terbatas via pos_komponen, jumlah juri 0/1/2/3+, 7 metode hitung, induk_pos_id, timer/bidak/umur shared per pos-tim, juri melekat di pos mana pun via juri_pos, presensi QR peserta, tierbreaker umur). Akun juri: username + password + nama. Cetak thermal: juri terakhir submit yang cetak, struk satu per tim per pos, QR ke penilaian_pos. Bagian: [nama bagian]. Mulai dari: [langkah spesifik]. Kutipan PEDOMAN.md yang relevan: [copy bagian]."
+
+Contoh:
+
+"Lanjutan Jumbara PMI Purbalingga. Dokumen final: PEDOMAN.md v1.5. Bagian: Skema SQL & Supabase. Mulai dari: DDL semua tabel (termasuk pos_komponen, penilaian_pos/penilaian_juri/penilaian_detail, presensi_peserta), RLS policy, fungsi (fn_hitung_nilai_final, fn_hitung_nilai_gabungan, fn_juara_pos, fn_juara_umum, fn_hitung_rata_rata_umur). Kutipan PEDOMAN.md: [copy bagian 5]."
+
+16. Peringatan Keamanan
+⚠️ Revoke Telegram Bot Token di gs.html via BotFather.
+
+⚠️ Jangan commit gs.html asli ke GitHub publik.
+
+⚠️ Jangan commit Supabase service_role key ke frontend.
+
+⚠️ RLS wajib aktif di semua tabel.
+
+⚠️ Hash password via Supabase Auth.
+
+⚠️ Backup harian database selama event.
+
+⚠️ Web Bluetooth hanya Chrome/Edge Android/Desktop — tetapkan device juri = Android.
+
+⚠️ Reset password juri via Edge Function — jangan taruh service_role di frontend.
+
+17. Status Dokumen
+Bagian	Status
+Dokumen final	✅ 100% Terkunci (revisi v1.5)
+Teknologi	✅ Final
+Skema database	✅ Final (3 tabel penilaian + pos_komponen + pos.komponen + presensi_peserta)
+Keputusan teknis	✅ Final (§6.14, 27 keputusan A–AA)
+Keamanan	✅ Final (§10 + §10.1)
+Rencana implementasi	✅ Final
+Rencana chat coding	✅ Final
+Siap coding	✅ Ya (setelah 17 prasyarat §13.1 disetujui)
+Dokumen ini FINAL 100% (v1.5). Siap dijadikan acuan tunggal untuk coding.
+
+Catatan: Seed & konfigurasi aktual 2026 belum ada di dokumen ini — dibuat terpisah di seed.sql setelah 17 prasyarat §13.1 disetujui.
+
+Terima kasih atas kerja samanya. Semangat coding! 🚀
