@@ -799,170 +799,159 @@ Panitia (login)
 |Komponen|Spesifikasi|
 |-|-|
 |Warna|primer	Merah #DC2626
-Font	Inter / system sans-serif
-Font monospace	JetBrains Mono (timer)
-Ikon	Font Awesome 6
-Border radius	8px / 12px / 16px
-Shadow	shadow-md / shadow-xl
-Breakpoint	640px / 768px / 1024px / 1280px
-Tema	Terang (default), Gelap (opsional)
-10. Keamanan
-Aspek	Keputusan
-RLS	Aktif di semua tabel
-PIN	Dihapus
-Password	Hash bcrypt (Supabase Auth)
-service_role key	Hanya di Edge Function
-CSP	Header via vercel.json
-Vercel	Aktifkan Vercel Authentication
-MFA	Aktifkan di akun Supabase Super Admin
-Audit log	Append-only, retensi 5 tahun
-10.1 Catatan Keamanan Tambahan
-Aspek	Keputusan
-Web Bluetooth	Hanya Chrome/Edge Android/Desktop. iOS Safari & Firefox tidak didukung. Tetapkan device standar juri = Android.
-Fallback cetak	window.print() → PDF → printer biasa. Wajib diuji di gladi.
-RLS slot_juri	Policy insert penilaian_juri harus cek slot_juri = juri_pos.slot milik juri. Butuh fungsi RLS. Uji di tahap 1.
-Reset password	Edge Function admin-reset-password (verifikasi role admin).
-audit_log.ip_address	Tidak otomatis diisi Supabase. Isi via Edge Function (x-forwarded-for) atau client. Jangan janji akurasi 100%.
-Backup	Free tier = manual CSV harian. Pro = automated. Putuskan sebelum event.
-Rate limiting	Supabase RLS tidak punya rate limit. Monitor via audit log, atau Edge Function.
-CSP unsafe-inline	Untuk MVP OK (Tailwind CDN). Hindari inline onclick — pakai addEventListener.
-11. Migrasi Data
+|Font|	Inter / system sans-serif
+|Font monospace|	JetBrains Mono (timer)
+|Ikon	Font| Awesome 6
+|Border radius|	8px / 12px / 16px
+|Shadow|	shadow-md / shadow-xl
+|Breakpoint|	640px / 768px / 1024px / 1280px
+|Tema|	Terang (default), Gelap (opsional)
+
+## 10. Keamanan
+|Aspek|	Keputusan|
+|-|-|
+|RLS|	Aktif di semua tabel
+|PIN|	Dihapus
+|Password	|Hash bcrypt (Supabase Auth)
+|service_role key	|Hanya di Edge Function
+|CSP	|Header via vercel.json
+|Vercel|	Aktifkan Vercel Authentication
+|MFA|	Aktifkan di akun Supabase Super Admin
+|Audit log|	Append-only, retensi 5 tahun
+
+### 10.1 Catatan Keamanan Tambahan
+|Aspek|	Keputusan|
+|-|-|
+|Web Bluetooth|	Hanya Chrome/Edge Android/Desktop. iOS Safari & Firefox tidak didukung. Tetapkan device standar juri = Android.
+|Fallback cetak	window.print() → PDF → printer biasa. |Wajib diuji di gladi.
+|RLS slot_juri	Policy insert penilaian_juri harus cek slot_juri = juri_pos.slot milik juri. |Butuh fungsi RLS. Uji di tahap 1.
+|Reset password	Edge Function |admin-reset-password (verifikasi role admin).
+|audit_log.ip_address	Tidak otomatis diisi Supabase. |Isi via Edge Function (x-forwarded-for) atau client. Jangan janji akurasi 100%.
+|Backup	Free tier = manual CSV harian. Pro = automated.| Putuskan sebelum event.
+|Rate limiting	Supabase RLS tidak punya rate limit. |Monitor via audit log, atau Edge Function.
+|CSP unsafe-inline	Untuk MVP OK (Tailwind CDN). |Hindari inline onclick — pakai addEventListener.
+
+## 11. Migrasi Data
 Data	Migrasi?
-KONTINGEN (18 tim)	✅ Ya
-POS (8 kode — konfirmasi: hanya 8 atau ada tambahan?)	✅ Ya
-JURI (16 juri)	✅ Ya (password hash)
-RUBRIK (semua soal)	✅ Ya
-NILAI (historis)	❌ Tidak
-12. Referensi File & Sheet
-12.1 File yang Sudah Direview
-File	Status
-dashboardx.html	✅ 9 tema dipertahankan, perangkingan dihilangkan
-dashboard1.html	✅ Diganti jadi tracker status-only + laporan
-index.html	✅ Alur juri & timer dipertahankan, backend diganti Supabase
-manifest.json	✅ Perlu update (start_url, orientation, ikon)
-sw.js	✅ Perlu update: network-first untuk HTML dinamis, cache-first untuk asset statis; bypass Supabase
-gs.html	✅ Backend diganti Supabase, token Telegram di-revoke
-12.2 Sheet yang Dimigrasi
-Sheet	Migrasi?
-RUBRIK	✅ Ya
-POS	✅ Ya
-KONTINGEN	✅ Ya
-JURI	✅ Ya (password hash)
-NILAI	❌ Tidak (historis)
-12.3 Data Master 2026
-Data	Jumlah
-Kontingen	18 tim (MU-01 s/d MU-18)
-Pos	8 kode (POS-01, 02, 03-T, 03-P, 04-T, 04-P, 05, 06) — konfirmasi: struktur aktual?
-Juri	16 baris (14 orang unik, karena Kukuh & Adit double)
-Rubrik	±100 soal (dari sheet)
-Catatan: Data master 2026 belum dikonfirmasi untuk konfigurasi agregasi_komponen, pos_komponen, dan juri_pos. Seed dibuat terpisah setelah konfirmasi.
+-KONTINGEN (18 tim)	✅ Ya
+-POS (8 kode — konfirmasi: hanya 8 atau ada tambahan?)	✅ Ya
+-JURI (16 juri)	✅ Ya (password hash)
+-RUBRIK (semua soal)	✅ Ya
+-NILAI (historis)	❌ Tidak
 
-13. Rencana Implementasi
-13.1 Prasyarat Sebelum Coding
-Sebelum tahap 1 dimulai, wajib diputuskan:
+## 12. Referensi File & Sheet
+### 12.1 File yang Sudah Direview
+|File|	Status|
+|-|-|
+|dashboardx.html	|✅ 9 tema dipertahankan, perangkingan dihilangkan
+|dashboard1.html	|✅ Diganti jadi tracker status-only + laporan
+|index.html|	✅ Alur juri & timer dipertahankan, backend diganti Supabase
+|manifest.json|	✅ Perlu update (start_url, orientation, ikon)
+|sw.js|	✅ Perlu update: network-first untuk HTML dinamis, cache-first untuk asset statis; bypass Supabase
+|gs.html|	✅ Backend diganti Supabase, token Telegram di-revoke
 
-Device juri = Android (Web Bluetooth) — setuju?
+### 12.2 Sheet yang Dimigrasi
+| Sheet	Migrasi?
+| RUBRIK	✅ Ya
+| POS	✅ Ya
+| KONTINGEN	✅ Ya
+| JURI	✅ Ya (password hash)
+| NILAI	❌ Tidak (historis)
 
-Timer & bidak shared per tim per pos — setuju?
+### 12.3 Data Master 2026
+|Data|	Jumlah|
+|-|-|
+|Kontingen|	18 tim (MU-01 s/d MU-18)
+|Pos	|8 kode  (POS-01, 02, 03-T, 03-P, 04-T, 04-P, 05, 06) — konfirmasi: struktur aktual?
+|Juri	|16 baris (14 orang unik, karena Kukuh & Adit double)
+|Rubrik|	±100 soal (dari sheet)
 
-Nilai final = wajib semua juri submit — setuju?
+|Catatan: Data master 2026 belum dikonfirmasi untuk konfigurasi agregasi_komponen, pos_komponen, dan juri_pos. Seed dibuat terpisah setelah konfirmasi.
 
-Pisah penilaian_pos / penilaian_juri / penilaian_detail — setuju?
+## 13. Rencana Implementasi
+### 13.1 Prasyarat Sebelum Coding
+- Sebelum tahap 1 dimulai, wajib diputuskan:
+- Device juri = Android (Web Bluetooth) — setuju?
+- Timer & bidak shared per tim per pos — setuju?
+- Nilai final = wajib semua juri submit — setuju?
+- Pisah penilaian_pos / penilaian_juri / penilaian_detail — setuju?
+- Juara umum = hanya pos induk — setuju?
+- agregasi_komponen + pos_komponen + pos.komponen — setuju?
+- weighted = normalisasi per komponen + rata-rata lintas juri — setuju?
+- Backup: manual CSV atau Supabase Pro?
+- Edge Function admin-reset-password — siap?
+- Service worker network-first untuk HTML dinamis — setuju?
+- Koreksi berlevel — setuju?
+- Jumlah pos aktual 2026 — hanya 8 kode, atau ada tambahan?
+- Konfigurasi aktual 2026: POS-03/POS-04 pola 1 atau 2? POS-01/02/05/06 metode apa? juri_pos aktual? Timer/bidak?
+- Cetak thermal pos 2+ juri: juri terakhir yang cetak, juri lain via cetak ulang — setuju?
+- Struk thermal = satu struk per tim per pos (bukan per juri), QR ke penilaian_pos — setuju?
+- Presensi QR wajib sebelum menilai, untuk hitung peserta tergiat — setuju?
+- Tierbreaker Umur diaktifkan (dihitung dari rata-rata tgl_lahir tim) — setuju?
+- Tanpa keputusan ini, coding skema berisiko rework.
 
-Juara umum = hanya pos induk — setuju?
+### 13.2 Tahapan Implementasi
+|Tahap|	Aktivitas|	Estimasi|
+|-|-|-|
+|1|	Setup Supabase (skema, RLS, view, fungsi, seed placeholder)	|2 hari
+|2	|Setup GitHub + Vercel + PWA shell	|1 hari
+|3	|Auth + Portal Kontingen + Cetak QR Peserta	|3 hari
+|4	|Set Pos & Rubrik	|2 hari
+|5	|Form Penilaian Juri + Scan QR	|5 hari
+|6	|Cetak Thermal & QR	|2 hari
+|7	|Juara & Koreksi	|4 hari
+|8	|Dashboard Tracker & Aula	|6 hari
+|9	|Histori & Audit Log	|3 hari
+|10	|Laporan & Sertifikat (termasuk Tergiat)	|4 hari
+|11	|Uji Coba & Deploy	|3 hari
+|Total estimasi:| ±35–45 hari kerja.|
 
-agregasi_komponen + pos_komponen + pos.komponen — setuju?
+## 14. Rencana Chat Coding
+|Chat|	Judul	Isi|
+|-|-|
+|1|	Skema SQL & Supabase	DDL semua tabel (penilaian_pos/penilaian_juri/penilaian_detail, pos_komponen, presensi_peserta), RLS lengkap, view + fungsi (fn_hitung_nilai_final, fn_hitung_nilai_gabungan, fn_juara_pos, fn_juara_umum, fn_hitung_rata_rata_umur), seed placeholder
+|2	|PWA Shell & Repositori	Struktur folder, manifest, sw, vercel, deploy
+|3	|Auth & Portal Kontingen	Login, role, portal, verifikasi, generate QR cetak
+|4	|Set Pos & Rubrik	Form pos fleksibel (agregasi_komponen, pos_komponen), CRUD rubrik
+|5	|Form Penilaian Juri	Alur juri, timer, rubrik, locked, trigger status, scanner QR
+|6	|Cetak Thermal & QR	Web Bluetooth, QR, verifikasi
+|7	|Juara & Koreksi	Hitung nilai (fn_*), peringkat, koreksi berlevel, tierbreaker (termasuk umur)
+|8	|Dashboard Tracker & Aula	Tracker, aula, 9 tema
+|9	|Histori & Audit Log	Histori, audit, ekspor
+|10	|Laporan & Sertifikat	10 laporan + 3 publik
+|11	|Deploy & Uji Coba	Vercel, gladi, bug fix
+|15 |Template Pembuka Chat Coding
 
-weighted = normalisasi per komponen + rata-rata lintas juri — setuju?
-
-Backup: manual CSV atau Supabase Pro?
-
-Edge Function admin-reset-password — siap?
-
-Service worker network-first untuk HTML dinamis — setuju?
-
-Koreksi berlevel — setuju?
-
-Jumlah pos aktual 2026 — hanya 8 kode, atau ada tambahan?
-
-Konfigurasi aktual 2026: POS-03/POS-04 pola 1 atau 2? POS-01/02/05/06 metode apa? juri_pos aktual? Timer/bidak?
-
-Cetak thermal pos 2+ juri: juri terakhir yang cetak, juri lain via cetak ulang — setuju?
-
-Struk thermal = satu struk per tim per pos (bukan per juri), QR ke penilaian_pos — setuju?
-
-Presensi QR wajib sebelum menilai, untuk hitung peserta tergiat — setuju?
-
-Tierbreaker Umur diaktifkan (dihitung dari rata-rata tgl_lahir tim) — setuju?
-
-Tanpa keputusan ini, coding skema berisiko rework.
-
-13.2 Tahapan Implementasi
-Tahap	Aktivitas	Estimasi
-1	Setup Supabase (skema, RLS, view, fungsi, seed placeholder)	2 hari
-2	Setup GitHub + Vercel + PWA shell	1 hari
-3	Auth + Portal Kontingen + Cetak QR Peserta	3 hari
-4	Set Pos & Rubrik	2 hari
-5	Form Penilaian Juri + Scan QR	5 hari
-6	Cetak Thermal & QR	2 hari
-7	Juara & Koreksi	4 hari
-8	Dashboard Tracker & Aula	6 hari
-9	Histori & Audit Log	3 hari
-10	Laporan & Sertifikat (termasuk Tergiat)	4 hari
-11	Uji Coba & Deploy	3 hari
-Total estimasi: ±35–45 hari kerja.
-
-14. Rencana Chat Coding
-Chat	Judul	Isi
-1	Skema SQL & Supabase	DDL semua tabel (penilaian_pos/penilaian_juri/penilaian_detail, pos_komponen, presensi_peserta), RLS lengkap, view + fungsi (fn_hitung_nilai_final, fn_hitung_nilai_gabungan, fn_juara_pos, fn_juara_umum, fn_hitung_rata_rata_umur), seed placeholder
-2	PWA Shell & Repositori	Struktur folder, manifest, sw, vercel, deploy
-3	Auth & Portal Kontingen	Login, role, portal, verifikasi, generate QR cetak
-4	Set Pos & Rubrik	Form pos fleksibel (agregasi_komponen, pos_komponen), CRUD rubrik
-5	Form Penilaian Juri	Alur juri, timer, rubrik, locked, trigger status, scanner QR
-6	Cetak Thermal & QR	Web Bluetooth, QR, verifikasi
-7	Juara & Koreksi	Hitung nilai (fn_*), peringkat, koreksi berlevel, tierbreaker (termasuk umur)
-8	Dashboard Tracker & Aula	Tracker, aula, 9 tema
-9	Histori & Audit Log	Histori, audit, ekspor
-10	Laporan & Sertifikat	10 laporan + 3 publik
-11	Deploy & Uji Coba	Vercel, gladi, bug fix
-15. Template Pembuka Chat Coding
 Setiap chat baru, kirim:
-
+```text
 "Lanjutan Jumbara PMI Purbalingga. Dokumen final: PEDOMAN.md v1.5 (di repositori GitHub). Teknologi: HTML murni + vanilla JS + Tailwind CDN + Supabase + Vercel + PWA. Prinsip: semua fleksibel (pos tak terbatas, sub-pos tak terbatas, komponen tak terbatas via pos_komponen, jumlah juri 0/1/2/3+, 7 metode hitung, induk_pos_id, timer/bidak/umur shared per pos-tim, juri melekat di pos mana pun via juri_pos, presensi QR peserta, tierbreaker umur). Akun juri: username + password + nama. Cetak thermal: juri terakhir submit yang cetak, struk satu per tim per pos, QR ke penilaian_pos. Bagian: [nama bagian]. Mulai dari: [langkah spesifik]. Kutipan PEDOMAN.md yang relevan: [copy bagian]."
-
+```
 Contoh:
-
+```text
 "Lanjutan Jumbara PMI Purbalingga. Dokumen final: PEDOMAN.md v1.5. Bagian: Skema SQL & Supabase. Mulai dari: DDL semua tabel (termasuk pos_komponen, penilaian_pos/penilaian_juri/penilaian_detail, presensi_peserta), RLS policy, fungsi (fn_hitung_nilai_final, fn_hitung_nilai_gabungan, fn_juara_pos, fn_juara_umum, fn_hitung_rata_rata_umur). Kutipan PEDOMAN.md: [copy bagian 5]."
+```
+## 16. Peringatan Keamanan
+- ⚠️ Revoke Telegram Bot Token di gs.html via BotFather.
+- ⚠️ Jangan commit gs.html asli ke GitHub publik.
+- ⚠️ Jangan commit Supabase service_role key ke frontend.
+- ⚠️ RLS wajib aktif di semua tabel.
+- ⚠️ Hash password via Supabase Auth.
+- ⚠️ Backup harian database selama event.
+- ⚠️ Web Bluetooth hanya Chrome/Edge Android/Desktop — tetapkan device juri = Android.
+- ⚠️ Reset password juri via Edge Function — jangan taruh service_role di frontend.
 
-16. Peringatan Keamanan
-⚠️ Revoke Telegram Bot Token di gs.html via BotFather.
+## 17. Status Dokumen
+|Bagian|	Status|
+|-|-|
+|Dokumen| final	✅ 100% Terkunci (revisi v1.5)
+|Teknologi|	✅ Final
+|Skema database|	✅ Final (3 tabel penilaian + pos_komponen + pos.komponen + presensi_peserta)
+|Keputusan teknis|	✅ Final (§6.14, 27 keputusan A–AA)
+|Keamanan|	✅ Final (§10 + §10.1)
+|Rencana implementasi|	✅ Final
+|Rencana chat coding|	✅ Final
+|Siap coding	|✅ Ya (setelah 17 prasyarat §13.1 disetujui)
 
-⚠️ Jangan commit gs.html asli ke GitHub publik.
-
-⚠️ Jangan commit Supabase service_role key ke frontend.
-
-⚠️ RLS wajib aktif di semua tabel.
-
-⚠️ Hash password via Supabase Auth.
-
-⚠️ Backup harian database selama event.
-
-⚠️ Web Bluetooth hanya Chrome/Edge Android/Desktop — tetapkan device juri = Android.
-
-⚠️ Reset password juri via Edge Function — jangan taruh service_role di frontend.
-
-17. Status Dokumen
-Bagian	Status
-Dokumen final	✅ 100% Terkunci (revisi v1.5)
-Teknologi	✅ Final
-Skema database	✅ Final (3 tabel penilaian + pos_komponen + pos.komponen + presensi_peserta)
-Keputusan teknis	✅ Final (§6.14, 27 keputusan A–AA)
-Keamanan	✅ Final (§10 + §10.1)
-Rencana implementasi	✅ Final
-Rencana chat coding	✅ Final
-Siap coding	✅ Ya (setelah 17 prasyarat §13.1 disetujui)
 Dokumen ini FINAL 100% (v1.5). Siap dijadikan acuan tunggal untuk coding.
-
 Catatan: Seed & konfigurasi aktual 2026 belum ada di dokumen ini — dibuat terpisah di seed.sql setelah 17 prasyarat §13.1 disetujui.
-
 Terima kasih atas kerja samanya. Semangat coding! 🚀
