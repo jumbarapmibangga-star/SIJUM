@@ -256,8 +256,9 @@ const SUPABASE_URL = 'https://xxx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 ```
+```text
 Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak boleh ada di sini.
-
+```
 ###3.5 Alur Deploy
 ```text
 1. Push kode ke GitHub (private)
