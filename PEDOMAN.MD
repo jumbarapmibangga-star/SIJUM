@@ -204,4 +204,108 @@ manifest.json:
   ]
 }
 ```
+sw.js (network-first untuk HTML dinamis, cache-first untuk asset statis):
+
+```html
+const CACHE_NAME = 'jumbara-v1.5';
+const STATIC_ASSETS = [
+  '/', '/index.html', '/manifest.json',
+  '/assets/css/custom.css', '/assets/js/supabase-client.js',
+  '/assets/js/auth.js', '/assets/js/utils.js',
+  '/assets/img/logo.png', '/offline.html'
+];
+const DYNAMIC_HTML = [
+  '/dashboard-aula.html', '/dashboard-tracker.html',
+  '/dashboard-laporan.html', '/verifikasi.html',
+  '/portal-kontingen.html', '/admin/', '/juri/'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)));
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(caches.keys().then((keys) =>
+    Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+  ));
+  self.clients.claim();
+});
+
+self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+  if (url.hostname.includes('supabase.co')) return;
+
+  // Network-first untuk HTML dinamis
+  const isDynamicHtml = DYNAMIC_HTML.some((p) => url.pathname.startsWith(p));
+  if (isDynamicHtml) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      }).catch(() => caches.match(event.request).then((cached) => cached || caches.match('/offline.html')))
+    );
+    return;
+  }
+
+  // Cache-first untuk asset statis
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      return cached || fetch(event.request).then((response) => {
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      });
+    }).catch(() => caches.match('/offline.html'))
+  );
+});
+```
+vercel.json:
+
+```html
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co;"
+        },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}
+```
+assets/js/supabase-client.js:
+
+```html
+const SUPABASE_URL = 'https://xxx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOi...';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+```
+Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak boleh ada di sini.
+
+### 3.5 Alur Deploy
+```text
+1. Push kode ke GitHub (private)
+   ↓
+2. Vercel otomatis detect & deploy
+   ↓
+3. Dapat URL: https://jumbara-purbalingga.vercel.app
+   ↓
+4. Aktifkan Vercel Authentication
+   ↓
+5. Uji PWA installable di HP/PC
+   ↓
+6. Uji service worker (offline)
+   ↓
+7. Uji CSP (tidak ada error di console)
+```
+
 
