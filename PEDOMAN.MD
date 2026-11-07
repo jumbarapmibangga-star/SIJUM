@@ -678,31 +678,23 @@ Aula:
 - Grid harus bisa dibaca dari jauh (uji di gladi).
 
 ## 6.11 Histori Peran
-Peserta + peran per tahun (join peserta_master).
-
-Bisa dicari per nama (publik).
-
-Beda dengan Peserta Tergiat: Histori Peran mencatat peran spesifik yang dijalankan (misal: jadi Narator di tahun 2025, jadi Pelaku di tahun 2026). Sedangkan Peserta Tergiat dihitung dari frekuensi kehadiran (berapa banyak pos yang diikuti) di tahun berjalan.
+- Peserta + peran per tahun (join peserta_master).
+- Bisa dicari per nama (publik).
+- Beda dengan Peserta Tergiat: Histori Peran mencatat peran spesifik yang dijalankan (misal: jadi Narator di tahun 2025, jadi Pelaku di tahun 2026). 
+- Sedangkan Peserta Tergiat dihitung dari frekuensi kehadiran (berapa banyak pos yang diikuti) di tahun berjalan.
 
 ## 6.12 Audit Log
-Append-only, tidak bisa edit/hapus.
+- Append-only, tidak bisa edit/hapus.
+- Mencatat semua aktivitas.
+- Juri bisa lihat log sendiri.
+- Percobaan akses ditolak dicatat.
+- Retensi 5 tahun, backup CSV harian.
+- ip_address diisi via Edge Function atau client (jangan janji akurasi 100%).
 
-Mencatat semua aktivitas.
-
-Juri bisa lihat log sendiri.
-
-Percobaan akses ditolak dicatat.
-
-Retensi 5 tahun, backup CSV harian.
-
-ip_address diisi via Edge Function atau client (jangan janji akurasi 100%).
-
-6.13 Menu Laporan
-10 laporan panitia:
-
-Rekap Juara Umum
-
-Rekap Juara per Pos
+## 6.13 Menu Laporan
+1. 10 laporan panitia:
+2. Rekap Juara Umum
+3.  Rekap Juara per Pos
 
 Rekap Nilai per Kontingen
 
