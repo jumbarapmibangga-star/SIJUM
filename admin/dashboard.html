@@ -96,14 +96,36 @@
       menu.innerHTML = menuHtml;
 
       // 4. Load Data Ringkasan (Event Aktif & Total Tim)
-      const { data: event } = await window.supabaseClient.from('event').select('*').eq('tahun', 2026).single();
-      if (event) {
-        document.getElementById('eventTahun').textContent = event.tahun;
-        document.getElementById('statusPendaftaran').textContent = event.pendaftaran_status.toUpperCase();
-        
-        // Hitung total tim
-        const { count } = await window.supabaseClient.from('tim').select('*', { count: 'exact', head: true }).eq('event_id', event.id);
-        document.getElementById('totalTim').textContent = count || 0;
+      try {
+        // Ambil event terbaru
+        const { data: events, error: errEvent } = await window.supabaseClient
+          .from('event')
+          .select('*')
+          .order('tahun', { ascending: false })
+          .limit(1);
+
+        if (errEvent) throw errEvent;
+
+        if (events && events.length > 0) {
+          const event = events[0];
+          document.getElementById('eventTahun').textContent = event.tahun;
+          document.getElementById('statusPendaftaran').textContent = event.pendaftaran_status.toUpperCase();
+          
+          // Hitung total tim
+          const { count, error: errTim } = await window.supabaseClient
+            .from('tim')
+            .select('*', { count: 'exact', head: true })
+            .eq('event_id', event.id);
+            
+          if (errTim) throw errTim;
+          document.getElementById('totalTim').textContent = count || 0;
+        } else {
+          document.getElementById('eventTahun').textContent = 'Belum Ada';
+          document.getElementById('statusPendaftaran').textContent = '-';
+          document.getElementById('totalTim').textContent = '0';
+        }
+      } catch (err) {
+        console.error("Gagal load data:", err);
       }
 
       // 5. Logout
