@@ -1,55 +1,80 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — Jumbara PMI Purbalingga</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-  <form id="form" class="bg-white p-6 rounded-lg shadow max-w-sm w-full space-y-3">
-    <h1 class="text-xl font-bold text-red-700">Jumbara PMI Purbalingga</h1>
-    <p class="text-sm text-slate-600">Masuk dengan email (panitia/kontingen) atau username (juri).</p>
-    <input id="identifier" required placeholder="Email atau username" class="w-full border rounded px-3 py-2">
-    <input id="password" type="password" required placeholder="Password" class="w-full border rounded px-3 py-2">
-    <p id="err" class="text-red-600 text-sm hidden"></p>
-    <button id="btn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded">Masuk</button>
-    <p class="text-sm text-center">Belum punya akun kontingen? <a href="/daftar.html" class="text-red-600 underline">Daftar</a></p>
-  </form>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/supabase.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+
+  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div class="text-center mb-8">
+      <h1 class="text-2xl font-bold text-red-600">JUMBARA PMI</h1>
+      <p class="text-gray-500">Kabupaten Purbalingga</p>
+    </div>
+
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Username / Email</label>
+        <input type="text" id="username" required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Password</label>
+        <input type="password" id="password" required
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500">
+      </div>
+
+      <div id="errorMessage" class="text-red-500 text-sm hidden"></div>
+
+      <button type="submit" id="btnLogin"
+        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+        Masuk
+      </button>
+    </form>
+  </div>
+
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script>
-    const form=document.getElementById("form"), err=document.getElementById("err"), btn=document.getElementById("btn");
-    
-    form.addEventListener("submit", async e => {
-      e.preventDefault(); 
-      err.classList.add("hidden"); 
-      btn.disabled=true; 
-      btn.textContent="Memproses…";
-      
-      const email = document.getElementById("identifier").value;
-      const password = document.getElementById("password").value;
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      const errDiv = document.getElementById('errorMessage');
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
 
-      const { data, error } = await loginWithIdentifier(email, password);
-      
-      if (error) { 
-        err.textContent="Gagal masuk: "+error.message; 
-        err.classList.remove("hidden"); 
-        btn.disabled=false; 
-        btn.textContent="Masuk"; 
-        return; 
+      btn.innerHTML = 'Memproses...';
+      btn.disabled = true;
+      errDiv.classList.add('hidden');
+
+      try {
+        await loginUser(username, password);
+        
+        // Cek Role dan redirect
+        const { data: { session } } = await window.supabaseClient.auth.getSession();
+        const role = session.user.app_metadata?.role;
+
+        if (role === 'super_admin' || role === 'koordinator' || role === 'admin_event') {
+          window.location.href = '/admin/dashboard.html';
+        } else if (role === 'juri') {
+          window.location.href = '/juri/pos.html';
+        } else if (role === 'kontingen') {
+          window.location.href = '/portal-kontingen.html';
+        } else {
+          window.location.href = '/index.html';
+        }
+      } catch (error) {
+        errDiv.textContent = error.message;
+        errDiv.classList.remove('hidden');
+        btn.innerHTML = 'Masuk';
+        btn.disabled = false;
       }
-
-      // KITA SIMPAN DATA USER DI LOCAL STORAGE AGAR TIDAK LUPA
-      if (data && data.user) {
-        localStorage.setItem("jumbara_user_id", data.user.id);
-        localStorage.setItem("jumbara_user_email", data.user.email);
-      }
-
-      btn.textContent = "Berhasil...";
-      setTimeout(() => { location.href = "/portal/index.html"; }, 500); 
     });
-  </script>   
+  </script>
 </body>
 </html>
