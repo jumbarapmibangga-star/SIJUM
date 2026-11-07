@@ -2,8 +2,7 @@
 
 // Fungsi Login
 async function loginUser(username, password) {
-  // Karena Supabase butuh email, kita ubah username menjadi email format (jika tidak pakai email asli)
-  // Contoh: jika user ketik "budi", jadikan "budi@jumbara.local"
+  // Ubah username jadi email palsu jika tidak ada '@'
   const email = username.includes('@') ? username : `${username}@jumbara.local`;
 
   const { data, error } = await window.supabaseClient.auth.signInWithPassword({
@@ -11,10 +10,7 @@ async function loginUser(username, password) {
     password: password,
   });
 
-  if (error) {
-    throw new Error(error.message);
-  }
-  
+  if (error) throw new Error(error.message);
   return data;
 }
 
@@ -24,31 +20,26 @@ async function logoutUser() {
   window.location.href = '/login.html';
 }
 
-// Fungsi Cek Sesi & Redirect sesuai Role
-async function checkAuthAndRedirect() {
+// Fungsi Proteksi Halaman
+async function protectPage(allowedRoles = []) {
   const { data: { session }, error } = await window.supabaseClient.auth.getSession();
   
   if (error || !session) {
-    // Jika tidak ada sesi, dan bukan di halaman login, tendang ke login
-    if (!window.location.pathname.includes('login.html')) {
-      window.location.href = '/login.html';
-    }
+    window.location.href = '/login.html';
     return null;
   }
 
-  // Ambil role dari metadata user (diatur saat bikin user di Supabase)
   const role = session.user.app_metadata?.role || 'publik';
-  
-  return { user: session.user, role: role };
-}
 
-// Proteksi Halaman (Panggil ini di halaman admin/juri/portal)
-async function protectPage(requiredRole) {
-  const auth = await checkAuthAndRedirect();
-  if (!auth) return; // Akan diredirect ke login oleh checkAuthAndRedirect
+  // Super admin selalu boleh masuk
+  if (role === 'super_admin') return { user: session.user, role };
 
-  if (requiredRole && auth.role !== requiredRole && auth.role !== 'super_admin') {
+  // Cek apakah role ada di daftar yang diizinkan
+  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
     alert('Akses Ditolak: Anda tidak memiliki izin ke halaman ini.');
-    window.location.href = '/index.html';
+    window.location.href = '/';
+    return null;
   }
+
+  return { user: session.user, role };
 }
