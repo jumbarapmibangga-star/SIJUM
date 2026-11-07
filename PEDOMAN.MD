@@ -507,3 +507,12 @@ Catatan pos induk + sub-pos:
 - Tierbreaker induk hanya fallback jika nilai gabungan sama.
 
 ## 6.5 Aturan Juara per Pos
+```text
+Untuk setiap pos utama (induk_pos_id = null), per tingkat:
+  1. Hitung nilai (fn_hitung_nilai_final untuk pos biasa;
+     fn_hitung_nilai_gabungan untuk pos induk dengan sub-pos)
+  2. Urutkan DESC
+  3. Jika sama → tierbreaker
+  4. Jika masih sama → fallback
+  5. Ambil 1, 2, 3 → Juara 1, 2, 3
+```
