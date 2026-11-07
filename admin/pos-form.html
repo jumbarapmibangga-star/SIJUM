@@ -7,82 +7,84 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col">
 
-  <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col min-h-screen shadow-sm">
-    <div class="p-5 bg-red-700 text-white shadow-md">
-      <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-      <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
-    </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors" onclick="toggleTheme()">
-        <span id="themeIcon"></span>
-      </button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-    </div>
-  </aside>
+  <div class="main-wrapper">
+    <aside class="sidebar-admin">
+      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+        <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+        <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
+          <span id="themeIcon"></span>
+        </button>
+        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+      </div>
+    </aside>
 
-  <main class="flex-1 p-6 md:p-8">
-    <div class="mb-6">
-      <a href="/admin/pos.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Pos</a>
-      <h2 class="text-2xl font-bold text-slate-800" id="formTitle">Tambah Pos Baru</h2>
-      <p class="text-slate-500">Isi detail konfigurasi pos di bawah ini.</p>
-    </div>
-
-    <form id="posForm" class="form-card space-y-6 max-w-3xl">
-      <input type="hidden" id="posId" value="">
-      <input type="hidden" id="eventId" value="">
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label class="input-label">Kode Pos</label>
-          <input type="text" id="kodePos" required placeholder="Contoh: POS-01" class="input-field">
-        </div>
-        <div>
-          <label class="input-label">Nama Pos</label>
-          <input type="text" id="namaPos" required placeholder="Contoh: Lomba Cerdas Tangkas" class="input-field">
-        </div>
+    <main class="flex-1 p-4 md:p-8">
+      <div class="mb-6">
+        <a href="/admin/pos.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Pos</a>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800" id="formTitle">Tambah Pos Baru</h2>
+        <p class="text-sm md:text-base text-slate-500">Isi detail konfigurasi pos di bawah ini.</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
-          <label class="input-label">Jumlah Juri</label>
-          <input type="number" id="jumlahJuri" min="0" value="1" required class="input-field">
-          <p class="text-xs text-slate-400 mt-1">Isi 0 jika ini pos induk.</p>
-        </div>
-        <div>
-          <label class="input-label">Metode Hitung</label>
-          <select id="metodeHitung" class="input-field">
-            <option value="sum">Sum (Total Nilai)</option>
-            <option value="average">Average (Rata-rata)</option>
-            <option value="percentage">Percentage (Persen)</option>
-            <option value="weighted">Weighted (Normalisasi Bobot)</option>
-          </select>
-        </div>
-        <div>
-          <label class="input-label">Urutan Tampil</label>
-          <input type="number" id="urutan" value="0" required class="input-field">
-        </div>
-      </div>
+      <form id="posForm" class="form-card space-y-6 max-w-3xl">
+        <input type="hidden" id="posId" value="">
+        <input type="hidden" id="eventId" value="">
 
-      <div class="border-t pt-4 space-y-3 border-slate-200">
-        <label class="flex items-center space-x-3 cursor-pointer">
-          <input type="checkbox" id="pakaiTimer" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
-          <span class="text-sm font-medium text-slate-700">Gunakan Timer</span>
-        </label>
-        <label class="flex items-center space-x-3 cursor-pointer">
-          <input type="checkbox" id="pakaiBidak" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
-          <span class="text-sm font-medium text-slate-700">Gunakan Bidak (Pion)</span>
-        </label>
-      </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="input-label">Kode Pos</label>
+            <input type="text" id="kodePos" required placeholder="Contoh: POS-01" class="input-field">
+          </div>
+          <div>
+            <label class="input-label">Nama Pos</label>
+            <input type="text" id="namaPos" required placeholder="Contoh: Lomba Cerdas Tangkas" class="input-field">
+          </div>
+        </div>
 
-      <div class="flex justify-end gap-3 pt-4 border-t mt-6 border-slate-200">
-        <a href="/admin/pos.html" class="btn-secondary">Batal</a>
-        <button type="submit" id="btnSubmit" class="btn-primary">Simpan Pos</button>
-      </div>
-    </form>
-  </main>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label class="input-label">Jumlah Juri</label>
+            <input type="number" id="jumlahJuri" min="0" value="1" required class="input-field">
+            <p class="text-xs text-slate-400 mt-1">Isi 0 jika ini pos induk.</p>
+          </div>
+          <div>
+            <label class="input-label">Metode Hitung</label>
+            <select id="metodeHitung" class="input-field">
+              <option value="sum">Sum (Total Nilai)</option>
+              <option value="average">Average (Rata-rata)</option>
+              <option value="percentage">Percentage (Persen)</option>
+              <option value="weighted">Weighted (Normalisasi Bobot)</option>
+            </select>
+          </div>
+          <div>
+            <label class="input-label">Urutan Tampil</label>
+            <input type="number" id="urutan" value="0" required class="input-field">
+          </div>
+        </div>
+
+        <div class="border-t pt-4 space-y-3 border-slate-200">
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <input type="checkbox" id="pakaiTimer" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
+            <span class="text-sm font-medium text-slate-700">Gunakan Timer</span>
+          </label>
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <input type="checkbox" id="pakaiBidak" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
+            <span class="text-sm font-medium text-slate-700">Gunakan Bidak (Pion)</span>
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t mt-6 border-slate-200">
+          <a href="/admin/pos.html" class="btn-secondary">Batal</a>
+          <button type="submit" id="btnSubmit" class="btn-primary">Simpan Pos</button>
+        </div>
+      </form>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
