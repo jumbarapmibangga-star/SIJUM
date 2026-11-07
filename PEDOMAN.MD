@@ -356,7 +356,7 @@ Catatan revisi v1.5:
 | v_tracking_panitia |	View |	Status per tim × pos per juri (status-only, jsonb status_per_juri)
 | v_peserta_tergiat |	View |	Peringkat peserta berdasarkan jumlah kehadiran (scan) terbanyak
 | fn_hitung_nilai_final(penilaian_pos_id) |	Fungsi |	Hitung nilai final per pos (7 metode + weighted N komponen)
-| fn_hitung_nilai_gabungan(tim_id, pos_induk_id) |	Fungsi	Hitung nilai gabungan pos induk (dari sub-pos)
+| fn_hitung_nilai_gabungan(tim_id, pos_induk_id) |	Fungsi |	Hitung nilai gabungan pos induk (dari sub-pos)
 | fn_hitung_nilai_sub(penilaian_pos_id) |	Fungsi |	Hitung nilai final sub-pos (sum/average/...)
 | fn_hitung_rata_rata_umur(tim_id) |	Fungsi |	Hitung rata-rata usia tim (dari peserta_master.tgl_lahir) untuk tierbreaker
 | fn_juara_pos(event_id, tingkat_id) |	Fungsi |	Peringkat per pos per tingkat
