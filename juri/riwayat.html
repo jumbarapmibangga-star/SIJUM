@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Riwayat Penilaian — Jumbara PMI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/custom.css">
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Header Mobile -->
+  <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
+    <div>
+      <h1 class="text-xl font-bold">Riwayat</h1>
+      <p id="userNameDisplayMobile" class="text-xs text-red-100">Juri PMI</p>
+    </div>
+    <a href="/juri/pos.html" class="bg-white text-red-700 px-3 py-1.5 rounded text-sm font-semibold">Kembali</a>
+  </div>
+
+  <div class="flex flex-1">
+    <!-- Sidebar Desktop -->
+    <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm">
+      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+        <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
+        <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+      </div>
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <a href="/juri/pos.html" class="sidebar-link">Daftar Pos Saya</a>
+        <a href="/juri/riwayat.html" class="sidebar-link active">Riwayat Penilaian</a>
+      </nav>
+      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600" onclick="toggleTheme()">
+          <span id="themeIcon"></span>
+        </button>
+        <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-4 md:p-8">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
+        <p class="text-slate-500">Daftar tim yang sudah Anda nilai.</p>
+      </div>
+
+      <div id="riwayatContainer" class="space-y-4">
+        <p class="text-slate-500 text-center py-10">Memuat riwayat...</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-client.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/theme.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['juri']);
+      if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+
+      const { data: juri } = await window.supabaseClient.from('juri').select('id, nama').eq('user_id', auth.user.id).single();
+      document.getElementById('userNameDisplay').textContent = juri.nama;
+      document.getElementById('userNameDisplayMobile').textContent = juri.nama;
+
+      // AMBIL DATA NILAI YANG SUDAH DI-LOCK
+      const { data: riwayat, error } = await window.supabaseClient
+        .from('penilaian_juri')
+        .select(`
+          nilai_juri,
+          locked_at,
+          penilaian_pos (
+            tim (nama_tim, kode_kontingen),
+            pos (nama_pos, kode_pos)
+          )
+        `)
+        .eq('juri_id', juri.id)
+        .eq('status', 'locked')
+        .order('locked_at', { ascending: false });
+
+      const container = document.getElementById('riwayatContainer');
+      
+      if (error) {
+        container.innerHTML = `<p class="text-red-500">Gagal memuat: ${error.message}</p>`;
+        return;
+      }
+
+      if (!riwayat || riwayat.length === 0) {
+        container.innerHTML = `<p class="text-slate-500 text-center py-10">Belum ada riwayat penilaian.</p>`;
+      } else {
+        container.innerHTML = '';
+        riwayat.forEach(r => {
+          const penPos = r.penilaian_pos;
+          const tim = penPos ? penPos.tim : null;
+          const pos = penPos ? penPos.pos : null;
+          
+          if (tim && pos) {
+            container.innerHTML += `
+              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="text-xs font-bold text-red-600 mb-1">${pos.nama_pos} (${pos.kode_pos})</p>
+                    <h3 class="font-bold text-lg text-slate-800">${tim.nama_tim}</h3>
+                    <p class="font-mono text-sm text-slate-500">${tim.kode_kontingen}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs text-slate-400">Nilai Akhir</p>
+                    <p class="text-2xl font-bold text-red-600">${r.nilai_juri}</p>
+                  </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-400">
+                  Dinilai pada: ${new Date(r.locked_at).toLocaleString('id-ID')}
+                </div>
+              </div>
+            `;
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
