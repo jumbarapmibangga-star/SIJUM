@@ -718,7 +718,7 @@ Sertifikat: Disimpan di Supabase Storage.
 
 ## 6.14 Keputusan Teknis (Final)
 | # |	Keputusan	| Alasan |
-| - | - | - |
+
 | A |	Device juri standar = Android (Chrome) |	Web Bluetooth tidak didukung iOS Safari & Firefox.
 | B	| Timer & bidak = shared per tim per pos |	Menghindari ambiguitas. Disimpan di tierbreaker.penilaian_pos_id.
 C	Nilai final pos = wajib semua juri submit (Opsi A)	Mencegah nilai tidak adil. Status menunggu_juri → final.
