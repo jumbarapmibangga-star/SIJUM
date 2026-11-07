@@ -349,6 +349,7 @@ Catatan revisi v1.5:
 
 ### 5.2 View & Fungsi
 | Nama |	Jenis	Fungsi |
+| ---- | ------------- |
 | v_nilai_pos_final	View |	Nilai final per tim per pos, sesuai metode_hitung (via fn_hitung_nilai_final) |
 | v_nilai_pos_gabungan	View	Nilai gabungan pos induk (via fn_hitung_nilai_gabungan)
 | v_penilaian_aula	View	Nilai locked per pos, urut kode kontingen (tanpa perangkingan)
