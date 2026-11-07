@@ -15,8 +15,11 @@
       <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
     </div>
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-200">
-      <button id="btnLogout" class="w-full text-sm font-semibold text-red-600 hover:text-white hover:bg-red-600 border border-red-600 py-2 rounded-lg transition-colors">Keluar (Logout)</button>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors" onclick="toggleTheme()">
+        <span id="themeIcon"></span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
     </div>
   </aside>
 
@@ -58,6 +61,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/theme.js"></script>
   <script>
     let currentEventId = null;
 
@@ -84,7 +88,7 @@
         let html = '';
         posList.forEach(p => {
           html += `
-            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-red-50 cursor-pointer transition-colors">
+            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-red-50 cursor-pointer transition-colors border-slate-200">
               <input type="checkbox" name="pos_ids" value="${p.id}" class="w-5 h-5 text-red-600 rounded focus:ring-red-500 pos-checkbox">
               <div>
                 <span class="font-mono font-bold text-red-600">${p.kode_pos}</span> - 
