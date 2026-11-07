@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Penilaian — Jumbara PMI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/custom.css">
+  <!-- Library Scanner QR -->
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row">
+
+  <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col min-h-screen shadow-sm">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
+      <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      <a href="/juri/pos.html" class="sidebar-link active">&larr; Kembali ke Daftar Pos</a>
+    </nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
+        <span id="themeIcon"></span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <main class="flex-1 p-6 md:p-8">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800" id="posTitle">Memuat Pos...</h2>
+      <p class="text-slate-500" id="posSubtitle">Pilih tim untuk dinilai.</p>
+    </div>
+
+    <!-- Daftar Tim (Tampilan Awal) -->
+    <div id="timListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <p class="text-slate-500">Memuat daftar tim...</p>
+    </div>
+
+    <!-- Area Form Penilaian (Tersembunyi di awal) -->
+    <div id="formPenilaianContainer" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+      <!-- Konten form akan dirender JS -->
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/supabase-client.js"></script>
+  <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/theme.js"></script>
+  <script>
+    let currentPosId = null;
+    let currentJuriId = null;
+    let currentEventId = null;
+    let currentPos = null;
+    let currentTim = null;
+    let rubrikList = [];
+    let html5QrCode = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['juri']);
+      if (!auth) return;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      currentPosId = urlParams.get('pos_id');
+      if (!currentPosId) { window.location.href = '/juri/pos.html'; return; }
+
+      // Ambil Profil Juri
+      const { data: juri } = await window.supabaseClient.from('juri').select('id, nama, user_id').eq('user_id', auth.user.id).single();
+      currentJuriId = juri.id;
+      document.getElementById('userNameDisplay').textContent = juri.nama;
+
+      // Ambil Detail Pos
+      const { data: pos } = await window.supabaseClient.from('pos').select('*').eq('id', currentPosId).single();
+      currentPos = pos;
+      currentEventId = pos.event_id;
+      document.getElementById('posTitle').textContent = pos.nama_pos;
+      document.getElementById('posSubtitle').textContent = `Kode: ${pos.kode_pos} | Metode: ${pos.metode_hitung}`;
+
+      // Ambil Rubrik
+      const { data: rubrik } = await window.supabaseClient.from('rubrik').select('*').eq('pos_id', currentPosId).order('urutan');
+      rubrikList = rubrik;
+
+      loadTim();
+    });
+
+    async function loadTim() {
+      // 1. Ambil semua tim di event ini
+      const { data: allTim } = await window.supabaseClient.from('tim').select('*').eq('event_id', currentEventId).order('kode_kontingen');
+      
+      // 2. Ambil tim yang sudah dinilai oleh juri ini di pos ini (atau sudah final)
+      const { data: sudahDinilai } = await window.supabaseClient
+        .from('penilaian_juri')
+        .select('penilaian_pos_id, status, penilaian_pos(tim_id)')
+        .eq('juri_id', currentJuriId);
+
+      // Filter out tim yang sudah di-lock oleh juri ini
+      const timSudahDinilaiIds = sudahDinilai
+        .filter(sd => sd.status === 'locked' && sd.penilaian_pos && sd.penilaian_pos.tim_id)
+        .map(sd => sd.penilaian_pos.tim_id);
+
+      const timBelumDinilai = allTim.filter(t => !timSudahDinilaiIds.includes(t.id));
+
+      const container = document.getElementById('timListContainer');
+      container.innerHTML = '';
+
+      if (timBelumDinilai.length === 0) {
+        container.innerHTML = `<p class="text-green-600 font-bold text-lg p-4 bg-green-50 rounded-lg">🎉 Semua tim di pos ini sudah Anda nilai!</p>`;
+      } else {
+        timBelumDinilai.forEach(t => {
+          container.innerHTML += `
+            <div class="form-card flex justify-between items-center">
+              <div>
+                <p class="font-mono font-bold text-red-600">${t.kode_kontingen}</p>
+                <h3 class="font-bold text-slate-800">${t.nama_tim}</h3>
+              </div>
+              <button onclick="bukaFormPenilaian('${t.id}', '${t.nama_tim}', '${t.kode_kontingen}')" class="btn-primary py-1.5 px-3 text-sm">Nilai</button>
+            </div>
+          `;
+        });
+      }
+    }
+
+    window.bukaFormPenilaian = async (timId, namaTim, kodeTim) => {
+      currentTim = { id: timId, nama: namaTim, kode: kodeTim };
+      document.getElementById('timListContainer').classList.add('hidden');
+      document.getElementById('formPenilaianContainer').classList.remove('hidden');
+
+      // Render Header Form
+      let formHtml = `
+        <div class="flex justify-between items-center border-b pb-4 mb-4">
+          <div>
+            <h3 class="text-xl font-bold text-slate-800">${namaTim}</h3>
+            <p class="font-mono text-sm text-red-600 font-bold">${kodeTim}</p>
+          </div>
+          <button onclick="kembaliKeDaftarTim()" class="text-slate-500 hover:text-red-600 text-sm font-semibold">&larr; Batal</button>
+        </div>
+      `;
+
+      // 1. FITUR SCAN QR PRESENSI (Wajib sebelum nilai)
+      formHtml += `
+        <div class="bg-red-50 border border-red-200 p-4 rounded-lg mb-6">
+          <h4 class="font-bold text-red-800 mb-2">1. Scan Kehadiran Peserta</h4>
+          <p class="text-sm text-red-600 mb-3">Wajib scan minimal 1 peserta sebelum menyimpan nilai.</p>
+          <div class="flex gap-2">
+            <input type="text" id="qrInput" placeholder="Scan QR atau ketik kode (cth: MU-01-01)" class="input-field flex-1">
+            <button type="button" onclick="scanKamera()" class="btn-secondary bg-white">Buka Kamera</button>
+          </div>
+          <div id="scannerArea" class="hidden mt-4 w-full max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-red-400"></div>
+          <div id="listHadir" class="mt-4 flex flex-wrap gap-2"></div>
+        </div>
+      `;
+
+      // 2. FITUR TIMER (Jika diaktifkan)
+      if (currentPos.pakai_timer) {
+        formHtml += `
+          <div class="bg-slate-50 border border-slate-200 p-4 rounded-lg mb-6 flex justify-between items-center">
+            <div>
+              <h4 class="font-bold text-slate-800">Timer Berjalan</h4>
+              <p class="text-sm text-slate-500">Waktu tersimpan otomatis di server.</p>
+            </div>
+            <div class="text-3xl font-mono font-bold text-red-600" id="timerDisplay">00:00</div>
+          </div>
+        `;
+      }
+
+      // 3. FORM RUBRIK
+      formHtml += `<h4 class="font-bold text-slate-800 mb-3 border-b pb-2">2. Form Penilaian</h4><form id="formNilai" class="space-y-4">`;
+      rubrikList.forEach(r => {
+        formHtml += `
+          <div class="flex justify-between items-center bg-slate-50 p-3 rounded-lg">
+            <div class="flex-1 pr-4">
+              <label class="font-medium text-slate-700">${r.nama_item}</label>
+              <p class="text-xs text-slate-400">Maksimal: ${r.skor_maksimal}</p>
+            </div>
+            <input type="number" name="rubrik_${r.id}" required min="0" max="${r.skor_maksimal}" class="input-field w-24 text-center font-bold" placeholder="0">
+          </div>
+        `;
+      });
+
+      // Tombol Submit
+      formHtml += `
+        <div class="flex justify-end gap-3 pt-6 mt-6 border-t">
+          <button type="submit" id="btnSimpanNilai" class="btn-primary w-full md:w-auto px-8 py-3 text-lg">Simpan & Kunci Nilai</button>
+        </div>
+      </form>`;
+
+      document.getElementById('formPenilaianContainer').innerHTML = formHtml;
+
+      // --- LOGIKA TIMER ---
+      if (currentPos.pakai_timer) {
+        mulaiTimer(timId);
+      }
+
+      // --- LOGIKA SUBMIT ---
+      document.getElementById('formNilai').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Cek validasi presensi (minimal 1)
+        const jumlahHadir = document.querySelectorAll('.badge-hadir').length;
+        if (jumlahHadir === 0) {
+          alert('Harap scan QR peserta terlebih dahulu sebelum menyimpan nilai!');
+          return;
+        }
+
+        const btn = document.getElementById('btnSimpanNilai');
+        btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+        // Kumpulkan data nilai
+        const formData = new FormData(e.target);
+        let totalNilai = 0;
+        const detailsPayload = [];
+
+        rubrikList.forEach(r => {
+          const nilai = parseFloat(formData.get(`rubrik_${r.id}`)) || 0;
+          totalNilai += nilai;
+          detailsPayload.push({
+            rubrik_id: r.id,
+            nilai: nilai
+          });
+        });
+
+        // STEP 1: Simpan ke Penilaian Pos (Induk)
+        // Cek dulu apakah penilaian_pos sudah dibuat oleh juri lain
+        let { data: penPos } = await window.supabaseClient
+          .from('penilaian_pos')
+          .select('id')
+          .eq('event_id', currentEventId)
+          .eq('tim_id', timId)
+          .eq('pos_id', currentPosId)
+          .maybeSingle();
+
+        if (!penPos) {
+          // Jika belum ada, buat baru
+          const { data: newPenPos, error: errPP } = await window.supabaseClient.from('penilaian_pos').insert({
+            event_id: currentEventId,
+            tim_id: timId,
+            pos_id: currentPosId,
+            jumlah_juri_wajib: currentPos.jumlah_juri,
+            status: 'menunggu_juri'
+          }).select().single();
+          
+          if (errPP) { alert('Error: ' + errPP.message); btn.innerHTML = 'Simpan'; btn.disabled = false; return; }
+          penPos = newPenPos;
+        }
+
+        // STEP 2: Simpan ke Penilaian Juri (Anak)
+        // Tentukan slot juri (juri1, juri2, dst) berdasarkan urutan penugasan (sementara hardcode ke juri_id)
+        const { data: penJuri, error: errPJ } = await window.supabaseClient.from('penilaian_juri').insert({
+          penilaian_pos_id: penPos.id,
+          juri_id: currentJuriId,
+          slot_juri: `juri_${currentJuriId.substring(0,4)}`, // Dummy slot unik sementara
+          nilai_juri: totalNilai,
+          status: 'locked'
+        }).select().single();
+
+        if (errPJ) { alert('Error: ' + errPJ.message); btn.innerHTML = 'Simpan'; btn.disabled = false; return; }
+
+        // STEP 3: Simpan ke Penilaian Detail (Rubrik)
+        const finalDetails = detailsPayload.map(d => ({
+          penilaian_juri_id: penJuri.id,
+          rubrik_id: d.rubrik_id,
+          nilai: d.nilai
+        }));
+        await window.supabaseClient.from('penilaian_detail').insert(finalDetails);
+
+        // STEP 4: Simpan Presensi (jika ada yang discan)
+        const listHadir = document.querySelectorAll('.badge-hadir');
+        if (listHadir.length > 0) {
+          const presensiPayload = Array.from(listHadir).map(el => ({
+            penilaian_pos_id: penPos.id,
+            peserta_event_id: el.dataset.pesertaId,
+            kode_peserta: el.dataset.kode,
+            discan_oleh: currentJuriId
+          }));
+          await window.supabaseClient.from('presensi_peserta').insert(presensiPayload);
+        }
+
+        // STEP 5: Stop Timer (jika ada)
+        if (currentPos.pakai_timer) {
+          await window.supabaseClient.from('tierbreaker').upsert({
+            penilaian_pos_id: penPos.id,
+            jenis: 'timer',
+            waktu_selesai_server: new Date().toISOString(),
+            status: 'final'
+          }, { onConflict: 'penilaian_pos_id, jenis' });
+        }
+
+        alert('Nilai berhasil disimpan dan dikunci!');
+        window.location.reload();
+      });
+
+      // --- LOGIKA SCAN MANUAL ---
+      document.getElementById('qrInput').addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const kode = e.target.value.trim();
+          if (kode) {
+            await prosesScan(kode);
+            e.target.value = ''; // Reset input
+          }
+        }
+      });
+    };
+
+    window.kembaliKeDaftarTim = () => {
+      if (html5QrCode) { html5QrCode.stop(); html5QrCode = null; }
+      document.getElementById('formPenilaianContainer').classList.add('hidden');
+      document.getElementById('timListContainer').classList.remove('hidden');
+    };
+
+    // --- FUNGSI SCAN KAMERA ---
+    window.scanKamera = () => {
+      const scannerArea = document.getElementById('scannerArea');
+      scannerArea.classList.remove('hidden');
+      
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("scannerArea");
+      }
+
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        (decodedText) => {
+          prosesScan(decodedText);
+          html5QrCode.stop();
+          scannerArea.classList.add('hidden');
+        },
+        (errorMessage) => { /* Abaikan error scan per frame */ }
+      ).catch(err => alert('Gagal buka kamera: ' + err));
+    };
+
+    // --- FUNGSI PROSES SCAN (MANUAL / KAMERA) ---
+    async function prosesScan(kodePeserta) {
+      // Cari peserta berdasarkan kode_peserta (contoh: MU-01-01)
+      const { data: peserta, error } = await window.supabaseClient
+        .from('peserta_event')
+        .select('id, peserta_master(nama)')
+        .eq('event_id', currentEventId)
+        .eq('peserta_master.kode_peserta', kodePeserta) // Join kondisi
+        .maybeSingle();
+
+      // Karena join kondisi di atas mungkin agak rumit di Supabase JS biasa, 
+      // mari kita pakai cara langsung: cari di peserta_master dulu
+      const { data: pm } = await window.supabaseClient.from('peserta_master').select('id, nama').eq('kode_peserta', kodePeserta).maybeSingle();
+      
+      if (!pm) { alert('Peserta dengan kode tersebut tidak ditemukan!'); return; }
+
+      // Cek apakah peserta ini terdaftar di event ini
+      const { data: pe } = await window.supabaseClient.from('peserta_event').select('id').eq('event_id', currentEventId).eq('peserta_master_id', pm.id).maybeSingle();
+      
+      if (!pe) { alert('Peserta ini tidak terdaftar di event ini!'); return; }
+
+      // Cek duplikasi di UI
+      if (document.querySelector(`.badge-hadir[data-kode="${kodePeserta}"]`)) {
+        alert('Peserta ini sudah discan!'); return;
+      }
+
+      // Tampilkan badge
+      const listHadir = document.getElementById('listHadir');
+      const badge = document.createElement('div');
+      badge.className = 'badge-hadir bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold flex items-center gap-2';
+      badge.dataset.pesertaId = pe.id;
+      badge.dataset.kode = kodePeserta;
+      badge.innerHTML = `${pm.nama} (${kodePeserta}) <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold">&times;</button>`;
+      listHadir.appendChild(badge);
+    }
+
+    // --- LOGIKA TIMER ---
+    function mulaiTimer(timId) {
+      let detik = 0;
+      const display = document.getElementById('timerDisplay');
+      const interval = setInterval(() => {
+        detik++;
+        const m = Math.floor(detik / 60).toString().padStart(2, '0');
+        const s = (detik % 60).toString().padStart(2, '0');
+        display.textContent = `${m}:${s}`;
+      }, 1000);
+      
+      // Hentikan timer jika user membatalkan
+      window.kembaliKeDaftarTim = () => {
+        clearInterval(interval);
+        if (html5QrCode) { html5QrCode.stop(); html5QrCode = null; }
+        document.getElementById('formPenilaianContainer').classList.add('hidden');
+        document.getElementById('timListContainer').classList.remove('hidden');
+      };
+    }
+  </script>
+</body>
+</html>
