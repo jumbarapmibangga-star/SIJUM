@@ -342,9 +342,33 @@ Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak 
 | histori_peran |	id, event_id, peserta_event_id, peserta_master_id, pos_id, peran
 | urutan_pos |	id, event_id, tingkat_id, pos_id, urutan, locked_at
 | audit_log |	id, waktu, user_id, user_role, username, kategori, aksi, entitas, entitas_id, data_lama, data_baru, alasan, ip_address, user_agent |
+
 Catatan revisi v1.5:
+- presensi_peserta ditambahkan untuk mencatat kehadiran peserta per pos via scan QR.
+- Tierbreaker Umur ditambahkan sebagai opsi penentu akhir.
 
-presensi_peserta ditambahkan untuk mencatat kehadiran peserta per pos via scan QR.
+### 5.2 View & Fungsi
+| Nama |	Jenis	Fungsi |
+| v_nilai_pos_final	View |	Nilai final per tim per pos, sesuai metode_hitung (via fn_hitung_nilai_final) |
+| v_nilai_pos_gabungan	View	Nilai gabungan pos induk (via fn_hitung_nilai_gabungan)
+| v_penilaian_aula	View	Nilai locked per pos, urut kode kontingen (tanpa perangkingan)
+| v_tracking_panitia	View	Status per tim × pos per juri (status-only, jsonb status_per_juri)
+| v_peserta_tergiat	View	Peringkat peserta berdasarkan jumlah kehadiran (scan) terbanyak
+| fn_hitung_nilai_final(penilaian_pos_id)	Fungsi	Hitung nilai final per pos (7 metode + weighted N komponen)
+| fn_hitung_nilai_gabungan(tim_id, pos_induk_id)	Fungsi	Hitung nilai gabungan pos induk (dari sub-pos)
+| fn_hitung_nilai_sub(penilaian_pos_id)	Fungsi	Hitung nilai final sub-pos (sum/average/...)
+| fn_hitung_rata_rata_umur(tim_id)	Fungsi	Hitung rata-rata usia tim (dari peserta_master.tgl_lahir) untuk tierbreaker
+| fn_juara_pos(event_id, tingkat_id)	Fungsi	Peringkat per pos per tingkat
+| fn_juara_umum(event_id, tingkat_id)	Fungsi	Perangkingan leksikografis dinamis (jumlah pos tak terbatas)
+| v_verifikasi	View	Data halaman verifikasi QR
+| v_histori_peran	View	Histori peran peserta lintas tahun (join peserta_master)
 
-Tierbreaker Umur ditambahkan sebagai opsi penentu akhir.
+### 5.3 RLS (Ringkas)
+| Role |Akses |
+| Super Admin |	Semua
+| Koordinator |	Semua kecuali kelola user
+| Admin Event	| Data event-nya
+| Juri |	Hanya pos yang ditugaskan; insert presensi & penilaian; tidak bisa update/delete setelah locked
+| Kontingen |	Data sendiri; submit pendaftaran
+| Publik |	Hanya view publik (read-only)
 
