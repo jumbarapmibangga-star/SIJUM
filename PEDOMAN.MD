@@ -352,10 +352,10 @@ Catatan revisi v1.5:
 | ---- | ------ | ----- |
 | v_nilai_pos_final |	View |	Nilai final per tim per pos, sesuai metode_hitung (via fn_hitung_nilai_final) |
 | v_nilai_pos_gabungan |	View |	Nilai gabungan pos induk (via fn_hitung_nilai_gabungan)
-| v_penilaian_aula |	View	Nilai locked per pos, urut kode kontingen (tanpa perangkingan)
-| v_tracking_panitia |	View	Status per tim × pos per juri (status-only, jsonb status_per_juri)
-| v_peserta_tergiat |	View	Peringkat peserta berdasarkan jumlah kehadiran (scan) terbanyak
-| fn_hitung_nilai_final(penilaian_pos_id) |	Fungsi	Hitung nilai final per pos (7 metode + weighted N komponen)
+| v_penilaian_aula |	View |	Nilai locked per pos, urut kode kontingen (tanpa perangkingan)
+| v_tracking_panitia |	View |	Status per tim × pos per juri (status-only, jsonb status_per_juri)
+| v_peserta_tergiat |	View |	Peringkat peserta berdasarkan jumlah kehadiran (scan) terbanyak
+| fn_hitung_nilai_final(penilaian_pos_id) |	Fungsi |	Hitung nilai final per pos (7 metode + weighted N komponen)
 | fn_hitung_nilai_gabungan(tim_id, pos_induk_id) |	Fungsi	Hitung nilai gabungan pos induk (dari sub-pos)
 | fn_hitung_nilai_sub(penilaian_pos_id) |	Fungsi |	Hitung nilai final sub-pos (sum/average/...)
 | fn_hitung_rata_rata_umur(tim_id) |	Fungsi |	Hitung rata-rata usia tim (dari peserta_master.tgl_lahir) untuk tierbreaker
