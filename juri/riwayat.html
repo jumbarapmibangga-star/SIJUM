@@ -9,6 +9,7 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
+  <!-- Header Mobile -->
   <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
     <div>
       <h1 class="text-xl font-bold">Riwayat</h1>
@@ -18,6 +19,7 @@
   </div>
 
   <div class="flex flex-1">
+    <!-- Sidebar Desktop -->
     <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm">
       <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
         <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
@@ -35,6 +37,7 @@
       </div>
     </aside>
 
+    <!-- Main Content -->
     <main class="flex-1 p-4 md:p-8">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
@@ -47,22 +50,22 @@
     </main>
   </div>
 
-  <!-- Modal Pilihan Cetak -->
+  <!-- MODAL CETAK (Tersembunyi di awal) -->
   <div id="modalCetak" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 text-center form-card">
       <h3 class="text-xl font-bold text-slate-800 mb-2">Cetak Ulang Struk</h3>
       <p class="text-slate-500 mb-6">Pilih metode cetak untuk tim ini.</p>
       
       <div class="space-y-3">
-        <button onclick="cetakViaBluetooth()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg shadow flex justify-center items-center gap-2 hover:bg-slate-900 transition">
+        <button id="btnCetakBt" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg shadow flex justify-center items-center gap-2 hover:bg-slate-900 transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
           Cetak via Bluetooth
         </button>
-        <button onclick="cetakViaBrowser()" class="w-full bg-white text-slate-700 border border-slate-300 font-bold py-3 rounded-lg shadow hover:bg-slate-50 transition flex justify-center items-center gap-2">
+        <button id="btnCetakPdf" class="w-full bg-white text-slate-700 border border-slate-300 font-bold py-3 rounded-lg shadow hover:bg-slate-50 transition flex justify-center items-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           Cetak / Simpan PDF
         </button>
-        <button onclick="document.getElementById('modalCetak').classList.add('hidden')" class="w-full text-slate-400 font-semibold py-2 text-sm hover:text-slate-600">Batal</button>
+        <button id="btnTutupModal" class="w-full text-slate-400 font-semibold py-2 text-sm hover:text-slate-600">Batal</button>
       </div>
     </div>
   </div>
@@ -81,8 +84,15 @@
       const auth = await protectPage(['juri']);
       if (!auth) return;
 
+      // Event Listener Tombol
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnTutupModal').addEventListener('click', () => {
+        document.getElementById('modalCetak').classList.add('hidden');
+      });
+      document.getElementById('btnCetakBt').addEventListener('click', cetakViaBluetooth);
+      document.getElementById('btnCetakPdf').addEventListener('click', cetakViaBrowser);
 
+      // Load Data
       const { data: juri } = await window.supabaseClient.from('juri').select('id, nama').eq('user_id', auth.user.id).single();
       document.getElementById('userNameDisplay').textContent = juri.nama;
       document.getElementById('userNameDisplayMobile').textContent = juri.nama;
@@ -154,7 +164,7 @@
       }
     });
 
-    // --- FUNGSI MODAL & CETAK ---
+    // Fungsi Buka Modal
     window.bukaModalCetak = (index) => {
       const r = riwayatData[index];
       const penPos = r.penilaian_pos;
@@ -177,23 +187,26 @@
       document.getElementById('modalCetak').classList.remove('hidden');
     };
 
-    window.cetakViaBluetooth = async () => {
+    // Fungsi Cetak via Bluetooth
+    async function cetakViaBluetooth() {
       document.getElementById('modalCetak').classList.add('hidden');
       if (!bluetoothCharacteristic) {
         const connected = await connectPrinter();
         if (!connected) {
-           if(confirm('Gagal/ Batal konek Bluetooth. Cetak via Browser (PDF) saja?')) { cetakViaBrowser(); }
+           if(confirm('Gagal/ Batal konek Bluetooth. Cetak via Browser (PDF) saja?')) { cetakStrukBrowser(dataCetak); }
            return;
         }
       }
       await prosesCetakData(dataCetak);
-    };
+    }
 
-    window.cetakViaBrowser = () => {
+    // Fungsi Cetak via Browser
+    function cetakViaBrowser() {
       document.getElementById('modalCetak').classList.add('hidden');
       cetakStrukBrowser(dataCetak);
-    };
+    }
 
+    // Fungsi Koneksi Printer
     async function connectPrinter() {
       if (!navigator.bluetooth) { alert('Browser Anda tidak mendukung Web Bluetooth. Gunakan Chrome di Android.'); return false; }
       try {
@@ -208,6 +221,7 @@
       } catch (error) { alert('Gagal konek printer: ' + error.message); return false; }
     }
 
+    // Fungsi Kirim Data ke Printer
     async function prosesCetakData(data) {
       if (!bluetoothCharacteristic) return;
       const teksStruk = `
@@ -229,7 +243,8 @@ Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
       try { await bluetoothCharacteristic.writeValue(dataBytes); alert('Struk sedang dicetak...'); } catch (error) { alert('Gagal mencetak: ' + error.message); }
     }
 
-    window.cetakStrukBrowser = (data) => {
+    // Fungsi Cetak Browser
+    function cetakStrukBrowser(data) {
       const win = window.open('', '_blank');
       win.document.write(`
         <html><head><title>Struk Jumbara</title>
