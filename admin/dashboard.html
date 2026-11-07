@@ -7,56 +7,70 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <div class="main-wrapper">
-    <aside class="sidebar-admin">
-      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-        <div class="flex items-center space-x-3">
-          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-          <div>
-            <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-            <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
-          </div>
-        </div>
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
-          <span id="themeIcon"></span>
-        </button>
-        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-      </div>
-    </aside>
-
-    <main class="flex-1 p-4 md:p-8">
-      <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600">
-        <div>
-          <h2 class="text-xl md:text-2xl font-bold text-slate-800">Selamat Datang!</h2>
-          <p class="text-sm md:text-base text-slate-500 mt-1">Sistem Informasi Jumbara PMI Kabupaten Purbalingga.</p>
-        </div>
-        <div class="mt-4 md:mt-0 text-left md:text-right">
-          <p class="text-xs md:text-sm text-slate-400">Tanggal Hari Ini</p>
-          <p class="font-bold text-red-700 text-sm md:text-base" id="tanggalHariIni"></p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div class="form-card relative overflow-hidden">
-          <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Aktif</h3>
-          <p id="eventTahun" class="text-3xl md:text-4xl font-extrabold text-red-600 mt-2">-</p>
-        </div>
-        <div class="form-card relative overflow-hidden">
-          <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Status Pendaftaran</h3>
-          <p id="statusPendaftaran" class="text-xl md:text-2xl font-bold text-slate-800 mt-3">-</p>
-        </div>
-        <div class="form-card relative overflow-hidden">
-          <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Tim Terdaftar</h3>
-          <p id="totalTim" class="text-3xl md:text-4xl font-extrabold text-slate-800 mt-2">-</p>
-        </div>
-      </div>
-    </main>
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
+    <div>
+      <h1 class="text-lg font-bold">Jumbara PMI</h1>
+      <p id="userRoleDisplayMobile" class="text-xs text-red-100">Panitia</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="p-2 rounded-lg bg-red-800 text-white hover:bg-red-900 transition-colors" onclick="toggleTheme()">
+        <span class="theme-icon"></span>
+      </button>
+      <button id="btnLogoutMobile" class="text-sm font-bold bg-white text-red-700 px-3 py-2 rounded-lg shadow">Keluar</button>
+    </div>
   </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
+        <span class="theme-icon"></span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Selamat Datang!</h2>
+        <p class="text-sm md:text-base text-slate-500 mt-1">Sistem Informasi Jumbara PMI Kabupaten Purbalingga.</p>
+      </div>
+      <div class="mt-4 md:mt-0 text-left md:text-right">
+        <p class="text-xs md:text-sm text-slate-400">Tanggal Hari Ini</p>
+        <p class="font-bold text-red-700 text-sm md:text-base" id="tanggalHariIni"></p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+      <div class="form-card relative overflow-hidden">
+        <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Aktif</h3>
+        <p id="eventTahun" class="text-3xl md:text-4xl font-extrabold text-red-600 mt-2">-</p>
+      </div>
+      <div class="form-card relative overflow-hidden">
+        <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Status Pendaftaran</h3>
+        <p id="statusPendaftaran" class="text-xl md:text-2xl font-bold text-slate-800 mt-3">-</p>
+      </div>
+      <div class="form-card relative overflow-hidden">
+        <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Tim Terdaftar</h3>
+        <p id="totalTim" class="text-3xl md:text-4xl font-extrabold text-slate-800 mt-2">-</p>
+      </div>
+    </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
@@ -67,9 +81,15 @@
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
 
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       document.getElementById('tanggalHariIni').textContent = new Date().toLocaleDateString('id-ID', options);
-      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
+      
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
       const menu = document.getElementById('navMenu');
       let menuHtml = `
@@ -96,8 +116,6 @@
         const { count } = await window.supabaseClient.from('tim').select('*', { count: 'exact', head: true }).eq('event_id', event.id);
         document.getElementById('totalTim').textContent = count || 0;
       }
-
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
     });
   </script>
 </body>
