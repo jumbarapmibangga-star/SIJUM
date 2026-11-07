@@ -50,7 +50,7 @@
     </main>
   </div>
 
-  <!-- MODAL CETAK (Tersembunyi di awal) -->
+  <!-- MODAL CETAK -->
   <div id="modalCetak" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 text-center form-card">
       <h3 class="text-xl font-bold text-slate-800 mb-2">Cetak Ulang Struk</h3>
@@ -84,7 +84,6 @@
       const auth = await protectPage(['juri']);
       if (!auth) return;
 
-      // Event Listener Tombol
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
       document.getElementById('btnTutupModal').addEventListener('click', () => {
         document.getElementById('modalCetak').classList.add('hidden');
@@ -92,7 +91,6 @@
       document.getElementById('btnCetakBt').addEventListener('click', cetakViaBluetooth);
       document.getElementById('btnCetakPdf').addEventListener('click', cetakViaBrowser);
 
-      // Load Data
       const { data: juri } = await window.supabaseClient.from('juri').select('id, nama').eq('user_id', auth.user.id).single();
       document.getElementById('userNameDisplay').textContent = juri.nama;
       document.getElementById('userNameDisplayMobile').textContent = juri.nama;
@@ -164,30 +162,31 @@
       }
     });
 
-    // Fungsi Buka Modal
+    // FUNGSI MODAL DENGAN PENGAMAN (ANTI ERROR NULL)
     window.bukaModalCetak = (index) => {
       const r = riwayatData[index];
       const penPos = r.penilaian_pos;
-      const tim = penPos.tim;
-      const pos = penPos.pos;
-      const eventData = tim.event;
-      const tingkatData = tim.tingkat;
+      
+      // Gunakan optional chaining (?.) dan nilai default (||)
+      const tim = penPos?.tim || {};
+      const pos = penPos?.pos || {};
+      const eventData = tim?.event || {};
+      const tingkatData = tim?.tingkat || {};
 
       dataCetak = {
-        namaEvent: eventData.nama,
-        tahun: eventData.tahun,
-        tingkat: tingkatData.nama,
-        namaPos: pos.nama_pos,
-        kodePos: pos.kode_pos,
-        namaTim: tim.nama_tim,
-        kodeTim: tim.kode_kontingen,
-        nilai: r.nilai_juri
+        namaEvent: eventData.nama || 'JUMBARA PMI',
+        tahun: eventData.tahun || '-',
+        tingkat: tingkatData.nama || '-',
+        namaPos: pos.nama_pos || '-',
+        kodePos: pos.kode_pos || '-',
+        namaTim: tim.nama_tim || 'Tim Terhapus',
+        kodeTim: tim.kode_kontingen || '-',
+        nilai: r.nilai_juri || 0
       };
       
       document.getElementById('modalCetak').classList.remove('hidden');
     };
 
-    // Fungsi Cetak via Bluetooth
     async function cetakViaBluetooth() {
       document.getElementById('modalCetak').classList.add('hidden');
       if (!bluetoothCharacteristic) {
@@ -200,13 +199,11 @@
       await prosesCetakData(dataCetak);
     }
 
-    // Fungsi Cetak via Browser
     function cetakViaBrowser() {
       document.getElementById('modalCetak').classList.add('hidden');
       cetakStrukBrowser(dataCetak);
     }
 
-    // Fungsi Koneksi Printer
     async function connectPrinter() {
       if (!navigator.bluetooth) { alert('Browser Anda tidak mendukung Web Bluetooth. Gunakan Chrome di Android.'); return false; }
       try {
@@ -221,13 +218,12 @@
       } catch (error) { alert('Gagal konek printer: ' + error.message); return false; }
     }
 
-    // Fungsi Kirim Data ke Printer
     async function prosesCetakData(data) {
       if (!bluetoothCharacteristic) return;
       const teksStruk = `
 ================================
 ${data.namaEvent.toUpperCase()}
-${data.tingkat.toUpperCase()}
+${data.tingkat !== '-' ? 'TINGKAT ' + data.tingkat.toUpperCase() : ''}
 ================================
 POS: ${data.namaPos} (${data.kodePos})
 Tim: ${data.kodeTim} - ${data.namaTim}
@@ -243,7 +239,6 @@ Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
       try { await bluetoothCharacteristic.writeValue(dataBytes); alert('Struk sedang dicetak...'); } catch (error) { alert('Gagal mencetak: ' + error.message); }
     }
 
-    // Fungsi Cetak Browser
     function cetakStrukBrowser(data) {
       const win = window.open('', '_blank');
       win.document.write(`
@@ -252,7 +247,7 @@ Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
         </head><body onload="window.print()">
           <div class="center">
             <strong>${data.namaEvent.toUpperCase()}</strong><br>
-            TINGKAT ${data.tingkat.toUpperCase()}
+            ${data.tingkat !== '-' ? 'TINGKAT ' + data.tingkat.toUpperCase() : ''}
           </div>
           <hr>
           POS: ${data.namaPos} (${data.kodePos})<br>
