@@ -718,49 +718,45 @@ Sertifikat: Disimpan di Supabase Storage.
 
 ## 6.14 Keputusan Teknis (Final)
 | # |	Keputusan	| Alasan |
-
+| - | - | - |
 | A |	Device juri standar = Android (Chrome) |	Web Bluetooth tidak didukung iOS Safari & Firefox.
 | B	| Timer & bidak = shared per tim per pos |	Menghindari ambiguitas. Disimpan di tierbreaker.penilaian_pos_id.
-C	Nilai final pos = wajib semua juri submit (Opsi A)	Mencegah nilai tidak adil. Status menunggu_juri → final.
-D	Penilaian dipecah 3 tabel: penilaian_pos / penilaian_juri / penilaian_detail	Memisahkan nilai final pos dari nilai per juri.
-E	Juara umum = hanya pos induk (induk_pos_id = null)	Sub-pos sudah terwakili di nilai gabungan induk.
-F	fn_juara_umum = fungsi SQL dinamis, bukan view statis	Jumlah pos tak terbatas.
-G	Pos tak terbatas, sub-pos tak terbatas, komponen tak terbatas	Prinsip §2.
-H	pos.agregasi_komponen = tidak_ada/normalisasi_bobot	Generalisasi, bukan enum mode kaku.
-I	pos_komponen tabel terpisah (bukan bobot_teori/bobot_praktik di pos)	Dukung 3+ komponen.
-J	weighted = normalisasi per komponen + rata-rata lintas juri	Adil antar pos dengan jumlah juri berbeda & skala berbeda.
-K	pos.komponen untuk sub-pos menandai komponennya	Memudahkan agregasi induk.
-L	jumlah_juri >= 0 — 0 diizinkan untuk induk (juri di sub-pos)	Fleksibel.
-M	Juri bisa melekat di pos mana pun via juri_pos	Prinsip §2.
-N	Struk thermal: pos induk cetak setelah semua sub-pos final	Hindari struk ganda.
-O	weighted wajib kedua komponen ada (validasi config_locked)	Cegah nilai hangus.
-P	maks_k dihitung dari Σ skor_maksimal rubrik, bukan pos.total_maks	Normalisasi benar.
-Q	Koreksi berlevel (item_rubrik/nilai_juri/nilai_final) + jsonb	Fleksibel & auditable.
-R	nilai_final dihitung via view/fungsi dulu, materialize jika lambat	Hindari trigger kompleks di awal.
-S	Backup: manual CSV harian selama event (kecuali Supabase Pro)	Free tier tidak punya automated backup.
-T	Reset password juri via Edge Function admin-reset-password	service_role hanya di Edge Function.
-U	Service worker: network-first untuk HTML dinamis, cache-first untuk asset statis	Halaman dashboard harus selalu fresh.
-V	Cetak thermal pos 2+ juri: juri terakhir submit otomatis dapat tombol cetak; juri lain & panitia via cetak ulang	Natural, tidak perlu koordinasi. Struk sama untuk semua.
-W	Struk thermal = satu struk per tim per pos (bukan per juri) — menampilkan total per juri + nilai akhir; QR ke penilaian_pos	Hindari duplikasi.
-X	Presensi via Scan QR Code oleh juri sebelum menilai (berisi kode_peserta)	Menjawab kebutuhan 1 tim ikut banyak lomba di waktu bersamaan.
-Y	Peserta Tergiat dihitung dari frekuensi kehadiran (scan) di presensi_peserta	Objektif dan otomatis.
-Z	Tierbreaker Umur: Opsi umur_dulu di prioritas_tierbreaker, dihitung dari rata-rata usia tim (tgl_lahir)	Menyelesaikan nilai seri jika timer/bidak juga seri.
-AA	Menu Panitia dibedakan berdasarkan Role di 1 halaman HTML (admin/dashboard.html), dirender kondisional via JS, dilindungi RLS Supabase	Efisien, tidak perlu buat 3 file dashboard berbeda.
-7. Akun Juri
-Username + password + nama (bukan email, bukan PIN).
+| C	| Nilai final pos = wajib semua juri submit (Opsi A)	Mencegah nilai tidak adil. Status menunggu_juri → final.
+| D |	Penilaian dipecah 3 tabel: penilaian_pos / penilaian_juri / penilaian_detail |	Memisahkan nilai final pos dari nilai per juri.
+| E |	Juara umum = hanya pos induk (induk_pos_id = null) |	Sub-pos sudah terwakili di nilai gabungan induk.
+| F |	fn_juara_umum = fungsi SQL dinamis, bukan view statis	| Jumlah pos tak terbatas.
+| G |	Pos tak terbatas, sub-pos tak terbatas, komponen tak terbatas	| Prinsip §2.
+| H	| pos.agregasi_komponen = tidak_ada/normalisasi_bobot	| Generalisasi, bukan enum mode kaku.
+| I	| pos_komponen tabel terpisah (bukan bobot_teori/bobot_praktik di pos)	| Dukung 3+ komponen.
+| J	| weighted = normalisasi per komponen + rata-rata lintas juri	| Adil antar pos dengan jumlah juri berbeda & skala berbeda.
+| K	| pos.komponen untuk sub-pos menandai komponennya	| Memudahkan agregasi induk.
+| L	| jumlah_juri >= 0 — 0 diizinkan untuk induk (juri di sub-pos) |	Fleksibel.
+| M	| Juri bisa melekat di pos mana pun via juri_pos |	Prinsip §2.
+| N	| Struk thermal: pos induk cetak setelah semua sub-pos final |	Hindari struk ganda.
+| O	| weighted wajib kedua komponen ada (validasi config_locked)	| Cegah nilai hangus.
+| P	| maks_k dihitung dari Σ skor_maksimal rubrik, bukan pos.total_maks |	Normalisasi benar.
+| Q	| Koreksi berlevel (item_rubrik/nilai_juri/nilai_final) + jsonb	| Fleksibel & auditable.
+| R	| nilai_final dihitung via view/fungsi dulu, materialize jika lambat	| Hindari trigger kompleks di awal.
+| S	| Backup: manual CSV harian selama event (kecuali Supabase Pro)	| Free tier tidak punya automated backup.
+| T	| Reset password juri via Edge Function admin-reset-password	| service_role hanya di Edge Function.
+| U	| Service worker: network-first untuk HTML dinamis, cache-first untuk asset statis	| Halaman dashboard harus selalu fresh.
+| V	| Cetak thermal pos 2+ juri: juri terakhir submit otomatis dapat tombol cetak; juri lain & panitia via cetak ulang	| Natural, tidak perlu koordinasi. Struk sama untuk semua.
+| W	| Struk thermal = satu struk per tim per pos (bukan per juri) — menampilkan total per juri + nilai akhir; QR ke penilaian_pos	| Hindari duplikasi.
+| X	| Presensi via Scan QR Code oleh juri sebelum menilai (berisi kode_peserta) |	Menjawab kebutuhan 1 tim ikut banyak lomba di waktu bersamaan.
+| Y	| Peserta Tergiat dihitung dari frekuensi kehadiran (scan) di presensi_peserta	| Objektif dan otomatis.
+| Z	| Tierbreaker Umur: Opsi umur_dulu di prioritas_tierbreaker, dihitung dari rata-rata usia tim (tgl_lahir)	| Menyelesaikan nilai seri jika timer/bidak juga seri.
+| AA |	Menu Panitia dibedakan berdasarkan Role di 1 halaman HTML (admin/dashboard.html), dirender kondisional via JS, dilindungi RLS Supabase |	Efisien, tidak perlu buat 3 file dashboard berbeda.
 
-Email palsu di Supabase: {username}@jumbara.local.
+## 7. Akun Juri
+- Username + password + nama (bukan email, bukan PIN).
+- Email palsu di Supabase: {username}@jumbara.local.
+- Admin buat akun → sampaikan username & password manual.
+- Reset password manual oleh admin (via Edge Function admin-reset-password).
+- Multi-device login.
+- Satu orang bisa ditugaskan ke >1 pos via juri_pos.
 
-Admin buat akun → sampaikan username & password manual.
-
-Reset password manual oleh admin (via Edge Function admin-reset-password).
-
-Multi-device login.
-
-Satu orang bisa ditugaskan ke >1 pos via juri_pos.
-
-8. Halaman Aplikasi
-text
+##8. Halaman Aplikasi
+```text
 Publik
 ├── Beranda / info Jumbara
 ├── Papan Skor (jika publikasi aktif)
@@ -798,9 +794,11 @@ Panitia (login)
 ├── Menu Laporan
 ├── Kontrol Dashboard Aula (Koordinator & Super Admin)
 └── Audit Log (Super Admin)
-9. Design System
-Komponen	Spesifikasi
-Warna primer	Merah #DC2626
+```
+## 9. Design System
+|Komponen|Spesifikasi|
+|-|-|
+|Warna|primer	Merah #DC2626
 Font	Inter / system sans-serif
 Font monospace	JetBrains Mono (timer)
 Ikon	Font Awesome 6
