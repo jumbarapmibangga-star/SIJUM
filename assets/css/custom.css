@@ -1,5 +1,5 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v4.0)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v4.1)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -149,6 +149,26 @@ body {
   border-radius: 9999px;
 }
 
+/* --- 7. Tombol Ganti Tema (Kapsul) --- */
+.btn-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px; /* Kapsul */
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: all 0.2s;
+  cursor: pointer;
+  background-color: #F1F5F9; /* Abu-abu muda */
+  color: #475569;
+  border: 1px solid #CBD5E1;
+}
+.btn-theme-toggle:hover {
+  background-color: #E2E8F0;
+}
+
 /* =========================================================
    DARK MODE (MODE GELAP)
    ========================================================= */
@@ -171,3 +191,13 @@ html.dark .input-label { color: #B0BEC5; }
 html.dark .sidebar-link { color: #B0BEC5; }
 html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
 html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
+
+/* Tombol Tema di Dark Mode */
+html.dark .btn-theme-toggle {
+  background-color: #1E293B;
+  color: #CBD5E1;
+  border-color: #334155;
+}
+html.dark .btn-theme-toggle:hover {
+  background-color: #334155;
+}
