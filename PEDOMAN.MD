@@ -323,9 +323,9 @@ Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak 
 | ----- | ----------- |
 | event |	id, tahun, nama, status, pendaftaran_tutup_pada, pendaftaran_status, aula_mode, aula_pesan, urutan_pos_locked, publikasi_nilai |
 | tingkat |	id, nama (Mula/Madya/Wira) |
-| sekolah |	id, nama
-| peserta_master | id, kode_peserta, nama, sekolah_id, tgl_lahir
-| peserta_event	| id, event_id, peserta_master_id, tim_id, tingkat_id, peran_utama
+| sekolah |	id, nama |
+| peserta_master | id, kode_peserta, nama, sekolah_id, tgl_lahir |
+| peserta_event	| id, event_id, peserta_master_id, tim_id, tingkat_id, peran_utama |
 | tim |	id, event_id, nama_tim, sekolah_id, tingkat_id, kode_kontingen, kontingen_event_id
 | kontingen_event	| id, event_id, akun_id, nama_kontingen, tingkat_id, status, verified_at, verified_by
 | pos |	id, event_id, kode_pos, nama_pos, urutan, jumlah_juri (≥0), metode_hitung, agregasi_komponen (tidak_ada/normalisasi_bobot), komponen (untuk sub-pos: teori/praktik/... — null untuk pos biasa), total_maks, pakai_timer, pakai_bidak, prioritas_tierbreaker, induk_pos_id, is_aktif, config_locked, locked_at, locked_by
@@ -341,7 +341,7 @@ Catatan: anon key aman di frontend hanya jika RLS aktif. service_role key tidak 
 | koreksi_nilai |	id, penilaian_pos_id, jenis_koreksi, level_koreksi (item_rubrik/nilai_juri/nilai_final), referensi_id, data_lama (jsonb), data_baru (jsonb), alasan, oleh, waktu
 | histori_peran |	id, event_id, peserta_event_id, peserta_master_id, pos_id, peran
 | urutan_pos |	id, event_id, tingkat_id, pos_id, urutan, locked_at
-| audit_log |	id, waktu, user_id, user_role, username, kategori, aksi, entitas, entitas_id, data_lama, data_baru, alasan, ip_address, user_agent
+| audit_log |	id, waktu, user_id, user_role, username, kategori, aksi, entitas, entitas_id, data_lama, data_baru, alasan, ip_address, user_agent |
 Catatan revisi v1.5:
 
 presensi_peserta ditambahkan untuk mencatat kehadiran peserta per pos via scan QR.
