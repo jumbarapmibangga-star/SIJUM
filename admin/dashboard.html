@@ -9,17 +9,19 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <!-- HEADER MOBILE -->
-  <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
-    <div>
-      <h1 class="text-lg font-bold">Jumbara PMI</h1>
-      <p id="userRoleDisplayMobile" class="text-xs text-red-100">Panitia</p>
-    </div>
-    <div class="flex items-center gap-2">
-      <button class="p-2 rounded-lg bg-red-800 text-white hover:bg-red-900 transition-colors" onclick="toggleTheme()">
-        <span class="theme-icon"></span>
-      </button>
-      <button id="btnLogoutMobile" class="text-sm font-bold bg-white text-red-700 px-3 py-2 rounded-lg shadow">Keluar</button>
+  <!-- HEADER MOBILE (Dibungkus div md:hidden) -->
+  <div class="md:hidden">
+    <div class="flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
+      <div>
+        <h1 class="text-lg font-bold">Jumbara PMI</h1>
+        <p id="userRoleDisplayMobile" class="text-xs text-red-100">Panitia</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="p-2 rounded-lg bg-red-800 text-white hover:bg-red-900 transition-colors" onclick="toggleTheme()">
+          <span class="theme-icon"></span>
+        </button>
+        <button id="btnLogoutMobile" class="text-sm font-bold bg-white text-red-700 px-3 py-2 rounded-lg shadow">Keluar</button>
+      </div>
     </div>
   </div>
 
