@@ -472,3 +472,38 @@ Catatan:
 - Tidak menormalisasi skala global; normalisasi per komponen sudah menyerap perbedaan skala.
 
 ## 6.4 Tierbreaker
+Timer, bidak, & umur adalah penentu jika nilai sama. Timer & bidak shared per tim per pos. Umur dihitung dari rata-rata usia anggota tim.
+
+```text
+Timer:
+  - Di-start oleh juri pertama yang membuka form penilaian pos-tim.
+  - Di-stop oleh juri terakhir yang submit (status → locked).
+  - Disimpan: waktu_mulai_server, waktu_selesai_server, waktu_detik.
+
+Bidak:
+  - Diinput satu kali per tim per pos (oleh juri slot 1 atau panitia).
+  - Disimpan: bidak_petak.
+
+Umur:
+  - Dihitung otomatis oleh sistem dari rata-rata `tgl_lahir` anggota tim di `peserta_master`.
+  - Jika tgl_lahir kosong, dianggap 0 (paling tua) atau fallback ke keputusan panitia.
+
+Aturan tiebreak (berurutan sesuai `prioritas_tierbreaker`):
+1. Nilai Pos (Utama)
+2. Bidak (jika pakai_bidak)
+3. Timer (jika pakai_timer)
+4. Umur (jika diaktifkan panitia)
+5. Fallback (shared rank / keputusan panitia, tercatat di audit)
+
+Contoh Konfigurasi:
+- `prioritas_tierbreaker = 'bidak_dulu'` → Nilai → Bidak → Timer → Umur
+- `prioritas_tierbreaker = 'timer_dulu'` → Nilai → Timer → Bidak → Umur
+- `prioritas_tierbreaker = 'umur_dulu'`  → Nilai → Umur → Bidak → Timer
+
+Timer, bidak, & umur tidak masuk nilai_pos_total.
+```
+Catatan pos induk + sub-pos:
+- Timer/bidak di sub-pos (-T, -P, ...), bukan induk.
+- Tierbreaker induk hanya fallback jika nilai gabungan sama.
+
+## 6.5 Aturan Juara per Pos
