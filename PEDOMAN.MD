@@ -833,11 +833,11 @@ Panitia (login)
 
 ## 11. Migrasi Data
 Data	Migrasi?
--KONTINGEN (18 tim)	✅ Ya
--POS (8 kode — konfirmasi: hanya 8 atau ada tambahan?)	✅ Ya
--JURI (16 juri)	✅ Ya (password hash)
--RUBRIK (semua soal)	✅ Ya
--NILAI (historis)	❌ Tidak
+- KONTINGEN (18 tim)	✅ Ya
+- POS (8 kode — konfirmasi: hanya 8 atau ada tambahan?)	✅ Ya
+- JURI (16 juri)	✅ Ya (password hash)
+- RUBRIK (semua soal)	✅ Ya
+- NILAI (historis)	❌ Tidak
 
 ## 12. Referensi File & Sheet
 ### 12.1 File yang Sudah Direview
@@ -851,12 +851,12 @@ Data	Migrasi?
 |gs.html|	✅ Backend diganti Supabase, token Telegram di-revoke
 
 ### 12.2 Sheet yang Dimigrasi
-| Sheet	Migrasi?
-| RUBRIK	✅ Ya
-| POS	✅ Ya
-| KONTINGEN	✅ Ya
-| JURI	✅ Ya (password hash)
-| NILAI	❌ Tidak (historis)
+- Sheet	Migrasi?
+- RUBRIK	✅ Ya
+- POS	✅ Ya
+- KONTINGEN	✅ Ya
+- JURI	✅ Ya (password hash)
+- NILAI	❌ Tidak (historis)
 
 ### 12.3 Data Master 2026
 |Data|	Jumlah|
