@@ -65,7 +65,7 @@
       document.getElementById('userNameDisplay').textContent = juri.nama;
       document.getElementById('userNameDisplayMobile').textContent = juri.nama;
 
-      // Ambil data penilaian yang sudah di-lock oleh juri ini
+      // AMBIL DATA NILAI YANG SUDAH DI-LOCK
       const { data: riwayat, error } = await window.supabaseClient
         .from('penilaian_juri')
         .select(`
