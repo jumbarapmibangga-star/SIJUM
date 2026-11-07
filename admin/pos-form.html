@@ -5,17 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Form Pos — Jumbara PMI</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/assets/css/custom.css">
 </head>
-<body class="bg-slate-100 min-h-screen font-sans flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col md:flex-row">
 
-  <aside class="w-full md:w-64 bg-slate-800 text-white flex flex-col min-h-screen">
-    <div class="p-4 bg-slate-900 border-b border-slate-700">
-      <h1 class="text-lg font-bold">Jumbara Panitia</h1>
-      <p id="userRoleDisplay" class="text-xs text-slate-400">Memuat...</p>
+  <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex flex-col min-h-screen shadow-sm">
+    <div class="p-5 bg-red-700 text-white shadow-md">
+      <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+      <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
     </div>
-    <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-700">
-      <button id="btnLogout" class="w-full text-left text-sm text-red-400 hover:text-red-300">Keluar (Logout)</button>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors" onclick="toggleTheme()">
+        <span id="themeIcon"></span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
     </div>
   </aside>
 
@@ -26,30 +30,30 @@
       <p class="text-slate-500">Isi detail konfigurasi pos di bawah ini.</p>
     </div>
 
-    <form id="posForm" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 max-w-3xl">
+    <form id="posForm" class="form-card space-y-6 max-w-3xl">
       <input type="hidden" id="posId" value="">
       <input type="hidden" id="eventId" value="">
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Kode Pos</label>
-          <input type="text" id="kodePos" required placeholder="Contoh: POS-01" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Kode Pos</label>
+          <input type="text" id="kodePos" required placeholder="Contoh: POS-01" class="input-field">
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Nama Pos</label>
-          <input type="text" id="namaPos" required placeholder="Contoh: Lomba Cerdas Tangkas" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Nama Pos</label>
+          <input type="text" id="namaPos" required placeholder="Contoh: Lomba Cerdas Tangkas" class="input-field">
         </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Jumlah Juri</label>
-          <input type="number" id="jumlahJuri" min="0" value="1" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Jumlah Juri</label>
+          <input type="number" id="jumlahJuri" min="0" value="1" required class="input-field">
           <p class="text-xs text-slate-400 mt-1">Isi 0 jika ini pos induk.</p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Metode Hitung</label>
-          <select id="metodeHitung" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Metode Hitung</label>
+          <select id="metodeHitung" class="input-field">
             <option value="sum">Sum (Total Nilai)</option>
             <option value="average">Average (Rata-rata)</option>
             <option value="percentage">Percentage (Persen)</option>
@@ -57,25 +61,25 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Urutan Tampil</label>
-          <input type="number" id="urutan" value="0" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
+          <label class="input-label">Urutan Tampil</label>
+          <input type="number" id="urutan" value="0" required class="input-field">
         </div>
       </div>
 
-      <div class="border-t pt-4 space-y-3">
-        <label class="flex items-center space-x-3">
+      <div class="border-t pt-4 space-y-3 border-slate-200">
+        <label class="flex items-center space-x-3 cursor-pointer">
           <input type="checkbox" id="pakaiTimer" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
           <span class="text-sm font-medium text-slate-700">Gunakan Timer</span>
         </label>
-        <label class="flex items-center space-x-3">
+        <label class="flex items-center space-x-3 cursor-pointer">
           <input type="checkbox" id="pakaiBidak" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
           <span class="text-sm font-medium text-slate-700">Gunakan Bidak (Pion)</span>
         </label>
       </div>
 
-      <div class="flex justify-end gap-3 pt-4">
-        <a href="/admin/pos.html" class="px-4 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50">Batal</a>
-        <button type="submit" id="btnSubmit" class="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow hover:bg-red-700">Simpan Pos</button>
+      <div class="flex justify-end gap-3 pt-4 border-t mt-6 border-slate-200">
+        <a href="/admin/pos.html" class="btn-secondary">Batal</a>
+        <button type="submit" id="btnSubmit" class="btn-primary">Simpan Pos</button>
       </div>
     </form>
   </main>
@@ -83,16 +87,18 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/assets/js/supabase-client.js"></script>
   <script src="/assets/js/auth.js"></script>
+  <script src="/assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
       
-      document.getElementById('userRoleDisplay').textContent = 'Panitia';
+      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
       document.getElementById('navMenu').innerHTML = `
-        <a href="/admin/dashboard.html" class="block px-3 py-2 rounded hover:bg-slate-700">Dashboard</a>
-        <a href="/admin/pos.html" class="block px-3 py-2 rounded bg-slate-700 font-semibold">Kelola Pos & Rubrik</a>
-        <a href="/admin/verifikasi.html" class="block px-3 py-2 rounded hover:bg-slate-700">Verifikasi Kontingen</a>
+        <a href="/admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="/admin/pos.html" class="sidebar-link active">Kelola Pos & Rubrik</a>
+        <a href="/admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="/admin/juri.html" class="sidebar-link">Penugasan Juri</a>
       `;
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
@@ -105,7 +111,6 @@
       if (editId) {
         document.getElementById('formTitle').textContent = 'Edit Pos';
         document.getElementById('posId').value = editId;
-        
         const { data: pos } = await window.supabaseClient.from('pos').select('*').eq('id', editId).single();
         if (pos) {
           document.getElementById('kodePos').value = pos.kode_pos;
@@ -121,8 +126,7 @@
       document.getElementById('posForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
-        btn.innerHTML = 'Menyimpan...';
-        btn.disabled = true;
+        btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
 
         const payload = {
           event_id: document.getElementById('eventId').value,
@@ -146,8 +150,7 @@
 
         if (error) {
           alert('Gagal menyimpan: ' + error.message);
-          btn.innerHTML = 'Simpan Pos';
-          btn.disabled = false;
+          btn.innerHTML = 'Simpan Pos'; btn.disabled = false;
         } else {
           window.location.href = '/admin/pos.html';
         }
