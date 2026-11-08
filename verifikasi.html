@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verifikasi Struk — Jumbara PMI</title>
+  
+  <!-- ATURAN 1: BASE URL (ROOT) -->
+  <base href="./">
+  
+  <!-- ATURAN 4: FAVICON & CSS -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-root min-h-screen flex flex-col bg-slate-50 font-sans">
+
+  <!-- HEADER -->
+  <header class="bg-red-700 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-2xl mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
+        <h1 class="text-lg font-bold tracking-wide">Verifikasi Struk</h1>
+      </div>
+      <a href="index.html" class="bg-white text-red-700 px-3 py-1.5 rounded font-semibold text-sm hover:bg-slate-100 transition shadow-sm">Beranda</a>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 flex items-center justify-center p-4">
+    
+    <!-- Kartu Hasil Verifikasi -->
+    <div id="verifikasiCard" class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in text-center hidden">
+      
+      <!-- Ikon Sukses -->
+      <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+      </div>
+
+      <h2 class="text-2xl font-bold text-slate-800 mb-1">Struk Valid</h2>
+      <p class="text-sm text-slate-500 mb-6">Data penilaian ini sah dan tercatat di sistem.</p>
+
+      <div class="bg-slate-50 p-4 rounded-lg text-left space-y-3 border border-slate-200">
+        <div>
+          <p class="text-xs text-slate-400 font-semibold uppercase">Nama Event</p>
+          <p class="font-bold text-slate-800" id="vEvent">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400 font-semibold uppercase">Pos / Lomba</p>
+          <p class="font-bold text-slate-800" id="vPos">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400 font-semibold uppercase">Tim / Kontingen</p>
+          <p class="font-bold text-slate-800" id="vTim">-</p>
+        </div>
+        <div class="pt-3 border-t border-slate-200">
+          <p class="text-xs text-slate-400 font-semibold uppercase">Nilai Akhir</p>
+          <p class="text-3xl font-extrabold text-red-600" id="vNilai">-</p>
+        </div>
+      </div>
+
+      <div class="mt-6 text-xs text-slate-400">
+        Waktu Penilaian: <span id="vWaktu">-</span>
+      </div>
+
+    </div>
+
+    <!-- Kartu Error -->
+    <div id="errorCard" class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in text-center hidden">
+      <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Struk Tidak Ditemukan</h2>
+      <p class="text-sm text-slate-500 mb-6">Data yang Anda cari tidak valid atau sudah dihapus.</p>
+      <a href="index.html" class="btn-secondary w-full block py-2">Kembali ke Beranda</a>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingCard" class="text-center">
+      <div class="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-slate-500">Memverifikasi data...</p>
+    </div>
+
+  </main>
+
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Ambil ID dari URL (contoh: verifikasi.html?id=xxx)
+      const urlParams = new URLSearchParams(window.location.search);
+      const penilaianId = urlParams.get('id');
+
+      const loading = document.getElementById('loadingCard');
+      const successCard = document.getElementById('verifikasiCard');
+      const errorCard = document.getElementById('errorCard');
+
+      if (!penilaianId) {
+        loading.classList.add('hidden');
+        errorCard.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        // Ambil data penilaian_pos beserta relasinya
+        const { data, error } = await window.supabaseClient
+          .from('penilaian_pos')
+          .select(`
+            nilai_final, status, locked_at,
+            tim (nama_tim, kode_kontingen, tingkat (nama), event (nama, tahun)),
+            pos (nama_pos, kode_pos)
+          `)
+          .eq('id', penilaianId)
+          .in('status', ['final', 'direvisi'])
+          .single();
+
+        if (error || !data) throw new Error('Data tidak ditemukan');
+
+        // Tampilkan Data
+        const event = data.tim.event;
+        const tim = data.tim;
+        const pos = data.pos;
+
+        document.getElementById('vEvent').textContent = `${event.nama} (${event.tahun})`;
+        document.getElementById('vPos').textContent = `${pos.kode_pos} - ${pos.nama_pos}`;
+        document.getElementById('vTim').textContent = `${tim.kode_kontingen} - ${tim.nama_tim} (${tim.tingkat.nama})`;
+        document.getElementById('vNilai').textContent = parseFloat(data.nilai_final).toFixed(2);
+        document.getElementById('vWaktu').textContent = new Date(data.locked_at).toLocaleString('id-ID');
+
+        loading.classList.add('hidden');
+        successCard.classList.remove('hidden');
+
+      } catch (err) {
+        console.error(err);
+        loading.classList.add('hidden');
+        errorCard.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
