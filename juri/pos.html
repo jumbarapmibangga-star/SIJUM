@@ -4,66 +4,78 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Daftar Pos Juri — Jumbara PMI</title>
+  
+  <!-- BASE PATH: Mundur satu folder karena file ini ada di dalam folder 'juri' -->
+  <base href="../">
+  
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <!-- Header Mobile -->
-  <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
-    <div>
-      <h1 class="text-xl font-bold">Juri PMI</h1>
-      <p id="userNameDisplayMobile" class="text-xs text-red-100">Memuat...</p>
-    </div>
-    <button id="btnLogoutMobile" class="text-sm font-bold bg-white text-red-700 px-3 py-1.5 rounded-lg shadow">Keluar</button>
-  </div>
-
-  <div class="flex flex-1">
-    <!-- Sidebar Desktop -->
-    <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm">
-      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-        <div class="flex items-center space-x-3">
-          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-          <div>
-            <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
-            <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
-          </div>
-        </div>
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <a href="/juri/pos.html" class="sidebar-link active">Daftar Pos Saya</a>
-        <a href="/juri/riwayat.html" class="sidebar-link">Riwayat Penilaian</a>
-      </nav>
-      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
-          <span id="themeIcon"></span>
-        </button>
-        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 p-4 md:p-8">
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
+      <div class="flex items-center gap-2">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
         <div>
-          <h2 class="text-2xl font-bold text-slate-800">Pos yang Ditugaskan</h2>
-          <p class="text-slate-500">Pilih pos untuk mulai menilai tim.</p>
+          <h1 class="text-lg font-bold text-red-700">Juri PMI</h1>
+          <p id="userNameDisplayMobile" class="text-xs text-slate-500">Memuat...</p>
         </div>
-        <!-- Tombol Riwayat Mobile -->
-        <a href="/juri/riwayat.html" class="md:hidden bg-slate-800 text-white px-4 py-2 rounded-lg font-semibold shadow w-full text-center">Lihat Riwayat Penilaian</a>
       </div>
-
-      <!-- Container Kartu Pos -->
-      <div id="posContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <p class="text-slate-500 text-center py-10 col-span-full">Memuat daftar pos...</p>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle" onclick="toggleTheme()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-sm font-bold bg-red-50 text-red-700 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors shadow-sm">Keluar</button>
       </div>
-    </main>
+    </div>
   </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
+          <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      <a href="juri/pos.html" class="sidebar-link active">Daftar Pos Saya</a>
+      <a href="juri/riwayat.html" class="sidebar-link">Riwayat Penilaian</a>
+    </nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 animate-fade-in">Pos yang Ditugaskan</h2>
+        <p class="text-slate-500 animate-fade-in delay-1">Pilih pos untuk mulai menilai tim.</p>
+      </div>
+      <a href="juri/riwayat.html" class="md:hidden bg-slate-800 text-white px-4 py-2 rounded-lg font-semibold shadow w-full text-center animate-fade-in delay-2">Lihat Riwayat Penilaian</a>
+    </div>
+
+    <div id="posContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <p class="text-slate-500 text-center py-10 col-span-full">Memuat daftar pos...</p>
+    </div>
+  </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/supabase-client.js"></script>
-  <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['juri']);
@@ -78,11 +90,7 @@
       document.getElementById('userNameDisplay').textContent = juriProfile.nama;
       document.getElementById('userNameDisplayMobile').textContent = juriProfile.nama;
 
-      // AMBIL DATA POS SAJA (BUKAN NILAI)
-      const { data: penugasan, error } = await window.supabaseClient
-        .from('juri_pos')
-        .select(`pos_id, pos (id, kode_pos, nama_pos, jumlah_juri, pakai_timer, pakai_bidak)`)
-        .eq('juri_id', juriProfile.id);
+      const { data: penugasan, error } = await window.supabaseClient.from('juri_pos').select(`pos_id, pos (id, kode_pos, nama_pos, jumlah_juri, pakai_timer, pakai_bidak)`).eq('juri_id', juriProfile.id);
 
       const container = document.getElementById('posContainer');
       container.innerHTML = '';
@@ -95,10 +103,10 @@
       if (penugasan.length === 0) {
         container.innerHTML = `<p class="text-slate-500 text-center py-10 col-span-full">Anda belum ditugaskan ke pos manapun.</p>`;
       } else {
-        penugasan.forEach(p => {
+        penugasan.forEach((p, index) => {
           const pos = p.pos;
           container.innerHTML += `
-            <a href="/juri/penilaian.html?pos_id=${pos.id}" class="block bg-white rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 p-5 hover:shadow-md hover:border-l-red-700 transition-all active:scale-95">
+            <a href="juri/penilaian.html?pos_id=${pos.id}" class="block bg-white rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 p-5 hover:shadow-md hover:border-l-red-700 transition-all active:scale-95 animate-fade-in delay-${(index % 3) + 1}">
               <div class="flex justify-between items-start mb-2">
                 <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded">${pos.kode_pos}</span>
                 <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">${pos.jumlah_juri} Juri</span>
