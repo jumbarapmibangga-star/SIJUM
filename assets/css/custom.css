@@ -211,28 +211,41 @@ body {
 .delay-3 { animation-delay: 0.3s; }
 
 /* =========================================================
-   DARK MODE (MODE GELAP)
+   DARK MODE (MODE GELAP) - KUSTOMISASI PMI
    ========================================================= */
+
+/* Background Utama Gelap */
 html.dark body {
   background-color: #121212;
   color: #ECEFF1;
 }
-html.dark .bg-white, html.dark .form-card, html.dark .sidebar-admin {
+
+/* Kartu & Form Gelap */
+html.dark .bg-white, html.dark .form-card {
   background-color: #1E1E1E !important;
   border-color: #333333 !important;
 }
+
+/* TEKS GELAP */
 html.dark .text-slate-800, html.dark .text-slate-700 { color: #ECEFF1 !important; }
 html.dark .text-slate-600 { color: #B0BEC5 !important; }
 html.dark .border-slate-200 { border-color: #333333 !important; }
+
+/* Tabel Gelap */
 html.dark .table-custom thead { background-color: #2C2C2C; color: #B0BEC5; border-color: #424242; }
 html.dark .table-custom td { border-color: #333333; }
 html.dark .table-custom tbody tr:hover { background-color: #2C2C2C; }
+
+/* Input Gelap */
 html.dark .input-field { background-color: #2C2C2C; border-color: #424242; color: white; }
 html.dark .input-label { color: #B0BEC5; }
+
+/* Menu Sidebar Gelap */
 html.dark .sidebar-link { color: #B0BEC5; }
 html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
-html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
+html.dark .sidebar-link.active { background-color: #B71C1C; color: white; }
 
+/* Tombol Tema Gelap */
 html.dark .btn-theme-toggle {
   background-color: #1E293B;
   color: #CBD5E1;
@@ -241,14 +254,31 @@ html.dark .btn-theme-toggle {
 html.dark .btn-theme-toggle:hover {
   background-color: #334155;
 }
+
 /* =========================================================
-   LOGO DI DARK MODE
+   KHUSUS: SIDEBAR ADMIN & HEADER MOBILE DI MODE GELAP
+   (Tetap Merah Gelap agar Logo Terbaca)
    ========================================================= */
-html.dark .img-logo-pmi, 
-html.dark .logo-crop-container img,
-html.dark .header-mobile-custom img {
-  /* Membalik warna gambar menjadi putih bersih */
-  filter: brightness(0) invert(1);
-  /* Opsional: Beri sedikit bayangan agar tidak menyatu dengan background */
-  opacity: 0.9; 
+
+/* Sidebar Desktop: Tetap Merah Maroon */
+html.dark .sidebar-admin {
+  background-color: #1A1A1A !important; /* Sedikit lebih terang dari hitam */
+  border-right-color: #333333 !important;
+}
+
+/* Header di atas sidebar (tempat logo) */
+html.dark .sidebar-admin > div:first-child {
+  background-color: #8B0000 !important; /* Merah Gelap (Dark Red) */
+}
+
+/* Header Mobile: Tetap Merah Maroon */
+html.dark .header-mobile-custom, 
+html.dark .md\:hidden > div {
+  background-color: #1A1A1A !important;
+  border-bottom-color: #333333 !important;
+}
+
+/* Jika kamu menggunakan struktur header manual, pastikan warnanya tetap merah */
+html.dark header.bg-red-700 {
+  background-color: #8B0000 !important;
 }
