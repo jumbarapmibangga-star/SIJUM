@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Jumbara PMI Purbalingga</title>
   
-  <!-- Favicon -->
   <link rel="icon" type="image/png" href="/assets/img/logo-pmi.png">
-  
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#B91C1C">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,17 +15,17 @@
 
   <!-- Header -->
   <header class="bg-red-700 text-white p-4 shadow-md sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-3 md:gap-0">
       
-      <!-- Bagian Logo & Teks -->
-      <div class="flex items-center gap-3">
-        <!-- Logo Dikecilkan: 40px di HP, 50px di Desktop -->
-        <img src="/assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-10 md:h-[50px] w-auto object-contain animate-heartbeat">
+      <!-- Bagian Logo & Teks (Atas-Bawah di HP, Sejajar di Desktop) -->
+      <div class="flex flex-col md:flex-row items-center gap-2 md:gap-3 text-center md:text-left">
+        <!-- Ukuran Logo disesuaikan -->
+        <img src="/assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-10 md:h-12 w-auto object-contain animate-heartbeat">
         <h1 class="text-lg md:text-xl font-bold tracking-wide leading-tight">Jumbara PMI</h1>
       </div>
 
       <!-- Tombol Login -->
-      <a href="/login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
+      <a href="/login.html" class="bg-white text-red-700 px-6 py-1.5 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm w-full md:w-auto text-center">
         Login
       </a>
       
