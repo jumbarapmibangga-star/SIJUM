@@ -5,41 +5,42 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Daftar Pos Juri — Jumbara PMI</title>
   
+  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
+  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+<body class="halaman-juri bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
   <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
-    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-3 py-2 flex justify-between items-center transition-colors">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
       
       <!-- Kiri: Logo & Teks -->
       <div class="flex items-center gap-2">
-        <!-- Logo Sangat Kecil (h-7) -->
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-7 w-auto object-contain animate-heartbeat">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
         <div>
           <h1 class="text-sm font-bold text-red-700 leading-tight">Juri PMI</h1>
-          <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none">Memuat...</p>
+          <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none mt-0.5">Memuat...</p>
         </div>
       </div>
 
       <!-- Kanan: Tombol -->
       <div class="flex items-center gap-1.5">
-        <button class="btn-theme-toggle text-xs px-2 py-1.5" onclick="toggleTheme()">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
-        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-2.5 py-1.5 rounded-lg border border-red-200 transition-colors">Keluar</button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
       </div>
 
     </div>
   </div>
 
   <!-- SIDEBAR DESKTOP -->
-  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10 transition-colors">
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
         <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
@@ -79,6 +80,7 @@
     </div>
   </main>
 
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
