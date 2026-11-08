@@ -25,7 +25,6 @@
 
     <form id="registerForm" class="space-y-5">
       
-      <!-- 1. Pilih Jenjang -->
       <div>
         <label class="input-label">Tingkat Perlombaan</label>
         <select id="tingkatId" required class="input-field" onchange="onTingkatChange()">
@@ -33,7 +32,6 @@
         </select>
       </div>
 
-      <!-- 2. Pilih Sekolah (Muncul setelah jenjang dipilih) -->
       <div id="sekolahWrapper" class="hidden">
         <label class="input-label">Nama Sekolah</label>
         <select id="sekolahId" required class="input-field">
@@ -41,13 +39,11 @@
         </select>
       </div>
 
-      <!-- 3. Username -->
       <div>
         <label class="input-label">Username (Tanpa Spasi)</label>
         <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field">
       </div>
 
-      <!-- 4. Password -->
       <div>
         <label class="input-label">Password</label>
         <input type="password" id="password" required placeholder="Minimal 6 karakter" class="input-field">
@@ -68,7 +64,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/config.js"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script>
     let listTingkat = [];
@@ -98,19 +93,23 @@
       sekolahWrapper.classList.remove('hidden');
       sekolahSelect.innerHTML = '<option value="">Memuat data sekolah...</option>';
 
-      try {
-        // Menggunakan URL dari config.js
-        const response = await fetch(`${APP_CONFIG.API_SEKOLAH_URL}?jenjang=${jenjang}`);
-        const data = await response.json();
+      // AMBIL DARI SUPABASE (BUKAN API)
+      const { data: sekolahData, error } = await window.supabaseClient
+        .from('sekolah')
+        .select('nama')
+        .eq('jenjang', jenjang)
+        .order('nama');
 
-        sekolahSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-        data.forEach(s => {
-          sekolahSelect.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
-        });
-      } catch (err) {
-        console.error(err);
+      if (error) {
+        console.error(error);
         sekolahSelect.innerHTML = '<option value="">Gagal memuat sekolah</option>';
+        return;
       }
+
+      sekolahSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+      sekolahData.forEach(s => {
+        sekolahSelect.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+      });
     }
 
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
