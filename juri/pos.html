@@ -14,25 +14,29 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <!-- HEADER MOBILE (Dibuat 2 Baris agar Lega) -->
+  <!-- HEADER MOBILE (Baris 1: Logo & Tombol, Baris 2: Teks) -->
   <div class="md:hidden relative z-50">
-    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0">
-      <!-- Baris 1: Logo & Nama -->
-      <div class="flex items-center gap-3 p-4 pb-2">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3">
+      
+      <!-- Baris 1: Logo di Kiri, Tombol di Kanan -->
+      <div class="flex justify-between items-center mb-2">
         <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
-        <div>
-          <h1 class="text-lg font-bold text-red-700 leading-tight">Juri PMI</h1>
-          <p id="userNameDisplayMobile" class="text-xs text-slate-500">Memuat...</p>
+        
+        <div class="flex items-center gap-2">
+          <button class="btn-theme-toggle text-xs px-3 py-1.5" onclick="toggleTheme()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            Mode
+          </button>
+          <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
         </div>
       </div>
-      <!-- Baris 2: Tombol Aksi -->
-      <div class="flex justify-end items-center gap-2 px-4 pb-3">
-        <button class="btn-theme-toggle text-xs px-3 py-1.5" onclick="toggleTheme()">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-          Mode
-        </button>
-        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+
+      <!-- Baris 2: Teks Juri PMI & Nama -->
+      <div>
+        <h1 class="text-lg font-bold text-red-700 leading-tight">Juri PMI</h1>
+        <p id="userNameDisplayMobile" class="text-xs text-slate-500">Memuat...</p>
       </div>
+
     </div>
   </div>
 
@@ -67,7 +71,7 @@
       <p class="text-slate-500 mt-1">Pilih pos untuk mulai menilai tim.</p>
     </div>
 
-    <!-- Tombol Riwayat di Mobile (Dibuat Full Width) -->
+    <!-- Tombol Riwayat di Mobile -->
     <a href="juri/riwayat.html" class="md:hidden block w-full bg-slate-800 text-white text-center px-4 py-3 rounded-xl font-semibold shadow mb-8">
       Lihat Riwayat Penilaian &rarr;
     </a>
