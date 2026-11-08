@@ -1,8 +1,8 @@
 // sw.js
 const CACHE_NAME = 'jumbara-v1';
 const ASSETS = [
-  '/', '/index.html', '/login.html', '/assets/css/custom.css',
-  '/assets/img/logo-pmi.png', '/offline.html'
+  './', 'index.html', 'login.html', 'assets/css/custom.css',
+  'assets/img/logo-pmi.png', 'offline.html'
 ];
 
 self.addEventListener('install', (event) => {
