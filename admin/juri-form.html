@@ -4,85 +4,152 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Form Juri — Jumbara PMI</title>
+  
+  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
+  <base href="../">
+  
+  <!-- ATURAN 4: FAVICON & CSS -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <div class="main-wrapper">
-    <aside class="sidebar-admin">
-      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-        <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-        <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
-          <span id="themeIcon"></span>
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-      </div>
-    </aside>
-
-    <main class="flex-1 p-4 md:p-8">
-      <div class="mb-6">
-        <a href="/admin/juri.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Juri</a>
-        <h2 class="text-xl md:text-2xl font-bold text-slate-800" id="formTitle">Tambah Juri Baru</h2>
-        <p class="text-sm md:text-base text-slate-500">Masukkan username yang sudah didaftarkan di Supabase Auth.</p>
-      </div>
-
-      <form id="juriForm" class="form-card space-y-6 max-w-3xl">
-        <input type="hidden" id="juriId" value="">
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
           <div>
-            <label class="input-label">Username</label>
-            <input type="text" id="username" required placeholder="Contoh: juri1" class="input-field">
-            <p class="text-xs text-slate-400 mt-1">Ketik tanpa @jumbara.local.</p>
-          </div>
-          <div>
-            <label class="input-label">Nama Lengkap</label>
-            <input type="text" id="nama" required placeholder="Contoh: Budi Santoso" class="input-field">
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
           </div>
         </div>
-
-        <div class="border-t pt-4 border-slate-200">
-          <h3 class="text-md font-bold text-slate-800 mb-3">Penugasan Pos</h3>
-          <p class="text-sm text-slate-500 mb-4">Pilih pos mana saja yang akan dinilai oleh juri ini.</p>
-          <div id="posCheckboxList" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-4 border-t mt-6 border-slate-200">
-          <a href="/admin/juri.html" class="btn-secondary">Batal</a>
-          <button type="submit" id="btnSubmit" class="btn-primary">Simpan Juri</button>
-        </div>
-      </form>
-    </main>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
   </div>
 
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6">
+      <a href="admin/juri.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Juri</a>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-800" id="formTitle">Tambah Juri Baru</h2>
+      <p class="text-sm md:text-base text-slate-500">Masukkan username yang sudah didaftarkan di Supabase Auth.</p>
+    </div>
+
+    <form id="juriForm" class="form-card space-y-6 max-w-3xl animate-fade-in">
+      <input type="hidden" id="juriId" value="">
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="input-label">Username</label>
+          <input type="text" id="username" required placeholder="Contoh: juri1" class="input-field">
+          <p class="text-xs text-slate-400 mt-1">Ketik tanpa @jumbara.local.</p>
+        </div>
+        <div>
+          <label class="input-label">Nama Lengkap</label>
+          <input type="text" id="nama" required placeholder="Contoh: Budi Santoso" class="input-field">
+        </div>
+      </div>
+
+      <div class="border-t pt-4 border-slate-200">
+        <h3 class="text-md font-bold text-slate-800 mb-3">Penugasan Pos</h3>
+        <p class="text-sm text-slate-500 mb-4">Pilih pos mana saja yang akan dinilai oleh juri ini.</p>
+        
+        <div id="posCheckboxList" class="space-y-2 max-h-64 overflow-y-auto pr-2 border border-slate-200 rounded-lg p-2 bg-slate-50">
+          <p class="text-sm text-slate-400 italic">Memuat daftar pos...</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t mt-6 border-slate-200">
+        <a href="admin/juri.html" class="btn-secondary text-center w-full md:w-auto">Batal</a>
+        <button type="submit" id="btnSubmit" class="btn-primary w-full md:w-auto">Simpan Juri</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/supabase-client.js"></script>
-  <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
   <script>
     let currentEventId = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
-      
-      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
-      document.getElementById('navMenu').innerHTML = `
-        <a href="/admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="/admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="/admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="/admin/juri.html" class="sidebar-link active">Penugasan Juri</a>
-      `;
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link active">Penugasan Juri</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      // Ambil Event ID
       const { data: events } = await window.supabaseClient.from('event').select('id').eq('tahun', 2026).single();
       if (events) currentEventId = events.id;
 
+      // Ambil Daftar Pos untuk Checkbox
       const { data: posList } = await window.supabaseClient.from('pos').select('*').eq('event_id', currentEventId).order('urutan');
       const posContainer = document.getElementById('posCheckboxList');
       
@@ -90,7 +157,7 @@
         let html = '';
         posList.forEach(p => {
           html += `
-            <label class="flex items-center space-x-3 p-3 border rounded-lg hover:bg-red-50 cursor-pointer transition-colors border-slate-200">
+            <label class="flex items-center space-x-3 p-3 bg-white border border-slate-200 rounded-lg hover:bg-red-50 cursor-pointer transition-colors">
               <input type="checkbox" name="pos_ids" value="${p.id}" class="w-5 h-5 text-red-600 rounded focus:ring-red-500 pos-checkbox">
               <div>
                 <span class="font-mono font-bold text-red-600">${p.kode_pos}</span> - 
@@ -100,14 +167,18 @@
           `;
         });
         posContainer.innerHTML = html;
+      } else {
+        posContainer.innerHTML = '<p class="text-sm text-slate-500 italic">Belum ada pos.</p>';
       }
 
+      // Cek Mode Edit
       const urlParams = new URLSearchParams(window.location.search);
       const editId = urlParams.get('id');
       
       if (editId) {
         document.getElementById('formTitle').textContent = 'Edit Juri';
         document.getElementById('juriId').value = editId;
+        
         const { data: juri } = await window.supabaseClient.from('juri').select('*').eq('id', editId).single();
         if (juri) {
           document.getElementById('username').value = juri.username;
@@ -115,6 +186,7 @@
           document.getElementById('username').readOnly = true;
           document.getElementById('username').classList.add('bg-slate-100');
         }
+
         const { data: penugasan } = await window.supabaseClient.from('juri_pos').select('pos_id').eq('juri_id', editId);
         if (penugasan) {
           penugasan.forEach(p => {
@@ -124,6 +196,7 @@
         }
       }
 
+      // Submit Form
       document.getElementById('juriForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
@@ -138,6 +211,7 @@
         let juriId = id;
         let error;
 
+        // Cari User ID dari Supabase Auth berdasarkan email
         const { data: userIdData, error: userError } = await window.supabaseClient.rpc('get_user_id_by_email', { email_input: email });
 
         if (userError || !userIdData) {
@@ -147,6 +221,7 @@
         }
         const finalUserId = userIdData;
 
+        // Simpan ke tabel JURI
         if (id) {
           const res = await window.supabaseClient.from('juri').update({ nama, email, user_id: finalUserId }).eq('id', id);
           error = res.error;
@@ -162,8 +237,10 @@
           return;
         }
 
+        // Simpan Penugasan Pos
         if (juriId) {
           if (id) await window.supabaseClient.from('juri_pos').delete().eq('juri_id', juriId);
+          
           if (selectedPos.length > 0) {
             const posPayload = selectedPos.map(posId => ({ juri_id: juriId, pos_id: posId }));
             const resPos = await window.supabaseClient.from('juri_pos').insert(posPayload);
@@ -174,7 +251,8 @@
             }
           }
         }
-        window.location.href = '/admin/juri.html';
+        
+        window.location.href = 'admin/juri.html';
       });
     });
   </script>
