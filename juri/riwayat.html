@@ -5,61 +5,69 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Riwayat Penilaian — Jumbara PMI</title>
   
-  <!-- BASE PATH: Mundur satu folder karena file ini ada di dalam folder 'juri' -->
+  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
+  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
+<body class="halaman-juri bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
   <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
-    <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
-      <div>
-        <h1 class="text-xl font-bold text-red-700">Riwayat</h1>
-        <p id="userNameDisplayMobile" class="text-xs text-slate-500">Juri PMI</p>
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-sm font-bold text-red-700 leading-tight">Riwayat</h1>
+          <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none mt-0.5">Memuat...</p>
+        </div>
       </div>
-      <a href="juri/pos.html" class="bg-red-50 text-red-700 px-3 py-1.5 rounded text-sm font-semibold border border-red-200">Kembali</a>
+      <div class="flex items-center gap-1.5">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <a href="juri/pos.html" class="text-xs font-bold bg-red-50 text-red-700 px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Kembali</a>
+      </div>
     </div>
   </div>
 
-  <div class="flex flex-1">
-    <!-- SIDEBAR DESKTOP -->
-    <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
-      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-        <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
-        <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <a href="juri/pos.html" class="sidebar-link">Daftar Pos Saya</a>
-        <a href="juri/riwayat.html" class="sidebar-link active">Riwayat Penilaian</a>
-      </nav>
-      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600" onclick="toggleTheme()">
-          <span id="themeIcon"></span>
-        </button>
-        <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
-      </div>
-    </aside>
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
+      <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+      <a href="juri/pos.html" class="sidebar-link">Daftar Pos Saya</a>
+      <a href="juri/riwayat.html" class="sidebar-link active">Riwayat Penilaian</a>
+    </nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+    </div>
+  </aside>
 
-    <!-- MAIN CONTENT -->
-    <main class="flex-1 p-4 md:p-8">
-      <div class="mb-6">
-        <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
-        <p class="text-slate-500">Daftar tim yang sudah Anda nilai. Anda dapat mencetak ulang struk di sini.</p>
-      </div>
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
+      <p class="text-slate-500 mt-1">Daftar tim yang sudah Anda nilai. Anda dapat mencetak ulang struk di sini.</p>
+    </div>
 
-      <div id="riwayatContainer" class="space-y-4">
-        <p class="text-slate-500 text-center py-10">Memuat riwayat...</p>
-      </div>
-    </main>
-  </div>
+    <div id="riwayatContainer" class="space-y-4">
+      <p class="text-slate-500 text-center py-10">Memuat riwayat...</p>
+    </div>
+  </main>
 
-  <!-- MODAL CETAK -->
+  <!-- MODAL CETAK ULANG -->
   <div id="modalCetak" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 text-center form-card">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 text-center form-card animate-fade-in">
       <h3 class="text-xl font-bold text-slate-800 mb-2">Cetak Ulang Struk</h3>
       <p class="text-slate-500 mb-6">Pilih metode cetak untuk tim ini.</p>
       
@@ -77,6 +85,7 @@
     </div>
   </div>
 
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -138,7 +147,7 @@
             const tgl = r.locked_at ? new Date(r.locked_at).toLocaleString('id-ID') : '-';
 
             html += `
-              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-5">
+              <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-5 animate-fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
                     <p class="text-xs font-bold text-red-600 mb-1">${pos.nama_pos} (${pos.kode_pos})</p>
@@ -174,7 +183,7 @@
       const tingkatData = tim?.tingkat || {};
 
       dataCetak = {
-        namaEvent: eventData.nama || 'JUMBARA PMR MULA KE-4 PMI PURBALINGGA', 
+        namaEvent: eventData.nama || 'JUMBARA PMI PURBALINGGA', 
         tahun: eventData.tahun || '2026',
         tingkat: tingkatData.nama || 'MULA', 
         namaPos: pos.nama_pos || '-',
