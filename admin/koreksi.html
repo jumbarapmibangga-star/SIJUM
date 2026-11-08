@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Koreksi Nilai — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -139,7 +137,6 @@
     </div>
   </div>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -240,7 +237,6 @@
           ? `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">Direvisi</span>` 
           : `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Final</span>`;
 
-        // Handle nilai null agar tidak NaN
         const nilaiTampil = d.nilai_final !== null ? parseFloat(d.nilai_final).toFixed(2) : '-';
         const nilaiKirim = d.nilai_final !== null ? d.nilai_final : 0;
 
@@ -304,8 +300,8 @@
         
         if (errLog) throw errLog;
 
-        // CATAT LOG AKTIVITAS KOREKSI
-        await catatLog('koreksi', 'update_nilai', `Mengoreksi nilai dari ${nilaiLama} menjadi ${nilaiBaru} dengan alasan: ${alasan}`, 'penilaian_pos');
+        // CATAT LOG AKTIVITAS KOREKSI (Kirim alasan ke parameter kelima)
+        await catatLog('koreksi', 'update_nilai', `Mengoreksi nilai dari ${nilaiLama} menjadi ${nilaiBaru}`, 'penilaian_pos', alasan);
 
         alert('Nilai berhasil dikoreksi!');
         document.getElementById('modalKoreksi').classList.add('hidden');
