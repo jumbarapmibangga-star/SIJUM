@@ -1,63 +1,318 @@
-// assets/js/auth.js
-
-async function loginUser(username, password) {
-  const email = username.includes('@') ? username : `${username}@jumbara.local`;
-  const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(error.message);
-
-  // Catat Log Login
-  await catatLog('auth', 'login', `User ${username} berhasil login`, 'login');
-
-  return data;
-}
-
-async function logoutUser() {
-  // Catat Log Logout (sebelum signOut)
-  const { data: { session } } = await window.supabaseClient.auth.getSession();
-  if (session) {
-    await catatLog('auth', 'logout', `User ${session.user.email} logout`, 'logout');
-  }
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Koreksi Nilai — Jumbara PMI</title>
   
-  await window.supabaseClient.auth.signOut();
-  window.location.href = 'login.html';
-}
-
-async function protectPage(allowedRoles = []) {
-  const { data: { session }, error } = await window.supabaseClient.auth.getSession();
+  <base href="../">
   
-  if (error || !session) {
-    window.location.href = 'login.html';
-    return null;
-  }
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  const role = session.user.app_metadata?.role || 'publik';
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
 
-  if (role === 'super_admin') return { user: session.user, role };
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    alert('Akses Ditolak: Anda tidak memiliki izin ke halaman ini.');
-    window.location.href = 'index.html';
-    return null;
-  }
-  return { user: session.user, role };
-}
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6">
+      <h2 class="text-xl md:text-2xl font-bold text-slate-800">Koreksi Nilai</h2>
+      <p class="text-sm md:text-base text-slate-500">Cari tim dan pos untuk memperbaiki nilai yang sudah di-submit.</p>
+    </div>
 
-// FUNGSI BARU: Mencatat Log ke Database
-async function catatLog(kategori, aksi, deskripsi, jenis) {
-  try {
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
-    if (!session) return;
+    <!-- Form Pencarian -->
+    <div class="form-card mb-6 animate-fade-in">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+        <div>
+          <label class="input-label">Pilih Pos</label>
+          <select id="filterPos" class="input-field">
+            <option value="">-- Semua Pos --</option>
+          </select>
+        </div>
+        <div>
+          <label class="input-label">Cari Kode/Nama Tim</label>
+          <input type="text" id="filterTim" placeholder="Contoh: MU-01" class="input-field">
+        </div>
+        <div>
+          <button onclick="loadDataNilai()" class="btn-primary w-full shadow-md">Cari Nilai</button>
+        </div>
+      </div>
+    </div>
 
-    await window.supabaseClient.from('audit_log').insert([{
-      user_id: session.user.id,
-      user_role: session.user.app_metadata?.role || 'publik',
-      username: session.user.email,
-      kategori: kategori,
-      aksi: aksi,
-      entitas: jenis,
-      data_baru: { deskripsi: deskripsi }
-    }]);
-  } catch (err) {
-    console.warn('Gagal mencatat log:', err.message);
-  }
-}
+    <!-- Tabel Hasil Pencarian -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full">
+        <thead>
+          <tr>
+            <th>Kode Tim</th>
+            <th>Nama Tim</th>
+            <th>Pos</th>
+            <th>Nilai Akhir</th>
+            <th>Status</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="nilaiTableBody">
+          <tr><td colspan="6" class="p-8 text-center text-slate-500">Gunakan filter di atas untuk mencari data.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL KOREKSI -->
+  <div id="modalKoreksi" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 form-card animate-fade-in">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">Form Koreksi Nilai</h3>
+      <form id="koreksiForm" class="space-y-4">
+        <input type="hidden" id="koreksiId" value="">
+        
+        <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 text-sm mb-4">
+          <p>Tim: <span id="infoTim" class="font-bold"></span></p>
+          <p>Pos: <span id="infoPos" class="font-bold"></span></p>
+          <p>Nilai Lama: <span id="infoNilaiLama" class="font-bold text-red-600"></span></p>
+        </div>
+
+        <div>
+          <label class="input-label">Nilai Baru</label>
+          <input type="number" id="nilaiBaru" step="0.01" required class="input-field">
+        </div>
+        <div>
+          <label class="input-label">Alasan Koreksi (Wajib)</label>
+          <textarea id="alasanKoreksi" required rows="3" class="input-field" placeholder="Contoh: Salah input nilai rubrik no 2"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="btnBatalKoreksi" class="btn-secondary">Batal</button>
+          <button type="submit" id="btnSimpanKoreksi" class="btn-primary">Simpan Koreksi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    let currentUser = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['koordinator', 'super_admin']);
+      if (!auth) return;
+      currentUser = auth.user;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
+        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
+        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link active">Koreksi Nilai</a>
+      `;
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      const { data: posList } = await window.supabaseClient.from('pos').select('*').is('induk_pos_id', null).order('urutan');
+      const selectPos = document.getElementById('filterPos');
+      if (posList) {
+        posList.forEach(p => {
+          selectPos.innerHTML += `<option value="${p.id}">${p.kode_pos} - ${p.nama_pos}</option>`;
+        });
+      }
+
+      document.getElementById('btnBatalKoreksi').addEventListener('click', () => {
+        document.getElementById('modalKoreksi').classList.add('hidden');
+      });
+    });
+
+    async function loadDataNilai() {
+      const posId = document.getElementById('filterPos').value;
+      const keyword = document.getElementById('filterTim').value.toLowerCase();
+      const tbody = document.getElementById('nilaiTableBody');
+      
+      tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Mencari data...</td></tr>`;
+
+      let query = window.supabaseClient
+        .from('penilaian_pos')
+        .select(`
+          id, nilai_final, status,
+          tim (kode_kontingen, nama_tim),
+          pos (kode_pos, nama_pos)
+        `)
+        .in('status', ['final', 'direvisi']);
+
+      if (posId) query = query.eq('pos_id', posId);
+
+      const { data, error } = await query;
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Gagal: ${error.message}</td></tr>`;
+        return;
+      }
+
+      const filtered = data.filter(d => 
+        d.tim && (
+          d.tim.kode_kontingen.toLowerCase().includes(keyword) || 
+          d.tim.nama_tim.toLowerCase().includes(keyword)
+        )
+      );
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Data tidak ditemukan.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach((d) => {
+        const statusBadge = d.status === 'direvisi' 
+          ? `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">Direvisi</span>` 
+          : `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Final</span>`;
+
+        const nilaiTampil = d.nilai_final !== null ? parseFloat(d.nilai_final).toFixed(2) : '-';
+        const nilaiKirim = d.nilai_final !== null ? d.nilai_final : 0;
+
+        html += `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="font-mono font-bold text-red-600">${d.tim.kode_kontingen}</td>
+            <td class="font-medium text-slate-800">${d.tim.nama_tim}</td>
+            <td class="text-slate-600">${d.pos.kode_pos}</td>
+            <td class="font-bold text-slate-800">${nilaiTampil}</td>
+            <td>${statusBadge}</td>
+            <td class="text-right">
+              <button onclick="bukaModalKoreksi('${d.id}', '${d.tim.kode_kontingen} - ${d.tim.nama_tim}', '${d.pos.nama_pos}', ${nilaiKirim})" class="text-blue-600 hover:underline font-semibold text-sm">Koreksi</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    window.bukaModalKoreksi = (id, infoTim, infoPos, nilaiLama) => {
+      document.getElementById('koreksiId').value = id;
+      document.getElementById('infoTim').textContent = infoTim;
+      document.getElementById('infoPos').textContent = infoPos;
+      document.getElementById('infoNilaiLama').textContent = nilaiLama;
+      document.getElementById('nilaiBaru').value = nilaiLama;
+      document.getElementById('alasanKoreksi').value = '';
+      
+      document.getElementById('modalKoreksi').classList.remove('hidden');
+    };
+
+    document.getElementById('koreksiForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSimpanKoreksi');
+      btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+      const id = document.getElementById('koreksiId').value;
+      const nilaiBaru = parseFloat(document.getElementById('nilaiBaru').value);
+      const alasan = document.getElementById('alasanKoreksi').value;
+      const nilaiLama = parseFloat(document.getElementById('infoNilaiLama').textContent);
+
+      try {
+        const { error: errUpdate } = await window.supabaseClient
+          .from('penilaian_pos')
+          .update({ nilai_final: nilaiBaru, status: 'direvisi' })
+          .eq('id', id);
+        
+        if (errUpdate) throw errUpdate;
+
+        const { error: errLog } = await window.supabaseClient
+          .from('koreksi_nilai')
+          .insert([{
+            penilaian_pos_id: id,
+            jenis_koreksi: 'koreksi_nilai',
+            level_koreksi: 'nilai_final',
+            referensi_id: id,
+            data_lama: { nilai: nilaiLama },
+            data_baru: { nilai: nilaiBaru },
+            alasan: alasan,
+            oleh: currentUser.id
+          }]);
+        
+        if (errLog) throw errLog;
+
+        // CATAT LOG AKTIVITAS KOREKSI (Kirim alasan ke parameter kelima)
+        await catatLog('koreksi', 'update_nilai', `Mengoreksi nilai dari ${nilaiLama} menjadi ${nilaiBaru}`, 'penilaian_pos', alasan);
+
+        alert('Nilai berhasil dikoreksi!');
+        document.getElementById('modalKoreksi').classList.add('hidden');
+        loadDataNilai();
+
+      } catch (err) {
+        alert('Gagal koreksi: ' + err.message);
+      } finally {
+        btn.innerHTML = 'Simpan Koreksi'; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
