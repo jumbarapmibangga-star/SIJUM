@@ -5,36 +5,29 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Jumbara PMI Purbalingga</title>
   
-  <!-- FAVICON -->
-  <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+  <!-- TRIK PATH OTOMATIS: Cukup ubah href di sini jika pindah hosting -->
+  <base href="./">
   
-  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#B91C1C">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col">
 
-  <!-- Header -->
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
-      
-      <!-- Bagian Logo & Teks (Sejajar) -->
       <div class="flex items-center gap-2 md:gap-3">
-        <!-- Logo Dikecilkan -->
-        <img src="/assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
+        <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
         <h1 class="text-lg md:text-xl font-bold tracking-wide">Jumbara PMI</h1>
       </div>
-
-      <!-- Tombol Login -->
-      <a href="/login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
+      <a href="login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
         Login
       </a>
-      
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="flex-1 flex flex-col items-center justify-center text-center p-6">
     <div class="max-w-3xl animate-fade-in">
       <h2 class="text-3xl md:text-5xl font-extrabold text-red-800 mb-4 leading-tight">
@@ -45,28 +38,28 @@
       </p>
 
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/dashboard-aula.html" class="btn-primary text-lg px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+        <a href="dashboard-aula.html" class="btn-primary text-lg px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
           Lihat Papan Skor (Aula)
         </a>
-        <a href="/login.html" class="btn-secondary text-lg px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+        <a href="login.html" class="btn-secondary text-lg px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
           Masuk Portal
         </a>
       </div>
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="bg-white border-t p-4 text-center text-sm text-slate-500">
     &copy; 2026 PMI Kabupaten Purbalingga. Hak Cipta Dilindungi.
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/supabase-client.js"></script>
-  <script src="/assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/theme.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW failed', err));
+        // Gunakan path relatif untuk SW
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
       });
     }
   </script>
