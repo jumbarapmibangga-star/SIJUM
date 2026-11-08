@@ -1,5 +1,5 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v7.0)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v8.0)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -174,23 +174,36 @@ body {
   background-color: #E2E8F0;
 }
 
-/* --- 8. Logo PMI Horizontal (Gaya Situs Resmi) --- */
-.logo-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
+/* --- 8. Logo PMI (Full & Crop) --- */
 
-.img-logo-pmi {
-  height: 40px; /* Ukuran logo di HP */
+/* Logo Full (Untuk Login & Index) */
+.img-logo-full {
+  height: 60px;
   width: auto;
   object-fit: contain;
 }
-
 @media (min-width: 768px) {
-  .img-logo-pmi {
-    height: 50px; /* Ukuran logo di Desktop */
-  }
+  .img-logo-full { height: 80px; }
+}
+
+/* Logo Crop (Hanya Kelopak, Untuk Sidebar & Header) */
+.logo-crop-container {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (min-width: 768px) {
+  .logo-crop-container { width: 50px; height: 50px; }
+}
+.logo-crop-container img {
+  height: 100%;
+  width: auto;
+  max-width: none;
+  transform: translateX(25%); /* Menggeser gambar agar tulisan hilang */
 }
 
 /* =========================================================
