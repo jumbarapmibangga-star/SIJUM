@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kelola User — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -70,6 +68,11 @@
         <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola User</h2>
         <p class="text-sm md:text-base text-slate-500">Daftar semua akun yang terdaftar di sistem.</p>
       </div>
+      <!-- Tombol Aksi Cepat ke Supabase -->
+      <a href="https://supabase.com/dashboard/project/_/auth/users" target="_blank" class="btn-primary w-full md:w-auto text-center shadow-md flex justify-center items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+        Buka Supabase Auth
+      </a>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
@@ -89,19 +92,37 @@
       </table>
     </div>
     
-    <div class="mt-4 bg-blue-50 border border-blue-200 p-4 rounded-xl text-sm text-blue-800">
-      <p><strong>Info:</strong> Untuk membuat akun baru atau mereset password, silakan masuk ke <strong>Supabase Dashboard -> Authentication -> Users</strong>.</p>
+    <!-- PANDUAN CARA MENGELOLA USER -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 p-5 rounded-xl text-sm text-blue-900 space-y-3">
+      <h3 class="font-bold text-base mb-2">📖 Panduan Mengelola User (Via Supabase)</h3>
+      
+      <div>
+        <p class="font-semibold">1. Menambah User Baru (Juri/Panitia/Kontingen)</p>
+        <p>Buka Supabase -> Authentication -> Users -> Klik <b>"Add User"</b> -> Isi Email (contoh: <i>juri2@jumbara.local</i>) dan Password -> Centang <b>"Auto Confirm User"</b>.</p>
+      </div>
+
+      <div>
+        <p class="font-semibold">2. Mengubah Role User</p>
+        <p>Buka Supabase -> SQL Editor -> Jalankan perintah:</p>
+        <code class="block bg-white p-2 rounded mt-1 border border-blue-200 text-xs">
+          update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role": "juri"}'::jsonb where email = 'juri2@jumbara.local';
+        </code>
+        <p class="text-xs mt-1 text-blue-700">*(Ganti "juri" dengan role yang diinginkan: super_admin, koordinator, admin_event, juri, kontingen).*</p>
+      </div>
+
+      <div>
+        <p class="font-semibold">3. Mereset Password User</p>
+        <p>Buka Supabase -> Authentication -> Users -> Cari user -> Klik titik tiga (<b>...</b>) -> Pilih <b>"Reset Password"</b> atau <b>"Send Recovery"</b>.</p>
+      </div>
     </div>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Proteksi: Hanya Super Admin yang boleh masuk
       const auth = await protectPage(['super_admin']);
       if (!auth) return;
 
@@ -126,15 +147,11 @@
         <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
         <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
         <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
+        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>
+        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link active">Kelola User</a>
       `;
-      if (['koordinator', 'super_admin'].includes(auth.role)) {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
-      }
-      if (auth.role === 'super_admin') {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link active">Kelola User</a>`;
-      }
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
 
@@ -143,11 +160,8 @@
 
     async function loadUsers() {
       const tbody = document.getElementById('userTableBody');
-      
       try {
-        // Ambil data dari fungsi RPC yang akan kita buat (karena auth.users tidak bisa di-query langsung)
         const { data, error } = await window.supabaseClient.rpc('get_all_users');
-        
         if (error) throw error;
 
         if (!data || data.length === 0) {
@@ -157,7 +171,6 @@
 
         let html = '';
         data.forEach((u, index) => {
-          // Tentukan badge warna berdasarkan role
           let roleBadge = '';
           const role = u.role || 'publik';
           if (role === 'super_admin') roleBadge = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Super Admin</span>`;
@@ -176,7 +189,7 @@
               <td>${roleBadge}</td>
               <td class="text-slate-600 text-sm">${lastLogin}</td>
               <td class="text-right">
-                <span class="text-slate-400 italic text-xs">Kelola via Supabase</span>
+                <a href="https://supabase.com/dashboard/project/_/auth/users" target="_blank" class="text-blue-600 hover:underline font-semibold text-sm">Kelola</a>
               </td>
             </tr>
           `;
@@ -184,7 +197,7 @@
         tbody.innerHTML = html;
 
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Gagal memuat data: ${err.message}. <br> Pastikan fungsi RPC <b>get_all_users</b> sudah dibuat di Supabase.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Gagal memuat data: ${err.message}</td></tr>`;
       }
     }
   </script>
