@@ -5,17 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Login — Jumbara PMI</title>
   
+  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
+  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="manifest" href="manifest.json">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 bg-slate-50">
+<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
 
+  <!-- KARTU LOGIN -->
   <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in">
     
+    <!-- Header Card (Logo & Judul) -->
     <div class="text-center mb-8">
       <div class="flex justify-center mb-3">
         <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-12 md:h-14 w-auto object-contain animate-heartbeat">
@@ -24,6 +28,7 @@
       <p class="text-sm text-slate-500">Kabupaten Purbalingga</p>
     </div>
 
+    <!-- Form Login -->
     <form id="loginForm" class="space-y-5">
       <div>
         <label for="username" class="input-label">Username / Email</label>
@@ -34,18 +39,22 @@
         <input type="password" id="password" required placeholder="••••••••" class="input-field">
       </div>
 
+      <!-- Pesan Error -->
       <div id="errorMsg" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200"></div>
 
+      <!-- Tombol Submit -->
       <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
         Masuk
       </button>
     </form>
 
+    <!-- Link Kembali -->
     <div class="mt-6 text-center">
-      <a href="index.html" class="text-sm text-slate-500 hover:text-red-600">&larr; Kembali ke Beranda</a>
+      <a href="index.html" class="text-sm text-slate-500 hover:text-red-600 transition-colors">&larr; Kembali ke Beranda</a>
     </div>
   </div>
 
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -58,22 +67,31 @@
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
-      btn.innerHTML = 'Memproses...'; btn.disabled = true; errDiv.classList.add('hidden');
+      btn.innerHTML = 'Memproses...'; 
+      btn.disabled = true; 
+      errDiv.classList.add('hidden');
 
       try {
         await loginUser(username, password);
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         const role = session.user.app_metadata?.role;
 
-        // Gunakan variabel BASE_URL
-        if (['super_admin', 'koordinator', 'admin_event'].includes(role)) window.location.href = BASE_URL + 'admin/dashboard.html';
-        else if (role === 'juri') window.location.href = BASE_URL + 'juri/pos.html';
-        else if (role === 'kontingen') window.location.href = BASE_URL + 'portal-kontingen.html';
-        else window.location.href = BASE_URL + 'index.html';
+        // ATURAN 6: REDIRECT PAKAI BASE_URL / PATH RELATIF
+        if (['super_admin', 'koordinator', 'admin_event'].includes(role)) {
+          window.location.href = 'admin/dashboard.html';
+        } else if (role === 'juri') {
+          window.location.href = 'juri/pos.html';
+        } else if (role === 'kontingen') {
+          window.location.href = 'portal-kontingen.html';
+        } else {
+          window.location.href = 'index.html';
+        }
 
       } catch (error) {
-        errDiv.textContent = error.message; errDiv.classList.remove('hidden');
-        btn.innerHTML = 'Masuk'; btn.disabled = false;
+        errDiv.textContent = error.message; 
+        errDiv.classList.remove('hidden');
+        btn.innerHTML = 'Masuk'; 
+        btn.disabled = false;
       }
     });
   </script>
