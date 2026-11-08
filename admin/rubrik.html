@@ -4,61 +4,104 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Atur Rubrik — Jumbara PMI</title>
+  
+  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
+  <base href="../">
+  
+  <!-- ATURAN 4: FAVICON & CSS -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <div class="main-wrapper">
-    <aside class="sidebar-admin">
-      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-        <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-        <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
-          <span id="themeIcon"></span>
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-      </div>
-    </aside>
-
-    <main class="flex-1 p-4 md:p-8">
-      <div class="mb-6">
-        <a href="/admin/pos.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Pos</a>
-        <h2 class="text-xl md:text-2xl font-bold text-slate-800" id="posTitle">Memuat...</h2>
-        <p class="text-sm md:text-base text-slate-500">Atur soal dan bobot komponen untuk pos ini.</p>
-      </div>
-
-      <div id="komponenPanel" class="hidden form-card mb-6">
-        <h3 class="text-lg font-semibold text-slate-800 mb-4">Pengaturan Komponen (Metode Weighted)</h3>
-        <form id="komponenForm" class="flex flex-wrap gap-4 items-end">
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
           <div>
-            <label class="input-label">Nama Komponen</label>
-            <input type="text" id="namaKomponen" required placeholder="Contoh: Teori" class="input-field w-48">
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
           </div>
-          <div>
-            <label class="input-label">Bobot (Desimal)</label>
-            <input type="number" id="bobotKomponen" step="0.01" min="0" max="1" required placeholder="Contoh: 0.3" class="input-field w-32">
-          </div>
-          <button type="submit" class="btn-primary bg-slate-800 hover:bg-slate-900">Tambah Komponen</button>
-        </form>
-        <div id="komponenList" class="mt-4 flex gap-2 flex-wrap"></div>
-      </div>
-
-      <div class="form-card">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold text-slate-800">Daftar Soal (Rubrik)</h3>
-          <button id="btnTambahRubrik" class="btn-primary text-sm py-1.5 px-3">+ Tambah Soal</button>
         </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
 
-        <table class="table-custom">
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6">
+      <a href="admin/pos.html" class="text-sm text-red-600 hover:underline font-semibold mb-2 inline-block">&larr; Kembali ke Daftar Pos</a>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-800" id="posTitle">Memuat...</h2>
+      <p class="text-sm md:text-base text-slate-500">Atur soal dan bobot komponen untuk pos ini.</p>
+    </div>
+
+    <!-- Panel Komponen (Hanya muncul jika Weighted) -->
+    <div id="komponenPanel" class="hidden form-card mb-6 animate-fade-in">
+      <h3 class="text-lg font-semibold text-slate-800 mb-4">Pengaturan Komponen (Metode Weighted)</h3>
+      <form id="komponenForm" class="flex flex-col md:flex-row flex-wrap gap-4 items-end">
+        <div class="w-full md:w-auto">
+          <label class="input-label">Nama Komponen</label>
+          <input type="text" id="namaKomponen" required placeholder="Contoh: Teori" class="input-field md:w-48">
+        </div>
+        <div class="w-full md:w-auto">
+          <label class="input-label">Bobot (Desimal)</label>
+          <input type="number" id="bobotKomponen" step="0.01" min="0" max="1" required placeholder="Contoh: 0.3" class="input-field md:w-32">
+        </div>
+        <button type="submit" class="btn-primary bg-slate-800 hover:bg-slate-900 w-full md:w-auto">Tambah Komponen</button>
+      </form>
+      <div id="komponenList" class="mt-4 flex gap-2 flex-wrap"></div>
+    </div>
+
+    <!-- Daftar Rubrik -->
+    <div class="form-card animate-fade-in delay-1">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+        <h3 class="text-lg font-semibold text-slate-800">Daftar Soal (Rubrik)</h3>
+        <button id="btnTambahRubrik" class="btn-primary text-sm py-1.5 px-3 w-full md:w-auto">+ Tambah Soal</button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="table-custom min-w-full">
           <thead>
             <tr>
               <th>Urutan</th>
               <th>Nama Soal / Item</th>
-              <th>Skor Maksimal</th>
+              <th>Skor Maks</th>
               <th>Komponen</th>
               <th class="text-right">Aksi</th>
             </tr>
@@ -68,11 +111,12 @@
           </tbody>
         </table>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 
+  <!-- MODAL TAMBAH SOAL -->
   <div id="modalRubrik" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 form-card">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 form-card animate-fade-in">
       <h3 class="text-lg font-bold text-slate-800 mb-4" id="modalTitle">Tambah Soal</h3>
       <form id="rubrikForm" class="space-y-4">
         <input type="hidden" id="rubrikId" value="">
@@ -88,18 +132,19 @@
           <label class="input-label">Masuk Komponen</label>
           <select id="komponenSelect" class="input-field"></select>
         </div>
-        <div class="flex justify-end gap-3 pt-4">
-          <button type="button" id="btnBatalModal" class="btn-secondary">Batal</button>
-          <button type="submit" class="btn-primary">Simpan</button>
+        <div class="flex flex-col md:flex-row justify-end gap-3 pt-4">
+          <button type="button" id="btnBatalModal" class="btn-secondary text-center w-full md:w-auto">Batal</button>
+          <button type="submit" class="btn-primary w-full md:w-auto">Simpan</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/supabase-client.js"></script>
-  <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
   <script>
     let currentPosId = null;
     let currentMetode = 'sum';
@@ -107,22 +152,45 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
-      
-      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
-      document.getElementById('navMenu').innerHTML = `
-        <a href="/admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="/admin/pos.html" class="sidebar-link active">Kelola Pos & Rubrik</a>
-        <a href="/admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="/admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-      `;
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link active">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      // Ambil Pos ID dari URL
       const urlParams = new URLSearchParams(window.location.search);
       currentPosId = urlParams.get('pos_id');
-      if (!currentPosId) { window.location.href = '/admin/pos.html'; return; }
+      if (!currentPosId) { window.location.href = 'admin/pos.html'; return; }
 
       const { data: pos } = await window.supabaseClient.from('pos').select('*').eq('id', currentPosId).single();
-      if (!pos) { alert('Pos tidak ditemukan'); window.location.href = '/admin/pos.html'; return; }
+      if (!pos) { alert('Pos tidak ditemukan'); window.location.href = 'admin/pos.html'; return; }
 
       currentMetode = pos.metode_hitung;
       document.getElementById('posTitle').textContent = `${pos.kode_pos} — ${pos.nama_pos}`;
@@ -135,6 +203,7 @@
       loadKomponen();
       loadRubrik();
 
+      // Submit Komponen (Weighted)
       document.getElementById('komponenForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const nama = document.getElementById('namaKomponen').value;
@@ -150,6 +219,7 @@
         }
       });
 
+      // Buka Modal Tambah Soal
       document.getElementById('btnTambahRubrik').addEventListener('click', () => {
         document.getElementById('modalTitle').textContent = 'Tambah Soal';
         document.getElementById('rubrikId').value = '';
@@ -158,10 +228,12 @@
         document.getElementById('modalRubrik').classList.remove('hidden');
       });
 
+      // Tutup Modal
       document.getElementById('btnBatalModal').addEventListener('click', () => {
         document.getElementById('modalRubrik').classList.add('hidden');
       });
 
+      // Submit Rubrik
       document.getElementById('rubrikForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('rubrikId').value;
@@ -212,7 +284,7 @@
         let html = '';
         rubrikList.forEach((r, i) => {
           html += `
-            <tr>
+            <tr class="hover:bg-slate-50 transition-colors">
               <td class="text-slate-600">${i + 1}</td>
               <td class="font-medium text-slate-800">${r.nama_item}</td>
               <td class="text-slate-600">${r.skor_maksimal}</td>
