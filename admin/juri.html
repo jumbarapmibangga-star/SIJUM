@@ -4,76 +4,148 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Kelola Juri — Jumbara PMI</title>
+  
+  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
+  <base href="../">
+  
+  <!-- ATURAN 4: FAVICON & CSS -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <div class="main-wrapper">
-    <aside class="sidebar-admin">
-      <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-        <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-        <p id="userRoleDisplay" class="text-xs text-red-100">Panitia</p>
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-      <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-        <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 transition-colors" onclick="toggleTheme()">
-          <span id="themeIcon"></span>
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-      </div>
-    </aside>
-
-    <main class="flex-1 p-4 md:p-8">
-      <div class="flex justify-between items-center mb-6">
-        <div>
-          <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola Juri</h2>
-          <p class="text-sm md:text-base text-slate-500">Daftar juri dan penugasan pos.</p>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
         </div>
-        <a href="/admin/juri-form.html" class="btn-primary">+ Tambah Juri</a>
       </div>
-
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table class="table-custom">
-          <thead>
-            <tr>
-              <th>No</th>
-              <th>Nama Juri</th>
-              <th>Username</th>
-              <th>Pos yang Ditugaskan</th>
-              <th>Status</th>
-              <th class="text-right">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="juriTableBody">
-            <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data juri...</td></tr>
-          </tbody>
-        </table>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
       </div>
-    </main>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
   </div>
 
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola Juri</h2>
+        <p class="text-sm md:text-base text-slate-500">Daftar juri dan penugasan pos.</p>
+      </div>
+      <a href="admin/juri-form.html" class="btn-primary w-full md:w-auto text-center shadow-md">+ Tambah Juri</a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Juri</th>
+            <th>Username</th>
+            <th>Pos yang Ditugaskan</th>
+            <th>Status</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="juriTableBody">
+          <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data juri...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/supabase-client.js"></script>
-  <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
-      
-      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
-      document.getElementById('navMenu').innerHTML = `
-        <a href="/admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="/admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="/admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="/admin/juri.html" class="sidebar-link active">Penugasan Juri</a>
-      `;
+
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
 
-      const { data: juriList, error } = await window.supabaseClient.from('juri').select(`*, juri_pos ( pos (kode_pos) )`).order('nama', { ascending: true });
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link active">Penugasan Juri</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      // Ambil data juri beserta pos yang ditugaskan
+      const { data: juriList, error } = await window.supabaseClient
+        .from('juri')
+        .select(`
+          *,
+          juri_pos (
+            pos (kode_pos, nama_pos)
+          )
+        `)
+        .order('nama', { ascending: true });
+
       const tbody = document.getElementById('juriTableBody');
-
+      
       if (error) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
         return;
@@ -84,16 +156,22 @@
       } else {
         let html = '';
         juriList.forEach((juri, index) => {
+          // Gabungkan nama pos jika juri ditugaskan di lebih dari 1 pos
           const posList = juri.juri_pos.map(jp => jp.pos ? jp.pos.kode_pos : '').filter(Boolean).join(', ');
+          
           html += `
-            <tr>
+            <tr class="hover:bg-slate-50 transition-colors">
               <td class="text-slate-600">${index + 1}</td>
               <td class="font-semibold text-slate-800">${juri.nama}</td>
               <td class="text-slate-600 font-mono">${juri.username}</td>
               <td class="text-slate-600">${posList || '<span class="text-red-400 italic">Belum ditugaskan</span>'}</td>
-              <td><span class="${juri.is_aktif ? 'badge-active' : 'badge-locked'}">${juri.is_aktif ? 'Aktif' : 'Non-aktif'}</span></td>
+              <td>
+                <span class="${juri.is_aktif ? 'badge-active' : 'badge-locked'}">
+                  ${juri.is_aktif ? 'Aktif' : 'Non-aktif'}
+                </span>
+              </td>
               <td class="text-right">
-                <a href="/admin/juri-form.html?id=${juri.id}" class="text-blue-600 hover:underline font-semibold">Edit</a>
+                <a href="admin/juri-form.html?id=${juri.id}" class="text-blue-600 hover:underline font-semibold text-sm">Edit</a>
               </td>
             </tr>
           `;
