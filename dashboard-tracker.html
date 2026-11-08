@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Tracker Panitia — Jumbara PMI</title>
+  
+  <!-- ATURAN 1: BASE URL (ROOT) -->
+  <base href="./">
+  
+  <!-- ATURAN 4: FAVICON & CSS -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+    
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Tracker Penilaian</h2>
+        <p class="text-slate-500 mt-1">Pantau status penilaian per tim dan per juri secara real-time.</p>
+      </div>
+      <div class="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+        <select id="filterTingkat" class="input-field md:w-48" onchange="loadTracker()">
+          <option value="">Semua Tingkat</option>
+        </select>
+        <button onclick="loadTracker()" class="btn-primary w-full md:w-auto shadow-md">Refresh Data</button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full text-sm">
+        <thead>
+          <tr>
+            <th class="text-left">Kode Tim</th>
+            <th class="text-left">Nama Tim</th>
+            <!-- Header Pos akan diisi JS -->
+          </tr>
+        </thead>
+        <tbody id="trackerBody">
+          <tr><td colspan="10" class="p-8 text-center text-slate-500">Memuat data tracker...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap gap-4 text-sm">
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-green-500"></span> Selesai (Final)</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-yellow-400"></span> Proses (Menunggu Juri)</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded bg-slate-200"></span> Belum Dinilai</div>
+    </div>
+
+  </main>
+
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    let allPos = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+
+      // Setup Logout & Menu
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+      
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      // Render Menu Sidebar
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
+        <a href="dashboard-tracker.html" class="sidebar-link active">📡 Tracker Penilaian</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      // Load Master Tingkat
+      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      const selectTingkat = document.getElementById('filterTingkat');
+      if (tingkatData) {
+        tingkatData.forEach(t => {
+          selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+        });
+      }
+
+      // Load Master Pos (Hanya Pos Induk)
+      const { data: posData } = await window.supabaseClient
+        .from('pos')
+        .select('*')
+        .is('induk_pos_id', null)
+        .order('urutan', { ascending: true });
+      
+      allPos = posData || [];
+
+      // Render Header Tabel
+      const theadTr = document.querySelector('thead tr');
+      theadTr.innerHTML = '<th class="text-left">Kode Tim</th><th class="text-left">Nama Tim</th>';
+      allPos.forEach(p => {
+        theadTr.innerHTML += `<th class="text-center">${p.kode_pos}</th>`;
+      });
+
+      loadTracker();
+    });
+
+    async function loadTracker() {
+      const filterTingkatId = document.getElementById('filterTingkat').value;
+      const tbody = document.getElementById('trackerBody');
+      tbody.innerHTML = `<tr><td colspan="${allPos.length + 2}" class="p-8 text-center text-slate-500">Memuat data...</td></tr>`;
+
+      // Ambil Data Tim
+      let queryTim = window.supabaseClient.from('tim').select('*').order('kode_kontingen', { ascending: true });
+      if (filterTingkatId) queryTim = queryTim.eq('tingkat_id', filterTingkatId);
+      
+      const { data: timData, error: errTim } = await queryTim;
+      if (errTim) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 2}" class="p-8 text-center text-red-500">Gagal memuat tim: ${errTim.message}</td></tr>`;
+        return;
+      }
+
+      // Ambil Data Penilaian (Semua status)
+      const { data: nilaiData, error: errNilai } = await window.supabaseClient
+        .from('penilaian_pos')
+        .select('*');
+
+      if (errNilai) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 2}" class="p-8 text-center text-red-500">Gagal memuat nilai: ${errNilai.message}</td></tr>`;
+        return;
+      }
+
+      // Render Tabel
+      if (timData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 2}" class="p-8 text-center text-slate-500">Belum ada tim di tingkat ini.</td></tr>`;
+      } else {
+        let html = '';
+        timData.forEach(tim => {
+          html += `<tr class="hover:bg-slate-50 transition-colors">`;
+          html += `<td class="text-left font-mono font-bold text-red-600">${tim.kode_kontingen}</td>`;
+          html += `<td class="text-left font-medium text-slate-800">${tim.nama_tim}</td>`;
+          
+          allPos.forEach(pos => {
+            // Cari status penilaian untuk tim dan pos ini
+            const nilai = nilaiData.find(n => n.tim_id === tim.id && n.pos_id === pos.id);
+            
+            if (nilai) {
+              if (nilai.status === 'final' || nilai.status === 'direvisi') {
+                // Selesai (Hijau)
+                html += `<td class="text-center"><span class="inline-block w-6 h-6 rounded bg-green-500" title="Final"></span></td>`;
+              } else {
+                // Proses (Kuning)
+                html += `<td class="text-center"><span class="inline-block w-6 h-6 rounded bg-yellow-400" title="Menunggu Juri: ${nilai.jumlah_juri_submit}/${nilai.jumlah_juri_wajib}"></span></td>`;
+              }
+            } else {
+              // Belum Dinilai (Abu-abu)
+              html += `<td class="text-center"><span class="inline-block w-6 h-6 rounded bg-slate-200" title="Belum Dinilai"></span></td>`;
+            }
+          });
+
+          html += `</tr>`;
+        });
+        tbody.innerHTML = html;
+      }
+    }
+  </script>
+</body>
+</html>
