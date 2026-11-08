@@ -4,28 +4,37 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Riwayat Penilaian — Jumbara PMI</title>
+  
+  <!-- BASE PATH: Mundur satu folder karena file ini ada di dalam folder 'juri' -->
+  <base href="../">
+  
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="bg-slate-50 min-h-screen flex flex-col font-sans">
 
-  <div class="md:hidden flex justify-between items-center p-4 text-white shadow-md sticky top-0 z-40" style="background-color: #B71C1C;">
-    <div>
-      <h1 class="text-xl font-bold">Riwayat</h1>
-      <p id="userNameDisplayMobile" class="text-xs text-red-100">Juri PMI</p>
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
+      <div>
+        <h1 class="text-xl font-bold text-red-700">Riwayat</h1>
+        <p id="userNameDisplayMobile" class="text-xs text-slate-500">Juri PMI</p>
+      </div>
+      <a href="juri/pos.html" class="bg-red-50 text-red-700 px-3 py-1.5 rounded text-sm font-semibold border border-red-200">Kembali</a>
     </div>
-    <a href="/juri/pos.html" class="bg-white text-red-700 px-3 py-1.5 rounded text-sm font-semibold">Kembali</a>
   </div>
 
   <div class="flex flex-1">
-    <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm">
+    <!-- SIDEBAR DESKTOP -->
+    <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
       <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
         <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
         <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
       </div>
       <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <a href="/juri/pos.html" class="sidebar-link">Daftar Pos Saya</a>
-        <a href="/juri/riwayat.html" class="sidebar-link active">Riwayat Penilaian</a>
+        <a href="juri/pos.html" class="sidebar-link">Daftar Pos Saya</a>
+        <a href="juri/riwayat.html" class="sidebar-link active">Riwayat Penilaian</a>
       </nav>
       <div class="p-4 border-t border-slate-200 flex justify-between items-center">
         <button id="btnThemeToggle" class="p-2 rounded-lg bg-slate-100 text-slate-600" onclick="toggleTheme()">
@@ -35,6 +44,7 @@
       </div>
     </aside>
 
+    <!-- MAIN CONTENT -->
     <main class="flex-1 p-4 md:p-8">
       <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">Riwayat Penilaian</h2>
@@ -68,9 +78,9 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/supabase-client.js"></script>
-  <script src="/assets/js/auth.js"></script>
-  <script src="/assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
   <script>
     let bluetoothDevice = null;
     let bluetoothCharacteristic = null;
@@ -95,9 +105,7 @@
       const { data: riwayat, error } = await window.supabaseClient
         .from('penilaian_juri')
         .select(`
-          id,
-          nilai_juri,
-          locked_at,
+          id, nilai_juri, locked_at,
           penilaian_pos (
             id,
             tim (nama_tim, kode_kontingen, tingkat (nama), event (nama, tahun)),
@@ -132,14 +140,12 @@
             html += `
               <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-5">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  
                   <div>
                     <p class="text-xs font-bold text-red-600 mb-1">${pos.nama_pos} (${pos.kode_pos})</p>
                     <h3 class="font-bold text-lg text-slate-800">${tim.nama_tim}</h3>
                     <p class="font-mono text-sm text-slate-500">${tim.kode_kontingen}</p>
                     <p class="text-xs text-slate-400 mt-1">Dinilai: ${tgl}</p>
                   </div>
-                  
                   <div class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
                     <div class="text-left md:text-right">
                       <p class="text-xs text-slate-400 font-semibold uppercase">Nilai Akhir</p>
@@ -149,7 +155,6 @@
                       🖨️ Cetak Ulang
                     </button>
                   </div>
-
                 </div>
               </div>
             `;
@@ -159,7 +164,6 @@
       }
     });
 
-    // FUNGSI MODAL DENGAN PENGAMAN (ANTI ERROR NULL)
     window.bukaModalCetak = (index) => {
       const r = riwayatData[index];
       const penPos = r.penilaian_pos;
