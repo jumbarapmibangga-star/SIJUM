@@ -176,26 +176,20 @@ body {
 
 /* --- 8. Logo PMI Crop (Hanya Bunga) --- */
 .logo-crop-container {
+  /* Ukuran kotak yang akan menampilkan logo */
   width: 40px;
   height: 40px;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-image: url('/assets/img/logo-pmi.png');
+  background-size: cover; /* Memastikan gambar menutupi kotak */
+  background-position: left center; /* Geser fokus ke kiri agar tulisan hilang */
+  background-repeat: no-repeat;
+  border-radius: 4px; /* Opsional: sedikit melengkung */
 }
 @media (min-width: 768px) {
   .logo-crop-container {
     width: 50px;
     height: 50px;
   }
-}
-
-.logo-crop-container img {
-  height: 100%;
-  width: auto;
-  max-width: none;
-  transform: translateX(25%);
 }
 
 /* =========================================================
