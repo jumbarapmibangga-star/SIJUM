@@ -1,5 +1,5 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v5.0)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v6.0)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -172,6 +172,18 @@ body {
 }
 .btn-theme-toggle:hover {
   background-color: #E2E8F0;
+}
+
+/* --- 8. Logo PMI (Gambar) --- */
+.img-logo-pmi {
+  height: 40px; /* Ukuran di HP */
+  width: auto;
+  object-fit: contain;
+}
+@media (min-width: 768px) {
+  .img-logo-pmi {
+    height: 55px; /* Ukuran di Desktop */
+  }
 }
 
 /* =========================================================
