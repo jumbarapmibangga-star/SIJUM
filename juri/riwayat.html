@@ -12,6 +12,8 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
+  <!-- Library QR Code -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body class="halaman-juri bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
@@ -183,6 +185,7 @@
       const tingkatData = tim?.tingkat || {};
 
       dataCetak = {
+        penilaianPosId: penPos?.id, // ID untuk QR
         namaEvent: eventData.nama || 'JUMBARA PMI PURBALINGGA', 
         tahun: eventData.tahun || '2026',
         tingkat: tingkatData.nama || 'MULA', 
@@ -229,6 +232,9 @@
 
     async function prosesCetakData(data) {
       if (!bluetoothCharacteristic) return;
+      
+      const urlVerifikasi = `https://pmi-bangga.github.io/SIJUM/verifikasi.html?id=${data.penilaianPosId}`;
+      
       const teksStruk = `
 ================================
 ${data.namaEvent.toUpperCase()}
@@ -245,14 +251,57 @@ Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
 `;
       const encoder = new TextEncoder();
       const dataBytes = encoder.encode(teksStruk);
-      try { await bluetoothCharacteristic.writeValue(dataBytes); alert('Struk sedang dicetak...'); } catch (error) { alert('Gagal mencetak: ' + error.message); }
+      
+      try {
+        // 1. Cetak Teks
+        await bluetoothCharacteristic.writeValue(dataBytes);
+        
+        // 2. Cetak QR Code (Perintah ESC/POS)
+        const qrData = encoder.encode(urlVerifikasi);
+        const qrLength = qrData.length + 3;
+        const pL = qrLength & 0xFF;
+        const pH = (qrLength >> 8) & 0xFF;
+        
+        const qrCmd = new Uint8Array([
+          0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06,
+          0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31,
+          0x1D, 0x28, 0x6B, pL, pH, 0x31, 0x50, 0x30, ...qrData,
+          0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30,
+          0x0A, 0x0A, 0x0A
+        ]);
+        
+        await bluetoothCharacteristic.writeValue(qrCmd);
+        
+        alert('Struk dan QR sedang dicetak...');
+      } catch (error) { 
+        alert('Gagal mencetak: ' + error.message); 
+      }
     }
 
     function cetakStrukBrowser(data) {
+      const urlVerifikasi = `https://pmi-bangga.github.io/SIJUM/verifikasi.html?id=${data.penilaianPosId}`;
+      
+      // Buat div sementara untuk QR
+      const qrTemp = document.createElement('div');
+      new QRCode(qrTemp, {
+        text: urlVerifikasi,
+        width: 100,
+        height: 100,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      
+      // Ambil gambar QR dalam bentuk DataURL
+      const qrImg = qrTemp.querySelector('img').src;
+
       const win = window.open('', '_blank');
       win.document.write(`
         <html><head><title>Struk Jumbara</title>
-        <style> body { font-family: monospace; width: 58mm; padding: 10px; text-align: left; font-size: 12px; } hr { border-top: 1px dashed black; } .center { text-align: center; } </style>
+        <style> 
+          body { font-family: monospace; width: 58mm; padding: 10px; text-align: left; font-size: 12px; } 
+          hr { border-top: 1px dashed black; } 
+          .center { text-align: center; } 
+          .qr { margin: 10px auto; display: block; }
+        </style>
         </head><body onload="window.print()">
           <div class="center">
             <strong>${data.namaEvent.toUpperCase()}</strong><br>
@@ -263,6 +312,9 @@ Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
           Tim: ${data.kodeTim} - ${data.namaTim}<br>
           <hr>
           NILAI AKHIR: <strong>${data.nilai}</strong><br>
+          <hr>
+          <img src="${qrImg}" class="qr" />
+          <div class="center" style="font-size: 9px; color: #555;">Scan untuk verifikasi</div>
           <hr>
           Waktu Cetak: ${new Date().toLocaleTimeString('id-ID')}
         </body></html>
