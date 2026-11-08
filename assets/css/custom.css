@@ -1,6 +1,6 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v10.0)
-   ATURAN EMAS: Mobile-First, Dark Mode, Header Merah
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v11.0)
+   ATURAN EMAS: Mobile-First, Dark Mode, Header Merah, Running Text
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -247,7 +247,6 @@ html.dark .btn-theme-toggle:hover {
 
 /* =========================================================
    ATURAN EMAS NO. 5: PAKSA HEADER TETAP MERAH DI MODE GELAP
-   (Agar Logo PMI tetap terbaca)
    ========================================================= */
 
 /* Header Mobile & Sidebar Desktop */
@@ -281,4 +280,26 @@ html.dark .md\:hidden > div .btn-theme-toggle {
   background-color: #5a0000 !important;
   color: #FFEBEE !important;
   border-color: #8B0000 !important;
+}
+
+/* =========================================================
+   PERBAIKAN: RUNNING TEXT DI MODE GELAP
+   ========================================================= */
+html.dark #runningTextContainer {
+  background-color: #1E293B !important; /* Latar belakang gelap */
+  border-color: #334155 !important;
+}
+
+html.dark #linkBerita {
+  color: #E2E8F0 !important; /* Teks terang */
+}
+
+html.dark #linkBerita:hover {
+  color: #F87171 !important; /* Merah terang saat hover */
+}
+
+/* Pastikan background halaman root ikut gelap */
+html.dark body.halaman-root {
+  background-color: #121212 !important;
+  color: #ECEFF1 !important;
 }
