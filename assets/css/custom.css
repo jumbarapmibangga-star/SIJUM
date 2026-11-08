@@ -1,5 +1,6 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v9.0)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v10.0)
+   ATURAN EMAS: Mobile-First, Dark Mode, Header Merah
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -174,17 +175,6 @@ body {
   background-color: #E2E8F0;
 }
 
-/* --- 8. Logo PMI --- */
-/* Untuk Logo Full di Halaman Login & Index */
-.img-logo-full {
-  height: 60px;
-  width: auto;
-  object-fit: contain;
-}
-@media (min-width: 768px) {
-  .img-logo-full { height: 80px; }
-}
-
 /* =========================================================
    ANIMASI & EFEK VISUAL
    ========================================================= */
@@ -211,7 +201,7 @@ body {
 .delay-3 { animation-delay: 0.3s; }
 
 /* =========================================================
-   DARK MODE (MODE GELAP) - KUSTOMISASI PMI
+   ATURAN EMAS NO. 4 & 5: DARK MODE (MODE GELAP)
    ========================================================= */
 
 /* Background Utama Gelap */
@@ -226,7 +216,7 @@ html.dark .bg-white, html.dark .form-card {
   border-color: #333333 !important;
 }
 
-/* TEKS GELAP */
+/* Teks Gelap */
 html.dark .text-slate-800, html.dark .text-slate-700 { color: #ECEFF1 !important; }
 html.dark .text-slate-600 { color: #B0BEC5 !important; }
 html.dark .border-slate-200 { border-color: #333333 !important; }
@@ -240,10 +230,10 @@ html.dark .table-custom tbody tr:hover { background-color: #2C2C2C; }
 html.dark .input-field { background-color: #2C2C2C; border-color: #424242; color: white; }
 html.dark .input-label { color: #B0BEC5; }
 
-/* Menu Sidebar Gelap */
+/* Sidebar Menu Gelap */
 html.dark .sidebar-link { color: #B0BEC5; }
 html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
-html.dark .sidebar-link.active { background-color: #B71C1C; color: white; }
+html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
 
 /* Tombol Tema Gelap */
 html.dark .btn-theme-toggle {
@@ -256,71 +246,39 @@ html.dark .btn-theme-toggle:hover {
 }
 
 /* =========================================================
-   KHUSUS: SIDEBAR ADMIN & HEADER MOBILE DI MODE GELAP
-   (Tetap Merah Gelap agar Logo Terbaca)
+   ATURAN EMAS NO. 5: PAKSA HEADER TETAP MERAH DI MODE GELAP
+   (Agar Logo PMI tetap terbaca)
    ========================================================= */
 
-/* Sidebar Desktop: Tetap Merah Maroon */
-html.dark .sidebar-admin {
-  background-color: #1A1A1A !important; /* Sedikit lebih terang dari hitam */
-  border-right-color: #333333 !important;
-}
-
-/* Header di atas sidebar (tempat logo) */
-html.dark .sidebar-admin > div:first-child {
-  background-color: #8B0000 !important; /* Merah Gelap (Dark Red) */
-}
-
-/* Header Mobile: Tetap Merah Maroon */
-html.dark .header-mobile-custom, 
-html.dark .md\:hidden > div {
-  background-color: #1A1A1A !important;
-  border-bottom-color: #333333 !important;
-}
-
-/* Jika kamu menggunakan struktur header manual, pastikan warnanya tetap merah */
-html.dark header.bg-red-700 {
-  background-color: #8B0000 !important;
-}
-/* =========================================================
-   PAKSA HEADER JURI TETAP MERAH DI MODE GELAP
-   ========================================================= */
-
-html.dark .sidebar-admin > div:first-child,
-html.dark .md\:hidden > div[style*="background-color"],
-html.dark header[style*="background-color"] {
-  background-color: #8B0000 !important; /* Merah Gelap (Dark Red) */
-}
-
-/* Pastikan teks di dalam header tetap putih */
-html.dark .sidebar-admin > div:first-child h1,
-html.dark .sidebar-admin > div:first-child p,
-html.dark .md\:hidden > div[style*="background-color"] h1,
-html.dark .md\:hidden > div[style*="background-color"] p {
-  color: white !important;
-}
-/* =========================================================
-   TRIK SIMPEL: HEADER TETAP MERAH DI MODE GELAP
-   ========================================================= */
-
-/* 1. Header Mobile & Sidebar Desktop dipaksa Merah Gelap */
+/* Header Mobile & Sidebar Desktop */
 html.dark .md\:hidden > div,
-html.dark aside > div:first-child {
-  background-color: #8B0000 !important; /* Merah Gelap */
+html.dark aside > div:first-child,
+html.dark #header-juri {
+  background-color: #8B0000 !important; /* Merah Gelap PMI */
   border-color: #5a0000 !important;
 }
 
-/* 2. Teks di dalam header dipaksa Putih agar terbaca */
+/* Teks di dalam header dipaksa Putih */
 html.dark .md\:hidden > div h1,
 html.dark .md\:hidden > div p,
 html.dark aside > div:first-child h1,
-html.dark aside > div:first-child p {
+html.dark aside > div:first-child p,
+html.dark #header-juri h1,
+html.dark #header-juri p {
   color: #FFFFFF !important;
 }
 
-/* 3. Tombol Keluar di HP disesuaikan */
-html.dark .md\:hidden > div button#btnLogoutMobile {
+/* Tombol Keluar di Header disesuaikan */
+html.dark .md\:hidden > div button#btnLogoutMobile,
+html.dark #header-juri #btnLogoutMobile {
   background-color: #FFEBEE !important;
   color: #8B0000 !important;
   border-color: #ef9a9a !important;
+}
+
+/* Tombol Tema (Kapsul) di Header */
+html.dark .md\:hidden > div .btn-theme-toggle {
+  background-color: #5a0000 !important;
+  color: #FFEBEE !important;
+  border-color: #8B0000 !important;
 }
