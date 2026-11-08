@@ -282,3 +282,20 @@ html.dark .md\:hidden > div {
 html.dark header.bg-red-700 {
   background-color: #8B0000 !important;
 }
+/* =========================================================
+   PAKSA HEADER JURI TETAP MERAH DI MODE GELAP
+   ========================================================= */
+
+html.dark .sidebar-admin > div:first-child,
+html.dark .md\:hidden > div[style*="background-color"],
+html.dark header[style*="background-color"] {
+  background-color: #8B0000 !important; /* Merah Gelap (Dark Red) */
+}
+
+/* Pastikan teks di dalam header tetap putih */
+html.dark .sidebar-admin > div:first-child h1,
+html.dark .sidebar-admin > div:first-child p,
+html.dark .md\:hidden > div[style*="background-color"] h1,
+html.dark .md\:hidden > div[style*="background-color"] p {
+  color: white !important;
+}
