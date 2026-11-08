@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Papan Skor (Aula) — Jumbara PMI</title>
+  
+  <!-- ATURAN 1: BASE URL (ROOT) -->
+  <base href="./">
+  
+  <!-- ATURAN 4: FAVICON & CSS -->
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-aula bg-slate-50 min-h-screen flex flex-col font-sans">
+
+  <!-- HEADER AULA -->
+  <header class="bg-red-700 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 md:h-12 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-wide">Papan Skor Jumbara</h1>
+          <p class="text-xs md:text-sm text-red-100">PMI Kabupaten Purbalingga</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <button class="btn-theme-toggle text-xs px-3 py-1.5" onclick="toggleTheme()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+          Mode
+        </button>
+        <a href="index.html" class="bg-white text-red-700 px-4 py-1.5 rounded font-semibold text-sm hover:bg-slate-100 transition shadow-sm">Kembali</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+    
+    <!-- Filter Tingkat -->
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Nilai Per Pos</h2>
+        <p class="text-slate-500 mt-1">Menampilkan nilai yang sudah dikunci (final).</p>
+      </div>
+      
+      <div class="w-full md:w-auto">
+        <select id="filterTingkat" class="input-field md:w-64" onchange="loadDataAula()">
+          <option value="">Semua Tingkat</option>
+          <!-- Diisi JS -->
+        </select>
+      </div>
+    </div>
+
+    <!-- Container Tabel -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full text-center">
+        <thead>
+          <tr>
+            <th class="text-left">Kode Kontingen</th>
+            <th>POS-01</th>
+            <th>POS-02</th>
+            <th>POS-03</th>
+            <th>POS-04</th>
+            <th>POS-05</th>
+            <th>POS-06</th>
+          </tr>
+        </thead>
+        <tbody id="aulaTableBody">
+          <tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data nilai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Info Update -->
+    <div class="mt-4 text-center text-sm text-slate-400">
+      Terakhir diperbarui: <span id="lastUpdate">-</span>
+    </div>
+
+  </main>
+
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    let allPos = [];
+    let allTim = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Load Master Tingkat untuk Filter
+      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      const selectTingkat = document.getElementById('filterTingkat');
+      if (tingkatData) {
+        tingkatData.forEach(t => {
+          selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+        });
+      }
+
+      // 2. Load Master Pos (Hanya Pos Induk)
+      const { data: posData } = await window.supabaseClient
+        .from('pos')
+        .select('*')
+        .is('induk_pos_id', null)
+        .order('urutan', { ascending: true });
+      
+      allPos = posData || [];
+      
+      // 3. Render Header Tabel Dinamis (berdasarkan Pos)
+      const theadTr = document.querySelector('thead tr');
+      theadTr.innerHTML = '<th class="text-left">Kode Kontingen</th>';
+      allPos.forEach(p => {
+        theadTr.innerHTML += `<th>${p.kode_pos}</th>`;
+      });
+
+      // 4. Load Data Awal
+      loadDataAula();
+    });
+
+    async function loadDataAula() {
+      const filterTingkatId = document.getElementById('filterTingkat').value;
+      const tbody = document.getElementById('aulaTableBody');
+      tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-slate-500">Memuat data...</td></tr>`;
+
+      // Ambil Data Tim
+      let queryTim = window.supabaseClient.from('tim').select('*').order('kode_kontingen', { ascending: true });
+      if (filterTingkatId) queryTim = queryTim.eq('tingkat_id', filterTingkatId);
+      
+      const { data: timData, error: errTim } = await queryTim;
+      if (errTim) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-red-500">Gagal memuat tim: ${errTim.message}</td></tr>`;
+        return;
+      }
+      allTim = timData || [];
+
+      // Ambil Data Nilai (Hanya yang statusnya final/direvisi)
+      const { data: nilaiData, error: errNilai } = await window.supabaseClient
+        .from('penilaian_pos')
+        .select('*')
+        .in('status', ['final', 'direvisi']);
+
+      if (errNilai) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-red-500">Gagal memuat nilai: ${errNilai.message}</td></tr>`;
+        return;
+      }
+
+      // Render Tabel
+      if (allTim.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-slate-500">Belum ada tim di tingkat ini.</td></tr>`;
+      } else {
+        let html = '';
+        allTim.forEach(tim => {
+          html += `<tr class="hover:bg-slate-50 transition-colors">`;
+          html += `<td class="text-left font-mono font-bold text-red-600">${tim.kode_kontingen}</td>`;
+          
+          allPos.forEach(pos => {
+            // Cari nilai untuk tim dan pos ini
+            const nilai = nilaiData.find(n => n.tim_id === tim.id && n.pos_id === pos.id);
+            
+            if (nilai && nilai.nilai_final !== null) {
+              html += `<td class="font-bold text-slate-800 text-lg">${parseFloat(nilai.nilai_final).toFixed(2)}</td>`;
+            } else {
+              html += `<td class="text-slate-400">-</td>`;
+            }
+          });
+
+          html += `</tr>`;
+        });
+        tbody.innerHTML = html;
+      }
+
+      // Update Waktu
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
+    }
+
+    // Auto Refresh setiap 30 detik
+    setInterval(() => {
+      loadDataAula();
+    }, 30000);
+  </script>
+</body>
+</html>
