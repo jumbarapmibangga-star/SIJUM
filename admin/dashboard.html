@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dashboard Panitia — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -92,7 +90,6 @@
     </div>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -119,7 +116,6 @@
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
       
-      // MENU LENGKAP (Termasuk Laporan & Rekap)
       let menuHtml = `
         <a href="admin/dashboard.html" class="sidebar-link active">Dashboard</a>
         <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
@@ -134,13 +130,13 @@
       }
       if (auth.role === 'super_admin') {
         menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
       }
       
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
 
-      // Ambil Data Ringkasan
       const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
       if (events && events.length > 0) {
         const event = events[0];
