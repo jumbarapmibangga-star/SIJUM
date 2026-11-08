@@ -299,3 +299,28 @@ html.dark .md\:hidden > div[style*="background-color"] h1,
 html.dark .md\:hidden > div[style*="background-color"] p {
   color: white !important;
 }
+/* =========================================================
+   TRIK SIMPEL: HEADER TETAP MERAH DI MODE GELAP
+   ========================================================= */
+
+/* 1. Header Mobile & Sidebar Desktop dipaksa Merah Gelap */
+html.dark .md\:hidden > div,
+html.dark aside > div:first-child {
+  background-color: #8B0000 !important; /* Merah Gelap */
+  border-color: #5a0000 !important;
+}
+
+/* 2. Teks di dalam header dipaksa Putih agar terbaca */
+html.dark .md\:hidden > div h1,
+html.dark .md\:hidden > div p,
+html.dark aside > div:first-child h1,
+html.dark aside > div:first-child p {
+  color: #FFFFFF !important;
+}
+
+/* 3. Tombol Keluar di HP disesuaikan */
+html.dark .md\:hidden > div button#btnLogoutMobile {
+  background-color: #FFEBEE !important;
+  color: #8B0000 !important;
+  border-color: #ef9a9a !important;
+}
