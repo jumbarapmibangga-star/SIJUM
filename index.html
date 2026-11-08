@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Jumbara PMI Purbalingga</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#B91C1C">
@@ -21,16 +19,25 @@
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       
+      <!-- Kiri: Logo & Teks -->
       <div class="flex items-center gap-2 md:gap-3">
-        <!-- Logo Dikecilkan -->
         <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
         <h1 class="text-lg md:text-xl font-bold tracking-wide">Jumbara PMI</h1>
       </div>
 
-      <!-- Tombol Login -->
-      <a href="login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
-        Login
-      </a>
+      <!-- Kanan: Tombol Tema & Login -->
+      <div class="flex items-center gap-2 md:gap-3">
+        <!-- Tombol Switch Tema -->
+        <button class="btn-theme-toggle text-xs md:text-sm px-3 py-1.5" onclick="toggleTheme()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+          <span class="hidden md:inline">Mode</span>
+        </button>
+        
+        <!-- Tombol Login -->
+        <a href="login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
+          Login
+        </a>
+      </div>
       
     </div>
   </header>
@@ -61,7 +68,6 @@
     &copy; 2026 PMI Kabupaten Purbalingga. Hak Cipta Dilindungi.
   </footer>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/theme.js"></script>
