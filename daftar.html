@@ -25,6 +25,7 @@
 
     <form id="registerForm" class="space-y-5">
       
+      <!-- 1. Pilih Jenjang -->
       <div>
         <label class="input-label">Tingkat Perlombaan</label>
         <select id="tingkatId" required class="input-field" onchange="onTingkatChange()">
@@ -32,6 +33,15 @@
         </select>
       </div>
 
+      <!-- 2. Pilih Kecamatan (Muncul setelah jenjang dipilih) -->
+      <div id="kecamatanWrapper" class="hidden">
+        <label class="input-label">Kecamatan</label>
+        <select id="kecamatanId" required class="input-field" onchange="onKecamatanChange()">
+          <option value="">Memuat kecamatan...</option>
+        </select>
+      </div>
+
+      <!-- 3. Pilih Sekolah (Muncul setelah kecamatan dipilih) -->
       <div id="sekolahWrapper" class="hidden">
         <label class="input-label">Nama Sekolah</label>
         <select id="sekolahId" required class="input-field">
@@ -39,11 +49,13 @@
         </select>
       </div>
 
+      <!-- 4. Username -->
       <div>
         <label class="input-label">Username (Tanpa Spasi)</label>
         <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field">
       </div>
 
+      <!-- 5. Password -->
       <div>
         <label class="input-label">Password</label>
         <input type="password" id="password" required placeholder="Minimal 6 karakter" class="input-field">
@@ -67,6 +79,8 @@
   <script src="assets/js/supabase-client.js"></script>
   <script>
     let listTingkat = [];
+    let listKecamatan = [];
+    let currentJenjang = '';
 
     document.addEventListener('DOMContentLoaded', async () => {
       const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
@@ -77,27 +91,70 @@
       });
     });
 
+    // 1. Dipanggil saat Jenjang berubah
     async function onTingkatChange() {
       const tingkatId = document.getElementById('tingkatId').value;
+      const kecamatanWrapper = document.getElementById('kecamatanWrapper');
       const sekolahWrapper = document.getElementById('sekolahWrapper');
-      const sekolahSelect = document.getElementById('sekolahId');
+      const kecamatanSelect = document.getElementById('kecamatanId');
+
+      // Reset dropdown di bawahnya
+      sekolahWrapper.classList.add('hidden');
+      document.getElementById('sekolahId').innerHTML = '<option value="">-- Pilih Sekolah --</option>';
 
       if (!tingkatId) {
-        sekolahWrapper.classList.add('hidden');
+        kecamatanWrapper.classList.add('hidden');
         return;
       }
 
       const tingkatObj = listTingkat.find(t => t.id === tingkatId);
-      const jenjang = tingkatObj ? tingkatObj.nama : '';
+      currentJenjang = tingkatObj ? tingkatObj.nama : '';
+
+      kecamatanWrapper.classList.remove('hidden');
+      kecamatanSelect.innerHTML = '<option value="">Memuat kecamatan...</option>';
+
+      // Ambil daftar kecamatan unik dari tabel sekolah berdasarkan jenjang
+      const { data: sekolahData, error } = await window.supabaseClient
+        .from('sekolah')
+        .select('kecamatan')
+        .eq('jenjang', currentJenjang)
+        .not('kecamatan', 'is', null);
+
+      if (error) {
+        console.error(error);
+        kecamatanSelect.innerHTML = '<option value="">Gagal memuat kecamatan</option>';
+        return;
+      }
+
+      // Ambil nilai unik dan urutkan
+      const uniqueKecamatan = [...new Set(sekolahData.map(s => s.kecamatan))].sort();
+      
+      kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+      uniqueKecamatan.forEach(k => {
+        kecamatanSelect.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+    }
+
+    // 2. Dipanggil saat Kecamatan berubah
+    async function onKecamatanChange() {
+      const kecamatan = document.getElementById('kecamatanId').value;
+      const sekolahWrapper = document.getElementById('sekolahWrapper');
+      const sekolahSelect = document.getElementById('sekolahId');
+
+      if (!kecamatan) {
+        sekolahWrapper.classList.add('hidden');
+        return;
+      }
 
       sekolahWrapper.classList.remove('hidden');
-      sekolahSelect.innerHTML = '<option value="">Memuat data sekolah...</option>';
+      sekolahSelect.innerHTML = '<option value="">Memuat sekolah...</option>';
 
-      // AMBIL DARI SUPABASE (BUKAN API)
+      // Ambil daftar sekolah berdasarkan jenjang dan kecamatan
       const { data: sekolahData, error } = await window.supabaseClient
         .from('sekolah')
         .select('nama')
-        .eq('jenjang', jenjang)
+        .eq('jenjang', currentJenjang)
+        .eq('kecamatan', kecamatan)
         .order('nama');
 
       if (error) {
