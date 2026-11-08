@@ -4,7 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Daftar Akun Kontingen — Jumbara PMI</title>
+  
   <base href="./">
+  
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -12,78 +14,152 @@
 <body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
 
   <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in">
+    
     <div class="text-center mb-8">
-      <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-12 mx-auto mb-3 animate-heartbeat">
+      <div class="flex justify-center mb-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-12 md:h-14 w-auto object-contain animate-heartbeat">
+      </div>
       <h1 class="text-2xl font-bold text-red-700">Daftar Akun</h1>
       <p class="text-sm text-slate-500">Khusus Kontingen / Sekolah</p>
     </div>
 
     <form id="registerForm" class="space-y-5">
+      
+      <!-- 1. Pilih Jenjang -->
+      <div>
+        <label class="input-label">Tingkat Perlombaan</label>
+        <select id="tingkatId" required class="input-field" onchange="onTingkatChange()">
+          <option value="">-- Pilih Tingkat --</option>
+        </select>
+      </div>
+
+      <!-- 2. Pilih Sekolah (Muncul setelah jenjang dipilih) -->
+      <div id="sekolahWrapper" class="hidden">
+        <label class="input-label">Nama Sekolah</label>
+        <select id="sekolahId" required class="input-field">
+          <option value="">Memuat sekolah...</option>
+        </select>
+      </div>
+
+      <!-- 3. Username -->
       <div>
         <label class="input-label">Username (Tanpa Spasi)</label>
         <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field">
       </div>
+
+      <!-- 4. Password -->
       <div>
         <label class="input-label">Password</label>
         <input type="password" id="password" required placeholder="Minimal 6 karakter" class="input-field">
       </div>
-      <div>
-        <label class="input-label">Nama Kontingen / Sekolah</label>
-        <input type="text" id="nama" required placeholder="Contoh: SD N 1 Purbalingga" class="input-field">
-      </div>
 
       <div id="errorMsg" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200"></div>
 
-      <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5">Daftar Sekarang</button>
+      <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+        Daftar Sekarang
+      </button>
     </form>
 
-    <div class="mt-6 text-center">
-      <a href="login.html" class="text-sm text-slate-500 hover:text-red-600">&larr; Sudah punya akun? Login di sini</a>
+    <div class="mt-6 text-center border-t border-slate-200 pt-6">
+      <a href="login.html" class="text-sm text-slate-500 hover:text-red-600 transition-colors">
+        Sudah punya akun? Login di sini
+      </a>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script>
+    let listTingkat = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      listTingkat = tingkatData || [];
+      const selectTingkat = document.getElementById('tingkatId');
+      listTingkat.forEach(t => {
+        selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+      });
+    });
+
+    async function onTingkatChange() {
+      const tingkatId = document.getElementById('tingkatId').value;
+      const sekolahWrapper = document.getElementById('sekolahWrapper');
+      const sekolahSelect = document.getElementById('sekolahId');
+
+      if (!tingkatId) {
+        sekolahWrapper.classList.add('hidden');
+        return;
+      }
+
+      const tingkatObj = listTingkat.find(t => t.id === tingkatId);
+      const jenjang = tingkatObj ? tingkatObj.nama : '';
+
+      sekolahWrapper.classList.remove('hidden');
+      sekolahSelect.innerHTML = '<option value="">Memuat data sekolah...</option>';
+
+      try {
+        // Menggunakan URL dari config.js
+        const response = await fetch(`${APP_CONFIG.API_SEKOLAH_URL}?jenjang=${jenjang}`);
+        const data = await response.json();
+
+        sekolahSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        data.forEach(s => {
+          sekolahSelect.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+        });
+      } catch (err) {
+        console.error(err);
+        sekolahSelect.innerHTML = '<option value="">Gagal memuat sekolah</option>';
+      }
+    }
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('btnSubmit');
       const errDiv = document.getElementById('errorMsg');
       const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
-      const nama = document.getElementById('nama').value.trim();
+      const namaSekolah = document.getElementById('sekolahId').value;
       const email = `${username}@jumbara.local`;
+
+      if (!namaSekolah) {
+        errDiv.textContent = 'Silakan pilih sekolah terlebih dahulu.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
 
       btn.innerHTML = 'Memproses...'; btn.disabled = true; errDiv.classList.add('hidden');
 
       try {
-        // 1. Buat Akun di Supabase Auth
         const { data, error } = await window.supabaseClient.auth.signUp({
           email: email,
           password: password,
           options: {
-            data: { nama: nama } // Simpan nama di metadata user
+            data: { nama: namaSekolah }
           }
         });
 
         if (error) throw error;
 
-        // 2. Beri Role 'kontingen' lewat RPC (butuh fungsi di Supabase)
-        // CATATAN: Supabase Auth tidak bisa set app_metadata dari client secara langsung untuk keamanan.
-        // Solusi: Buat fungsi RPC khusus di SQL Editor Supabase untuk update role.
         const { error: rpcError } = await window.supabaseClient.rpc('set_user_role', {
           user_email: email,
           user_role: 'kontingen'
         });
 
-        if (rpcError) console.warn('Gagal set role otomatis. Hubungi panitia.', rpcError);
-
-        alert('Pendaftaran akun berhasil! Silakan login.');
+        if (rpcError) {
+          console.warn('Gagal set role otomatis.', rpcError);
+          alert('Akun dibuat, tapi gagal set role. Silakan hubungi panitia.');
+        } else {
+          alert('Pendaftaran akun berhasil! Silakan login.');
+        }
+        
         window.location.href = 'login.html';
 
       } catch (error) {
-        errDiv.textContent = error.message; errDiv.classList.remove('hidden');
-        btn.innerHTML = 'Daftar Sekarang'; btn.disabled = false;
+        errDiv.textContent = error.message; 
+        errDiv.classList.remove('hidden');
+        btn.innerHTML = 'Daftar Sekarang'; 
+        btn.disabled = false;
       }
     });
   </script>
