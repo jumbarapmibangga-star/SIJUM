@@ -1,10 +1,10 @@
 // sw.js
 const CACHE_NAME = 'jumbara-v1.6';
 const STATIC_ASSETS = [
-  '/', '/index.html', '/login.html', '/manifest.json',
-  '/assets/css/custom.css', '/assets/js/supabase-client.js',
-  '/assets/js/auth.js', '/assets/js/utils.js',
-  '/assets/img/logo.png', '/offline.html'
+  './', 'index.html', 'login.html', 'manifest.json',
+  'assets/css/custom.css', 'assets/js/supabase-client.js',
+  'assets/js/auth.js', 'assets/js/utils.js',
+  'assets/img/logo-pmi.png', 'offline.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -31,7 +31,7 @@ self.addEventListener('fetch', (event) => {
         const clone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
-      }).catch(() => caches.match(event.request).then((cached) => cached || caches.match('/offline.html')))
+      }).catch(() => caches.match(event.request).then((cached) => cached || caches.match('offline.html')))
     );
     return;
   }
@@ -45,6 +45,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         });
       });
-    }).catch(() => caches.match('/offline.html'))
+    }).catch(() => caches.match('offline.html'))
   );
 });
