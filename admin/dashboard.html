@@ -9,6 +9,7 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
+  <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
     <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
       <div class="flex items-center gap-3">
@@ -16,7 +17,8 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
         <div class="flex items-center gap-2">
-          <svg class="w-6 h-6 text-red-700 animate-heartbeat" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          <!-- Logo PMI Gambar -->
+          <img src="/assets/img/logo-pmi.png" alt="Logo PMI" class="img-logo-pmi animate-heartbeat">
           <div>
             <h1 class="text-lg font-bold text-red-700">Jumbara PMI</h1>
             <p id="userRoleDisplayMobile" class="text-xs text-slate-500">Panitia</p>
@@ -35,10 +37,12 @@
     </div>
   </div>
 
+  <!-- SIDEBAR DESKTOP -->
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
-        <svg class="w-8 h-8 text-white animate-heartbeat" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+        <!-- Logo PMI Gambar -->
+        <img src="/assets/img/logo-pmi.png" alt="Logo PMI" class="img-logo-pmi animate-heartbeat">
         <div>
           <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
           <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
@@ -55,6 +59,7 @@
     </div>
   </aside>
 
+  <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8">
     <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 animate-fade-in">
       <div>
