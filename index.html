@@ -12,6 +12,22 @@
   <meta name="theme-color" content="#B91C1C">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
+  
+  <style>
+    /* Animasi Running Text */
+    @keyframes marquee {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .animate-marquee {
+      display: inline-block;
+      white-space: nowrap;
+      animation: marquee 20s linear infinite;
+    }
+    .animate-marquee:hover {
+      animation-play-state: paused;
+    }
+  </style>
 </head>
 <body class="halaman-root bg-slate-50 min-h-screen flex flex-col">
 
@@ -19,20 +35,16 @@
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       
-      <!-- Kiri: Logo & Teks -->
       <div class="flex items-center gap-2 md:gap-3">
         <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
         <h1 class="text-lg md:text-xl font-bold tracking-wide">Jumbara PMI</h1>
       </div>
 
-      <!-- Kanan: Tombol Tema & Login -->
-      <div class="flex items-center gap-2 md:gap-3">
-        <!-- Tombol Switch Tema -->
-        <button class="btn-theme-toggle text-xs md:text-sm px-3 py-1.5" onclick="toggleTheme()">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-          <span class="hidden md:inline">Mode</span>
+      <div class="flex items-center gap-2">
+        <!-- Tombol Tema -->
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
-        
         <!-- Tombol Login -->
         <a href="login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
           Login
@@ -41,6 +53,18 @@
       
     </div>
   </header>
+
+  <!-- RUNNING TEXT BERITA -->
+  <div id="runningTextContainer" class="bg-yellow-50 border-b border-yellow-200 py-2 overflow-hidden hidden">
+    <div class="max-w-6xl mx-auto flex items-center gap-3 px-4">
+      <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap animate-pulse">📢 INFO TERBARU</span>
+      <div class="overflow-hidden flex-1">
+        <a href="publik/berita.html" id="linkBerita" class="animate-marquee text-sm text-slate-700 font-medium hover:text-red-600 transition-colors">
+          Memuat berita...
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- MAIN CONTENT -->
   <main class="flex-1 flex flex-col items-center justify-center text-center p-6">
@@ -72,11 +96,43 @@
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
+    // Registrasi Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
       });
     }
+
+    // Ambil Berita Terbaru untuk Running Text
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('runningTextContainer');
+      const linkBerita = document.getElementById('linkBerita');
+
+      try {
+        const { data, error } = await window.supabaseClient
+          .from('berita')
+          .select('judul')
+          .eq('status', 'publish')
+          .order('published_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        if (data && data.judul) {
+          // Tampilkan container jika ada berita
+          container.classList.remove('hidden');
+          linkBerita.textContent = `📰 ${data.judul} — Klik untuk baca selengkapnya`;
+          linkBerita.href = 'publik/berita.html';
+        } else {
+          // Sembunyikan jika tidak ada berita
+          container.classList.add('hidden');
+        }
+      } catch (err) {
+        console.warn('Gagal memuat running text:', err.message);
+        container.classList.add('hidden');
+      }
+    });
   </script>
 </body>
 </html>
