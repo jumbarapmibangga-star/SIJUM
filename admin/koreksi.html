@@ -148,7 +148,6 @@
     let currentUser = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // Proteksi: Hanya Koordinator & Super Admin
       const auth = await protectPage(['koordinator', 'super_admin']);
       if (!auth) return;
       currentUser = auth.user;
@@ -179,12 +178,12 @@
       `;
       if (auth.role === 'super_admin') {
         menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
       }
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
 
-      // Load Pos untuk Filter
       const { data: posList } = await window.supabaseClient.from('pos').select('*').is('induk_pos_id', null).order('urutan');
       const selectPos = document.getElementById('filterPos');
       if (posList) {
@@ -193,7 +192,6 @@
         });
       }
 
-      // Setup Modal Tutup
       document.getElementById('btnBatalKoreksi').addEventListener('click', () => {
         document.getElementById('modalKoreksi').classList.add('hidden');
       });
@@ -224,7 +222,6 @@
         return;
       }
 
-      // Filter berdasarkan keyword tim (di client-side)
       const filtered = data.filter(d => 
         d.tim && (
           d.tim.kode_kontingen.toLowerCase().includes(keyword) || 
@@ -243,15 +240,19 @@
           ? `<span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs font-bold">Direvisi</span>` 
           : `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Final</span>`;
 
+        // Handle nilai null agar tidak NaN
+        const nilaiTampil = d.nilai_final !== null ? parseFloat(d.nilai_final).toFixed(2) : '-';
+        const nilaiKirim = d.nilai_final !== null ? d.nilai_final : 0;
+
         html += `
           <tr class="hover:bg-slate-50 transition-colors">
             <td class="font-mono font-bold text-red-600">${d.tim.kode_kontingen}</td>
             <td class="font-medium text-slate-800">${d.tim.nama_tim}</td>
             <td class="text-slate-600">${d.pos.kode_pos}</td>
-            <td class="font-bold text-slate-800">${parseFloat(d.nilai_final).toFixed(2)}</td>
+            <td class="font-bold text-slate-800">${nilaiTampil}</td>
             <td>${statusBadge}</td>
             <td class="text-right">
-              <button onclick="bukaModalKoreksi('${d.id}', '${d.tim.kode_kontingen} - ${d.tim.nama_tim}', '${d.pos.nama_pos}', ${d.nilai_final})" class="text-blue-600 hover:underline font-semibold text-sm">Koreksi</button>
+              <button onclick="bukaModalKoreksi('${d.id}', '${d.tim.kode_kontingen} - ${d.tim.nama_tim}', '${d.pos.nama_pos}', ${nilaiKirim})" class="text-blue-600 hover:underline font-semibold text-sm">Koreksi</button>
             </td>
           </tr>
         `;
@@ -281,7 +282,6 @@
       const nilaiLama = parseFloat(document.getElementById('infoNilaiLama').textContent);
 
       try {
-        // 1. Update Nilai di penilaian_pos
         const { error: errUpdate } = await window.supabaseClient
           .from('penilaian_pos')
           .update({ nilai_final: nilaiBaru, status: 'direvisi' })
@@ -289,7 +289,6 @@
         
         if (errUpdate) throw errUpdate;
 
-        // 2. Catat di Koreksi Nilai (Audit Trail)
         const { error: errLog } = await window.supabaseClient
           .from('koreksi_nilai')
           .insert([{
@@ -304,6 +303,9 @@
           }]);
         
         if (errLog) throw errLog;
+
+        // CATAT LOG AKTIVITAS KOREKSI
+        await catatLog('koreksi', 'update_nilai', `Mengoreksi nilai dari ${nilaiLama} menjadi ${nilaiBaru} dengan alasan: ${alasan}`, 'penilaian_pos');
 
         alert('Nilai berhasil dikoreksi!');
         document.getElementById('modalKoreksi').classList.add('hidden');
