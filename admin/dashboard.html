@@ -5,37 +5,42 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dashboard Panitia — Jumbara PMI</title>
   
-  <!-- BASE PATH: Mundur satu folder karena file ini ada di dalam folder 'admin' -->
+  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- FAVICON -->
+  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
-  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
   <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
-    <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
       
       <!-- Kiri: Menu & Logo -->
       <div class="flex items-center gap-3">
         <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <!-- Logo Dikecilkan -->
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
       </div>
 
       <!-- Kanan: Tema & Keluar -->
       <div class="flex items-center gap-2">
-        <button class="btn-theme-toggle" onclick="toggleTheme()">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
-        <button id="btnLogoutMobile" class="text-sm font-bold bg-red-50 text-red-700 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors shadow-sm">Keluar</button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
       </div>
+
     </div>
     
     <!-- Dropdown Menu Mobile -->
@@ -67,6 +72,7 @@
 
   <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8">
+    <!-- Card Sambutan -->
     <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 animate-fade-in">
       <div>
         <h2 class="text-xl md:text-2xl font-bold text-slate-800">Selamat Datang!</h2>
@@ -78,6 +84,7 @@
       </div>
     </div>
 
+    <!-- Kartu Ringkasan -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
       <div class="form-card relative overflow-hidden animate-fade-in delay-1">
         <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Aktif</h3>
@@ -94,16 +101,18 @@
     </div>
   </main>
 
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
+      // Proteksi Halaman
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
 
-      // Setup Logout
+      // Setup Tombol Logout
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
       document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
 
@@ -112,15 +121,16 @@
       const dropdown = document.getElementById('mobileMenuDropdown');
       btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
 
-      // Tanggal
+      // Tampilkan Tanggal
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       document.getElementById('tanggalHariIni').textContent = new Date().toLocaleDateString('id-ID', options);
       
-      // Role
+      // Tampilkan Role
       const roleText = auth.role.replace('_', ' ').toUpperCase();
       document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
-      // Render Menu
+      // Render Menu (Desktop & Mobile)
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
       
@@ -142,7 +152,7 @@
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
 
-      // Ambil Data
+      // Ambil Data Ringkasan
       const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
       if (events && events.length > 0) {
         const event = events[0];
