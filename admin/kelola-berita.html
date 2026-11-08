@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kelola Berita — Jumbara PMI</title>
+  
+  <base href="../">
+  
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola Berita</h2>
+        <p class="text-sm md:text-base text-slate-500">Tambah, edit, dan publikasikan berita.</p>
+      </div>
+      <button onclick="bukaModalBerita()" class="btn-primary w-full md:w-auto shadow-md">+ Tambah Berita</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full">
+        <thead>
+          <tr>
+            <th>Judul</th>
+            <th>Status</th>
+            <th>Tanggal</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="beritaTableBody">
+          <tr><td colspan="4" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL BERITA -->
+  <div id="modalBerita" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 form-card animate-fade-in">
+      <h3 class="text-lg font-bold text-slate-800 mb-4" id="modalTitle">Tambah Berita</h3>
+      <form id="beritaForm" class="space-y-4">
+        <input type="hidden" id="beritaId" value="">
+        
+        <div>
+          <label class="input-label">Judul Berita</label>
+          <input type="text" id="judul" required class="input-field">
+        </div>
+        <div>
+          <label class="input-label">Isi Berita</label>
+          <textarea id="isi" required rows="5" class="input-field"></textarea>
+        </div>
+        <div>
+          <label class="input-label">URL Gambar (Opsional)</label>
+          <input type="url" id="gambarUrl" class="input-field" placeholder="https://...">
+        </div>
+        <div>
+          <label class="input-label">Penulis</label>
+          <input type="text" id="penulis" class="input-field" placeholder="Nama penulis">
+        </div>
+        <div>
+          <label class="input-label">Status</label>
+          <select id="status" class="input-field">
+            <option value="draft">Draft (Belum Tampil)</option>
+            <option value="publish">Publish (Tampil di Publik)</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="btnBatal" class="btn-secondary">Batal</button>
+          <button type="submit" id="btnSimpan" class="btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+        <a href="admin/kelola-berita.html" class="sidebar-link active">📰 Kelola Berita</a>
+        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
+        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      document.getElementById('btnBatal').addEventListener('click', () => {
+        document.getElementById('modalBerita').classList.add('hidden');
+      });
+
+      loadBerita();
+    });
+
+    async function loadBerita() {
+      const tbody = document.getElementById('beritaTableBody');
+      const { data, error } = await window.supabaseClient
+        .from('berita')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-red-500">Gagal: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada berita.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach(b => {
+        const tgl = new Date(b.created_at).toLocaleDateString('id-ID');
+        const statusBadge = b.status === 'publish' 
+          ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Publish</span>`
+          : `<span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-bold">Draft</span>`;
+
+        html += `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="font-medium text-slate-800">${b.judul}</td>
+            <td>${statusBadge}</td>
+            <td class="text-slate-600 text-sm">${tgl}</td>
+            <td class="text-right space-x-2">
+              <button onclick="editBerita('${b.id}')" class="text-blue-600 hover:underline font-semibold text-sm">Edit</button>
+              <button onclick="hapusBerita('${b.id}')" class="text-red-600 hover:underline font-semibold text-sm">Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    window.bukaModalBerita = () => {
+      document.getElementById('modalTitle').textContent = 'Tambah Berita';
+      document.getElementById('beritaId').value = '';
+      document.getElementById('judul').value = '';
+      document.getElementById('isi').value = '';
+      document.getElementById('gambarUrl').value = '';
+      document.getElementById('penulis').value = '';
+      document.getElementById('status').value = 'draft';
+      document.getElementById('modalBerita').classList.remove('hidden');
+    };
+
+    window.editBerita = async (id) => {
+      const { data: b } = await window.supabaseClient.from('berita').select('*').eq('id', id).single();
+      if (!b) return;
+
+      document.getElementById('modalTitle').textContent = 'Edit Berita';
+      document.getElementById('beritaId').value = b.id;
+      document.getElementById('judul').value = b.judul;
+      document.getElementById('isi').value = b.isi;
+      document.getElementById('gambarUrl').value = b.gambar_url || '';
+      document.getElementById('penulis').value = b.penulis || '';
+      document.getElementById('status').value = b.status;
+      document.getElementById('modalBerita').classList.remove('hidden');
+    };
+
+    window.hapusBerita = async (id) => {
+      if (!confirm('Yakin ingin menghapus berita ini?')) return;
+      await window.supabaseClient.from('berita').delete().eq('id', id);
+      loadBerita();
+    };
+
+    document.getElementById('beritaForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSimpan');
+      btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+      const id = document.getElementById('beritaId').value;
+      const payload = {
+        judul: document.getElementById('judul').value,
+        isi: document.getElementById('isi').value,
+        gambar_url: document.getElementById('gambarUrl').value || null,
+        penulis: document.getElementById('penulis').value || null,
+        status: document.getElementById('status').value,
+        published_at: document.getElementById('status').value === 'publish' ? new Date().toISOString() : null
+      };
+
+      let error;
+      if (id) {
+        const res = await window.supabaseClient.from('berita').update(payload).eq('id', id);
+        error = res.error;
+      } else {
+        const res = await window.supabaseClient.from('berita').insert([payload]);
+        error = res.error;
+      }
+
+      if (error) {
+        alert('Gagal menyimpan: ' + error.message);
+      } else {
+        document.getElementById('modalBerita').classList.add('hidden');
+        loadBerita();
+      }
+      btn.innerHTML = 'Simpan'; btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
