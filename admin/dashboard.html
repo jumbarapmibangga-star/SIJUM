@@ -8,7 +8,9 @@
   <!-- BASE PATH: Mundur satu folder karena file ini ada di dalam folder 'admin' -->
   <base href="../">
   
+  <!-- FAVICON -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
@@ -17,18 +19,17 @@
   <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
     <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
+      
+      <!-- Kiri: Menu & Logo -->
       <div class="flex items-center gap-3">
         <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <div class="flex items-center gap-2">
-          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
-          <div>
-            <h1 class="text-lg font-bold text-red-700">Jumbara PMI</h1>
-            <p id="userRoleDisplayMobile" class="text-xs text-slate-500">Panitia</p>
-          </div>
-        </div>
+        <!-- Logo Dikecilkan -->
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
       </div>
+
+      <!-- Kanan: Tema & Keluar -->
       <div class="flex items-center gap-2">
         <button class="btn-theme-toggle" onclick="toggleTheme()">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
@@ -36,6 +37,8 @@
         <button id="btnLogoutMobile" class="text-sm font-bold bg-red-50 text-red-700 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors shadow-sm">Keluar</button>
       </div>
     </div>
+    
+    <!-- Dropdown Menu Mobile -->
     <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
       <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
     </div>
@@ -45,7 +48,7 @@
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
         <div>
           <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
           <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
@@ -100,33 +103,46 @@
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
 
+      // Setup Logout
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
       document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
 
+      // Setup Menu Mobile
       const btnMenu = document.getElementById('btnMobileMenu');
       const dropdown = document.getElementById('mobileMenuDropdown');
       btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
 
+      // Tanggal
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       document.getElementById('tanggalHariIni').textContent = new Date().toLocaleDateString('id-ID', options);
       
+      // Role
       const roleText = auth.role.replace('_', ' ').toUpperCase();
       document.getElementById('userRoleDisplay').textContent = roleText;
-      document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
+      // Render Menu
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
       
-      // MENU PATH (Relatif tanpa garis miring di depan)
       let menuHtml = `
         <a href="admin/dashboard.html" class="sidebar-link active">Dashboard</a>
         <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
         <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
         <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
       `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+      }
+      
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
 
+      // Ambil Data
       const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
       if (events && events.length > 0) {
         const event = events[0];
