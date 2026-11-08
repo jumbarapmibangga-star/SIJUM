@@ -1,18 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Offline — Jumbara PMI</title>
+  
+  <base href="./">
+  
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-  <div class="text-center p-8 bg-white rounded-lg shadow-lg">
-    <h1 class="text-3xl font-bold text-red-600 mb-4">Anda Sedang Offline</h1>
-    <p class="text-gray-600 mb-6">Koneksi internet terputus. Silakan periksa jaringan Anda dan coba lagi.</p>
-    <button onclick="window.location.reload()" class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700">
+<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
+
+  <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card text-center animate-fade-in">
+    
+    <div class="flex justify-center mb-4">
+      <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-16 w-auto object-contain animate-heartbeat">
+    </div>
+
+    <h1 class="text-2xl font-bold text-red-700 mb-2">Anda Sedang Offline</h1>
+    <p class="text-slate-500 mb-6">Koneksi internet terputus. Silakan periksa jaringan Anda dan coba lagi.</p>
+
+    <button onclick="window.location.reload()" class="btn-primary w-full py-2.5">
       Muat Ulang
     </button>
+
   </div>
+
 </body>
 </html>
