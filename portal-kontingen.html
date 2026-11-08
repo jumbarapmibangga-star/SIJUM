@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Portal Kontingen — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
 <body class="halaman-kontingen bg-slate-50 min-h-screen flex flex-col font-sans">
 
-  <!-- HEADER KONTINGEN -->
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
       <div class="flex items-center gap-2 md:gap-3">
@@ -34,38 +31,37 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-20">
-    
-    <!-- Banner Status -->
     <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm animate-fade-in"></div>
 
     <div id="formSection" class="space-y-6 animate-fade-in">
       
-      <!-- Kartu 1: Identitas Tim -->
       <div class="form-card">
         <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-4 border-b pb-2">1. Identitas Tim</h2>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="input-label">Nama Sekolah / Kontingen</label>
-            <input type="text" id="namaKontingen" required placeholder="Contoh: SD N 1 Purbalingga" class="input-field">
-          </div>
-          <div>
-            <label class="input-label">Kode Kontingen</label>
-            <input type="text" id="kodeKontingen" required placeholder="Contoh: MU-01" class="input-field uppercase">
-            <p class="text-xs text-slate-400 mt-1">Isi sesuai kode dari panitia.</p>
-          </div>
+          
           <div class="md:col-span-2">
+            <label class="input-label">Nama Sekolah / Kontingen</label>
+            <input type="text" id="namaKontingen" required class="input-field bg-slate-100" readonly>
+          </div>
+
+          <div>
             <label class="input-label">Tingkat Perlombaan</label>
             <select id="tingkatId" required class="input-field">
               <option value="">-- Pilih Tingkat --</option>
             </select>
           </div>
+
+          <div>
+            <label class="input-label">Kode Kontingen</label>
+            <input type="text" id="kodeKontingen" required placeholder="Contoh: MU-01" class="input-field uppercase">
+            <p class="text-xs text-slate-400 mt-1">Isi sesuai kode dari panitia.</p>
+          </div>
+
         </div>
       </div>
 
-      <!-- Kartu 2: Data Peserta -->
       <div class="form-card">
         <div class="flex justify-between items-center mb-4 border-b pb-2">
           <h2 class="text-lg md:text-xl font-bold text-slate-800">2. Daftar Peserta</h2>
@@ -82,15 +78,12 @@
                 <th class="text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody id="pesertaTableBody">
-              <!-- Baris peserta diisi JS -->
-            </tbody>
+            <tbody id="pesertaTableBody"></tbody>
           </table>
         </div>
-        <p class="text-xs text-slate-500 mt-2">* Minimal 1 peserta. Pastikan nama dan tanggal lahir sesuai dokumen resmi.</p>
+        <p class="text-xs text-slate-500 mt-2">* Minimal 1 peserta.</p>
       </div>
 
-      <!-- Tombol Aksi -->
       <div class="flex flex-col md:flex-row justify-end gap-3 pt-4">
         <button type="button" id="btnSimpanDraft" class="btn-secondary w-full md:w-auto">Simpan Draft</button>
         <button type="button" id="btnSubmit" class="btn-primary w-full md:w-auto text-lg py-3 px-8 shadow-lg">Submit & Kunci Data</button>
@@ -99,8 +92,8 @@
     </div>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
@@ -116,12 +109,14 @@
 
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
-      // Ambil Event ID
+      const namaSekolah = auth.user.user_metadata?.nama || 'Nama Sekolah Belum Diatur';
+      document.getElementById('namaKontingen').value = namaSekolah;
+      document.getElementById('namaKontingenHeader').textContent = namaSekolah;
+
       const { data: events } = await window.supabaseClient.from('event').select('id').order('tahun', { ascending: false }).limit(1);
       if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
       currentEventId = events[0].id;
 
-      // Ambil Master Tingkat
       const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
       listTingkat = tingkatData || [];
       const selectTingkat = document.getElementById('tingkatId');
@@ -129,7 +124,6 @@
         selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
       });
 
-      // Cek apakah sudah pernah mendaftar
       const { data: kontingen } = await window.supabaseClient
         .from('kontingen_event')
         .select('*')
@@ -139,23 +133,18 @@
 
       if (kontingen) {
         currentKontingenId = kontingen.id;
-        document.getElementById('namaKontingen').value = kontingen.nama_kontingen;
         document.getElementById('tingkatId').value = kontingen.tingkat_id;
-        document.getElementById('namaKontingenHeader').textContent = kontingen.nama_kontingen;
 
-        // Ambil data tim
         const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
         if (tim) {
           currentTimId = tim.id;
           document.getElementById('kodeKontingen').value = tim.kode_kontingen;
         }
 
-        // Kunci form jika sudah submit
         if (kontingen.status !== 'draft') {
           lockForm(kontingen.status);
         }
 
-        // Load peserta
         if (currentTimId) {
           const { data: peserta } = await window.supabaseClient
             .from('peserta_event')
@@ -175,10 +164,9 @@
       }
 
       if (document.getElementById('pesertaTableBody').children.length === 0) {
-        addPesertaRow(); // Baris kosong default
+        addPesertaRow();
       }
 
-      // Event Listener
       document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
       document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
       document.getElementById('btnSubmit').addEventListener('click', () => {
@@ -251,7 +239,6 @@
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         let kontingenId = currentKontingenId;
 
-        // A. Simpan Kontingen
         if (!kontingenId) {
           const { data: newK, error: errK } = await window.supabaseClient.from('kontingen_event').insert([{
             event_id: currentEventId, akun_id: session.user.id, nama_kontingen: namaKontingen, tingkat_id: tingkatId, status: actionStatus
@@ -266,7 +253,6 @@
           if (errK) throw errK;
         }
 
-        // B. Simpan Tim
         let timId = currentTimId;
         if (!timId) {
           const { data: newT, error: errT } = await window.supabaseClient.from('tim').insert([{
@@ -282,7 +268,6 @@
           if (errT) throw errT;
         }
 
-        // C. Simpan Peserta
         await window.supabaseClient.from('peserta_event').delete().eq('tim_id', timId);
 
         const rows = document.querySelectorAll('#pesertaTableBody tr');
