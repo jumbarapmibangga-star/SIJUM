@@ -9,17 +9,18 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <!-- HEADER MOBILE -->
-  <div class="md:hidden">
-    <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0 z-40">
+  <div class="md:hidden relative z-50">
+    <div class="flex justify-between items-center p-4 bg-white border-b border-slate-200 shadow-sm sticky top-0">
       <div class="flex items-center gap-3">
-        <!-- Tombol Hamburger Menu -->
         <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
-        <div>
-          <h1 class="text-lg font-bold text-red-700">Jumbara PMI</h1>
-          <p id="userRoleDisplayMobile" class="text-xs text-slate-500">Panitia</p>
+        <div class="flex items-center gap-2">
+          <svg class="w-6 h-6 text-red-700 animate-heartbeat" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          <div>
+            <h1 class="text-lg font-bold text-red-700">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-xs text-slate-500">Panitia</p>
+          </div>
         </div>
       </div>
       <div class="flex items-center gap-2">
@@ -29,20 +30,15 @@
         <button id="btnLogoutMobile" class="text-sm font-bold bg-red-50 text-red-700 px-3 py-2 rounded-lg border border-red-200 hover:bg-red-100 transition-colors shadow-sm">Keluar</button>
       </div>
     </div>
-
-    <!-- DROPDOWN MENU MOBILE (Tersembunyi by default) -->
-    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full z-50">
-      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile">
-        <!-- Menu akan dirender JS -->
-      </nav>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
     </div>
   </div>
 
-  <!-- SIDEBAR DESKTOP -->
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
-        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+        <svg class="w-8 h-8 text-white animate-heartbeat" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
         <div>
           <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
           <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
@@ -59,9 +55,8 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8">
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600">
+    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 animate-fade-in">
       <div>
         <h2 class="text-xl md:text-2xl font-bold text-slate-800">Selamat Datang!</h2>
         <p class="text-sm md:text-base text-slate-500 mt-1">Sistem Informasi Jumbara PMI Kabupaten Purbalingga.</p>
@@ -73,15 +68,15 @@
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-      <div class="form-card relative overflow-hidden">
+      <div class="form-card relative overflow-hidden animate-fade-in delay-1">
         <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Aktif</h3>
         <p id="eventTahun" class="text-3xl md:text-4xl font-extrabold text-red-600 mt-2">-</p>
       </div>
-      <div class="form-card relative overflow-hidden">
+      <div class="form-card relative overflow-hidden animate-fade-in delay-2">
         <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Status Pendaftaran</h3>
         <p id="statusPendaftaran" class="text-xl md:text-2xl font-bold text-slate-800 mt-3">-</p>
       </div>
-      <div class="form-card relative overflow-hidden">
+      <div class="form-card relative overflow-hidden animate-fade-in delay-3">
         <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Tim Terdaftar</h3>
         <p id="totalTim" class="text-3xl md:text-4xl font-extrabold text-slate-800 mt-2">-</p>
       </div>
@@ -100,12 +95,9 @@
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
       document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
 
-      // Logika Toggle Menu Mobile
       const btnMenu = document.getElementById('btnMobileMenu');
       const dropdown = document.getElementById('mobileMenuDropdown');
-      btnMenu.addEventListener('click', () => {
-        dropdown.classList.toggle('hidden');
-      });
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
 
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       document.getElementById('tanggalHariIni').textContent = new Date().toLocaleDateString('id-ID', options);
@@ -131,8 +123,6 @@
         menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
         <a href="/admin/users.html" class="sidebar-link">Kelola User</a>`;
       }
-      
-      // Pasang menu ke Desktop dan Mobile
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
 
