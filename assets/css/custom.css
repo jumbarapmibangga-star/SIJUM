@@ -1,5 +1,5 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v4.1)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v5.0)
    ========================================================= */
 
 /* --- 1. Font & Dasar --- */
@@ -79,6 +79,11 @@ body {
   border-radius: 0.75rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
   border: 1px solid #E0E0E0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.form-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 /* --- 4. Komponen Tabel --- */
@@ -156,18 +161,43 @@ body {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: 9999px; /* Kapsul */
+  border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 700;
   transition: all 0.2s;
   cursor: pointer;
-  background-color: #F1F5F9; /* Abu-abu muda */
+  background-color: #F1F5F9;
   color: #475569;
   border: 1px solid #CBD5E1;
 }
 .btn-theme-toggle:hover {
   background-color: #E2E8F0;
 }
+
+/* =========================================================
+   ANIMASI LOGO & EFEK VISUAL
+   ========================================================= */
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
+}
+.animate-heartbeat {
+  animation: heartbeat 2s infinite ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
 
 /* =========================================================
    DARK MODE (MODE GELAP)
@@ -192,7 +222,6 @@ html.dark .sidebar-link { color: #B0BEC5; }
 html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
 html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
 
-/* Tombol Tema di Dark Mode */
 html.dark .btn-theme-toggle {
   background-color: #1E293B;
   color: #CBD5E1;
