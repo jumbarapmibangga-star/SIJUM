@@ -241,3 +241,14 @@ html.dark .btn-theme-toggle {
 html.dark .btn-theme-toggle:hover {
   background-color: #334155;
 }
+/* =========================================================
+   LOGO DI DARK MODE
+   ========================================================= */
+html.dark .img-logo-pmi, 
+html.dark .logo-crop-container img,
+html.dark .header-mobile-custom img {
+  /* Membalik warna gambar menjadi putih bersih */
+  filter: brightness(0) invert(1);
+  /* Opsional: Beri sedikit bayangan agar tidak menyatu dengan background */
+  opacity: 0.9; 
+}
