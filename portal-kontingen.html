@@ -4,9 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Portal Kontingen — Jumbara PMI</title>
-  
   <base href="./">
-  
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -48,15 +46,15 @@
 
           <div>
             <label class="input-label">Tingkat Perlombaan</label>
-            <select id="tingkatId" required class="input-field">
+            <select id="tingkatId" required class="input-field bg-slate-100" disabled>
               <option value="">-- Pilih Tingkat --</option>
             </select>
           </div>
 
           <div>
             <label class="input-label">Kode Kontingen</label>
-            <input type="text" id="kodeKontingen" required placeholder="Contoh: MU-01" class="input-field uppercase">
-            <p class="text-xs text-slate-400 mt-1">Isi sesuai kode dari panitia.</p>
+            <input type="text" id="kodeKontingen" required class="input-field bg-slate-100 font-mono font-bold text-red-600" readonly placeholder="Akan dibuat otomatis">
+            <p class="text-xs text-slate-400 mt-1">Otomatis dibuat sistem saat disimpan.</p>
           </div>
 
         </div>
@@ -81,7 +79,7 @@
             <tbody id="pesertaTableBody"></tbody>
           </table>
         </div>
-        <p class="text-xs text-slate-500 mt-2">* Minimal 1 peserta.</p>
+        <p class="text-xs text-slate-500 mt-2">* Minimal 1 peserta. Klik "+ Tambah" untuk menambah anggota tim.</p>
       </div>
 
       <div class="flex flex-col md:flex-row justify-end gap-3 pt-4">
@@ -93,7 +91,6 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/config.js"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
@@ -102,6 +99,7 @@
     let currentKontingenId = null;
     let currentTimId = null;
     let listTingkat = [];
+    let listPeran = []; // Array untuk menyimpan data peran dari database
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['kontingen']);
@@ -117,13 +115,19 @@
       if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
       currentEventId = events[0].id;
 
-      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      // Ambil Data Tingkat
+      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*').order('id');
       listTingkat = tingkatData || [];
       const selectTingkat = document.getElementById('tingkatId');
       listTingkat.forEach(t => {
         selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
       });
 
+      // Ambil Data Peran dari Database (TANPA HARDCODE)
+      const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
+      listPeran = peranData || [];
+
+      // Cek apakah kontingen sudah punya data tim
       const { data: kontingen } = await window.supabaseClient
         .from('kontingen_event')
         .select('*')
@@ -132,8 +136,9 @@
         .maybeSingle();
 
       if (kontingen) {
+        // JIKA SUDAH ADA (EDIT DATA)
         currentKontingenId = kontingen.id;
-        document.getElementById('tingkatId').value = kontingen.tingkat_id;
+        selectTingkat.value = kontingen.tingkat_id;
 
         const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
         if (tim) {
@@ -180,15 +185,19 @@
       const tbody = document.getElementById('pesertaTableBody');
       const tr = document.createElement('tr');
       
+      // Generate opsi peran dari database
+      let peranOptions = '';
+      listPeran.forEach(p => {
+        const isSelected = data && data.peran === p.nama ? 'selected' : '';
+        peranOptions += `<option value="${p.nama}" ${isSelected}>${p.nama}</option>`;
+      });
+
       tr.innerHTML = `
         <td><input type="text" class="input-field text-sm" placeholder="Nama Lengkap" value="${data ? data.nama : ''}" required></td>
         <td><input type="date" class="input-field text-sm" value="${data ? data.tgl_lahir : ''}" required></td>
         <td>
           <select class="input-field text-sm">
-            <option value="narator" ${data && data.peran === 'narator' ? 'selected' : ''}>Narator</option>
-            <option value="pelaku_praktik" ${data && data.peran === 'pelaku_praktik' ? 'selected' : ''}>Praktik</option>
-            <option value="teori" ${data && data.peran === 'teori' ? 'selected' : ''}>Teori</option>
-            <option value="cadangan" ${data && data.peran === 'cadangan' ? 'selected' : ''}>Cadangan</option>
+            ${peranOptions}
           </select>
         </td>
         <td class="text-right">
@@ -226,10 +235,9 @@
       btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
 
       const namaKontingen = document.getElementById('namaKontingen').value;
-      const kodeKontingen = document.getElementById('kodeKontingen').value.toUpperCase();
       const tingkatId = document.getElementById('tingkatId').value;
 
-      if (!namaKontingen || !kodeKontingen || !tingkatId) {
+      if (!namaKontingen || !tingkatId) {
         alert('Lengkapi Identitas Tim terlebih dahulu!');
         btn.innerHTML = actionStatus === 'draft' ? 'Simpan Draft' : 'Submit & Kunci Data'; btn.disabled = false;
         return;
@@ -238,7 +246,20 @@
       try {
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         let kontingenId = currentKontingenId;
+        let timId = currentTimId;
+        let kodeKontingen = document.getElementById('kodeKontingen').value;
 
+        // Jika Kode Kontingen belum ada (pendaftaran baru), generate dari Database
+        if (!kodeKontingen) {
+          const { data: generatedKode, error: errRpc } = await window.supabaseClient
+            .rpc('generate_kode_kontingen', { p_tingkat_id: tingkatId });
+          
+          if (errRpc) throw new Error('Gagal generate kode: ' + errRpc.message);
+          kodeKontingen = generatedKode;
+          document.getElementById('kodeKontingen').value = kodeKontingen; // Tampilkan di form
+        }
+
+        // Simpan/Update Kontingen
         if (!kontingenId) {
           const { data: newK, error: errK } = await window.supabaseClient.from('kontingen_event').insert([{
             event_id: currentEventId, akun_id: session.user.id, nama_kontingen: namaKontingen, tingkat_id: tingkatId, status: actionStatus
@@ -253,7 +274,7 @@
           if (errK) throw errK;
         }
 
-        let timId = currentTimId;
+        // Simpan/Update Tim
         if (!timId) {
           const { data: newT, error: errT } = await window.supabaseClient.from('tim').insert([{
             event_id: currentEventId, kontingen_event_id: kontingenId, nama_tim: namaKontingen, tingkat_id: tingkatId, kode_kontingen: kodeKontingen
@@ -268,6 +289,7 @@
           if (errT) throw errT;
         }
 
+        // Hapus peserta lama, simpan yang baru
         await window.supabaseClient.from('peserta_event').delete().eq('tim_id', timId);
 
         const rows = document.querySelectorAll('#pesertaTableBody tr');
@@ -277,12 +299,13 @@
           const inputs = row.querySelectorAll('input, select');
           const nama = inputs[0].value;
           const tgl = inputs[1].value;
-          const peran = inputs[2].value;
+          const peran = inputs[2].value; // Mengambil teks peran dari DB
 
           if (nama && tgl) {
             let { data: pm } = await window.supabaseClient.from('peserta_master').select('id').eq('nama', nama).eq('tgl_lahir', tgl).maybeSingle();
             if (!pm) {
-              const kodePeserta = `${kodeKontingen}-0${Math.floor(Math.random() * 90) + 10}`;
+              // Generate kode_peserta (format: KODE_TIM-01)
+              const kodePeserta = `${kodeKontingen}-${Math.floor(Math.random() * 90) + 10}`;
               const { data: newPm, error: errPm } = await window.supabaseClient.from('peserta_master')
                 .insert([{ nama, tgl_lahir: tgl, kode_peserta: kodePeserta }]).select().single();
               if (errPm) throw errPm;
