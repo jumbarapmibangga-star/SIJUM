@@ -153,10 +153,21 @@
     });
 
     async function loadTim() {
-      const { data: allTim } = await window.supabaseClient.from('tim').select('*, tingkat(nama)').eq('event_id', currentEventId).order('kode_kontingen');
-      const { data: sudahDinilai } = await window.supabaseClient.from('penilaian_juri').select('penilaian_pos_id, status, penilaian_pos(tim_id)').eq('juri_id', currentJuriId);
+      // Ambil semua tim untuk event ini
+      const { data: allTim } = await window.supabaseClient
+        .from('tim')
+        .select('*, tingkat(nama)')
+        .eq('event_id', currentEventId)
+        .order('kode_kontingen');
       
-      const timSudahDinilaiIds = sudahDinilai
+      // Ambil penilaian Juri HANYA untuk pos ini (filter pos_id)
+      const { data: sudahDinilai } = await window.supabaseClient
+        .from('penilaian_juri')
+        .select('penilaian_pos_id, status, penilaian_pos!inner(tim_id, pos_id)')
+        .eq('juri_id', currentJuriId)
+        .eq('penilaian_pos.pos_id', currentPosId);
+      
+      const timSudahDinilaiIds = (sudahDinilai || [])
         .filter(sd => sd.status === 'locked' && sd.penilaian_pos && sd.penilaian_pos.tim_id)
         .map(sd => sd.penilaian_pos.tim_id);
 
@@ -212,7 +223,7 @@
           <h4 class="font-bold text-red-800 mb-2">Scan Kehadiran Peserta</h4>
           <p class="text-xs text-red-600 mb-3">Wajib scan minimal 1 peserta.</p>
           <div class="flex gap-2">
-            <input type="text" id="qrInput" placeholder="Kode (cth: MU-01-01)" class="input-field flex-1 bg-white border-red-300 text-sm">
+            <input type="text" id="qrInput" placeholder="Kode (cth: MU-001-01)" class="input-field flex-1 bg-white border-red-300 text-sm">
             <button type="button" onclick="scanKamera()" class="btn-secondary bg-white text-red-700 border-red-300 px-4">Scan</button>
           </div>
           <div id="scannerArea" class="hidden mt-4 w-full max-w-sm mx-auto overflow-hidden rounded-lg border-2 border-red-400"></div>
