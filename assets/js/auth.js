@@ -1,12 +1,18 @@
 // assets/js/auth.js
 
 async function loginUser(username, password) {
-  const email = username.includes('@') ? username : `${username}@jumbara.local`;
+  // PERBAIKAN: Ubah @jumbara.local menjadi @jumbara.id
+  const email = username.includes('@') ? username : `${username}@jumbara.id`;
+  
   const { data, error } = await window.supabaseClient.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
 
-  // Catat Log Login
-  await catatLog('auth', 'login', `User ${username} berhasil login`, 'login');
+  // PERBAIKAN: Bungkus catatLog dengan try-catch agar tidak menggagalkan login jika RLS ketat
+  try {
+    await catatLog('auth', 'login', `User ${username} berhasil login`, 'login');
+  } catch (logError) {
+    console.warn('Gagal mencatat log login (diabaikan):', logError.message);
+  }
 
   return data;
 }
@@ -14,7 +20,12 @@ async function loginUser(username, password) {
 async function logoutUser() {
   const { data: { session } } = await window.supabaseClient.auth.getSession();
   if (session) {
-    await catatLog('auth', 'logout', `User ${session.user.email} logout`, 'logout');
+    // Tambahkan try-catch kecil di sini juga agar proses logout tidak macet jika log gagal
+    try {
+      await catatLog('auth', 'logout', `User ${session.user.email} logout`, 'logout');
+    } catch (logError) {
+      console.warn('Gagal mencatat log logout (diabaikan):', logError.message);
+    }
   }
   
   await window.supabaseClient.auth.signOut();
@@ -59,5 +70,7 @@ async function catatLog(kategori, aksi, deskripsi, jenis, alasan = null) {
     }]);
   } catch (err) {
     console.warn('Gagal mencatat log:', err.message);
+    // Melempar error agar bisa ditangkap oleh try-catch di fungsi pemanggil (jika diperlukan)
+    throw err; 
   }
 }
