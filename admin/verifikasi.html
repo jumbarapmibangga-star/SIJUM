@@ -10,30 +10,84 @@
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
 <body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESKTOP -->
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto">
-        <div><h1 class="text-lg font-bold">Jumbara PMI</h1><p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p></div>
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
       </div>
     </div>
-    <nav class="flex-1 p-4 space-y-1" id="navMenu"></nav>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
     <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-      <button class="btn-theme-toggle" onclick="toggleTheme()">Mode Gelap</button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
     </div>
   </aside>
 
+  <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8">
     <div class="mb-6">
       <h2 class="text-xl md:text-2xl font-bold text-slate-800">Verifikasi Pendaftaran</h2>
-      <p class="text-sm text-slate-500">Daftar kontingen yang mensubmit pendaftaran.</p>
+      <p class="text-sm md:text-base text-slate-500">Daftar kontingen yang mensubmit pendaftaran.</p>
     </div>
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <table class="table-custom min-w-full">
-        <thead><tr><th>No</th><th>Nama Kontingen</th><th>Kode</th><th>Status</th><th class="text-right">Aksi</th></tr></thead>
-        <tbody id="verifikasiTableBody"><tr><td colspan="5" class="p-8 text-center text-slate-500">Memuat data...</td></tr></tbody>
+
+    <!-- Tampilan Desktop (Tabel) -->
+    <div class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <table class="table-custom">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Kontingen</th>
+            <th>Kode</th>
+            <th>Tingkat</th>
+            <th>Status</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="verifikasiTableBody">
+          <tr><td colspan="6" class="p-8 text-center text-slate-500">Memuat data...</td></tr>
+        </tbody>
       </table>
+    </div>
+
+    <!-- Tampilan Mobile (Kartu) -->
+    <div id="verifikasiCardContainer" class="md:hidden space-y-4">
+      <p class="text-slate-500 text-center">Memuat data...</p>
     </div>
   </main>
 
@@ -45,37 +99,92 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
+
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
-      document.getElementById('userRoleDisplay').textContent = auth.role.replace('_', ' ').toUpperCase();
-      document.getElementById('navMenu').innerHTML = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/verifikasi.html" class="sidebar-link active">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-      `;
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      // RENDER MENU
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'verifikasi');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'verifikasi');
+
       loadVerifikasi();
     });
 
     async function loadVerifikasi() {
       const { data: list, error } = await window.supabaseClient
         .from('kontingen_event')
-        .select(`*, tingkat(nama), tim(kode_kontingen)`)
+        .select(`*, tingkat (nama), tim (kode_kontingen, nama_tim)`)
         .in('status', ['submitted', 'verified', 'rejected'])
-        .order('created_at');
+        .order('created_at', { ascending: true });
+
       const tbody = document.getElementById('verifikasiTableBody');
-      if (error || !list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada pendaftaran.</td></tr>`;
+      const cardContainer = document.getElementById('verifikasiCardContainer');
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+        cardContainer.innerHTML = `<p class="text-red-500 text-center">Gagal memuat: ${error.message}</p>`;
         return;
       }
-      let html = '';
-      list.forEach((k, index) => {
-        const kode = k.tim && k.tim.length > 0 ? k.tim[0].kode_kontingen : '-';
-        let badge = k.status === 'verified' ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Terverifikasi</span>' :
-                    k.status === 'rejected' ? '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Ditolak</span>' :
-                    '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold">Menunggu</span>';
-        let tombol = k.status === 'submitted' ? `<a href="admin/verifikasi-detail.html?id=${k.id}" class="bg-red-600 text-white px-3 py-1 rounded text-sm font-bold">Lihat & Verifikasi</a>` : `<span class="text-slate-400 italic text-sm">Selesai</span>`;
-        html += `<tr><td class="text-slate-600">${index + 1}</td><td class="font-semibold text-slate-800">${k.nama_kontingen}</td><td class="font-mono text-slate-600">${kode}</td><td>${badge}</td><td class="text-right">${tombol}</td></tr>`;
-      });
-      tbody.innerHTML = html;
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Belum ada pendaftaran yang masuk.</td></tr>`;
+        cardContainer.innerHTML = `<p class="text-slate-500 text-center py-10">Belum ada pendaftaran yang masuk.</p>`;
+      } else {
+        let htmlTable = '';
+        let htmlCard = '';
+
+        list.forEach((k, index) => {
+          const kode = k.tim && k.tim.length > 0 ? k.tim[0].kode_kontingen : '-';
+          
+          let statusBadge = '';
+          if (k.status === 'verified') statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Terverifikasi</span>`;
+          else if (k.status === 'rejected') statusBadge = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Ditolak</span>`;
+          else statusBadge = `<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold">Menunggu</span>`;
+
+          // SEMUA STATUS MENGARAH KE HALAMAN DETAIL
+          let tombolTable = `<a href="admin/verifikasi-detail.html?id=${k.id}" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-700 transition shadow-sm">Lihat Detail</a>`;
+          let tombolCard = `<div class="flex gap-2 w-full mt-3">
+                              <a href="admin/verifikasi-detail.html?id=${k.id}" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold text-sm text-center shadow-sm">Lihat Detail</a>
+                            </div>`;
+
+          htmlTable += `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="text-slate-600">${index + 1}</td>
+              <td class="font-semibold text-slate-800">${k.nama_kontingen}</td>
+              <td class="font-mono text-slate-600">${kode}</td>
+              <td class="text-slate-600">${k.tingkat.nama}</td>
+              <td>${statusBadge}</td>
+              <td class="text-right">${tombolTable}</td>
+            </tr>
+          `;
+
+          htmlCard += `
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 animate-fade-in">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="font-bold text-slate-800 text-lg">${k.nama_kontingen}</h3>
+                  <p class="text-sm font-mono text-slate-500">${kode} | ${k.tingkat.nama}</p>
+                </div>
+                ${statusBadge}
+              </div>
+              ${tombolCard}
+            </div>
+          `;
+        });
+
+        tbody.innerHTML = htmlTable;
+        cardContainer.innerHTML = htmlCard;
+      }
     }
   </script>
 </body>
