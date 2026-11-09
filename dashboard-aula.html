@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Papan Skor (Aula) — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
 <body class="halaman-aula bg-slate-50 min-h-screen flex flex-col font-sans">
 
-  <!-- HEADER AULA -->
   <header class="bg-red-700 text-white p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center gap-3">
@@ -36,61 +33,79 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
     
-    <!-- Filter Tingkat -->
-    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Nilai Per Pos</h2>
-        <p class="text-slate-500 mt-1">Menampilkan nilai yang sudah dikunci (final).</p>
-      </div>
-      
-      <div class="w-full md:w-auto">
-        <select id="filterTingkat" class="input-field md:w-64" onchange="loadDataAula()">
-          <option value="">Semua Tingkat</option>
-          <!-- Diisi JS -->
-        </select>
-      </div>
+    <!-- PANIC MODE BANNER -->
+    <div id="panicBanner" class="hidden mb-6 bg-red-600 text-white p-6 rounded-xl shadow-lg text-center animate-pulse">
+      <h2 class="text-2xl md:text-3xl font-bold mb-2">⚠️ PEMBERITAHUAN</h2>
+      <p id="panicMessage" class="text-lg md:text-xl">Mohon perhatian, ada kendala teknis.</p>
     </div>
 
-    <!-- Container Tabel -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-      <table class="table-custom min-w-full text-center">
-        <thead>
-          <tr>
-            <th class="text-left">Kode Kontingen</th>
-            <th>POS-01</th>
-            <th>POS-02</th>
-            <th>POS-03</th>
-            <th>POS-04</th>
-            <th>POS-05</th>
-            <th>POS-06</th>
-          </tr>
-        </thead>
-        <tbody id="aulaTableBody">
-          <tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data nilai...</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- NORMAL MODE (TABEL SKOR) -->
+    <div id="normalContent">
+      <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Nilai Per Pos</h2>
+          <p class="text-slate-500 mt-1">Menampilkan nilai yang sudah dikunci (final).</p>
+        </div>
+        
+        <div class="w-full md:w-auto">
+          <select id="filterTingkat" class="input-field md:w-64" onchange="loadDataAula()">
+            <option value="">Semua Tingkat</option>
+          </select>
+        </div>
+      </div>
 
-    <!-- Info Update -->
-    <div class="mt-4 text-center text-sm text-slate-400">
-      Terakhir diperbarui: <span id="lastUpdate">-</span>
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+        <table class="table-custom min-w-full text-center">
+          <thead>
+            <tr>
+              <th class="text-left">Kode Kontingen</th>
+            </tr>
+          </thead>
+          <tbody id="aulaTableBody">
+            <tr><td class="p-8 text-center text-slate-500">Memuat data nilai...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 text-center text-sm text-slate-400">
+        Terakhir diperbarui: <span id="lastUpdate">-</span>
+      </div>
     </div>
 
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
     let allPos = [];
     let allTim = [];
+    let statusFinalList = [];
+    let currentEvent = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Load Master Tingkat untuk Filter
+      // 1. Ambil Event Aktif (untuk cek aula_mode)
+      const { data: events } = await window.supabaseClient
+        .from('event')
+        .select('*')
+        .order('tahun', { ascending: false })
+        .limit(1);
+      
+      if (events && events.length > 0) {
+        currentEvent = events[0];
+      }
+
+      // 2. Cek Aula Mode
+      if (currentEvent && currentEvent.aula_mode === 'panic') {
+        document.getElementById('normalContent').classList.add('hidden');
+        document.getElementById('panicBanner').classList.remove('hidden');
+        document.getElementById('panicMessage').textContent = currentEvent.aula_pesan || 'Mohon perhatian, ada kendala teknis.';
+        return;
+      }
+
+      // 3. Mode Normal: Load Master Tingkat
       const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
       const selectTingkat = document.getElementById('filterTingkat');
       if (tingkatData) {
@@ -99,7 +114,7 @@
         });
       }
 
-      // 2. Load Master Pos (Hanya Pos Induk)
+      // 4. Load Master Pos (Hanya Pos Induk)
       const { data: posData } = await window.supabaseClient
         .from('pos')
         .select('*')
@@ -108,18 +123,46 @@
       
       allPos = posData || [];
       
-      // 3. Render Header Tabel Dinamis (berdasarkan Pos)
+      // 5. Render Header Tabel Dinamis
       const theadTr = document.querySelector('thead tr');
       theadTr.innerHTML = '<th class="text-left">Kode Kontingen</th>';
       allPos.forEach(p => {
         theadTr.innerHTML += `<th>${p.kode_pos}</th>`;
       });
 
-      // 4. Load Data Awal
+      // 6. Ambil Status Final dari Database
+      const { data: statusData } = await window.supabaseClient
+        .from('status_kontingen')
+        .select('nama')
+        .eq('bisa_dicetak', true);
+      
+      statusFinalList = (statusData || []).map(s => s.nama);
+      if (statusFinalList.length === 0) {
+        statusFinalList = ['final', 'direvisi'];
+      }
+
+      // 7. Load Data Awal
       loadDataAula();
     });
 
     async function loadDataAula() {
+      // Cek ulang aula_mode setiap refresh (jika panitia mengubah mode)
+      const { data: events } = await window.supabaseClient
+        .from('event')
+        .select('aula_mode, aula_pesan')
+        .eq('id', currentEvent.id)
+        .single();
+      
+      if (events && events.aula_mode === 'panic') {
+        document.getElementById('normalContent').classList.add('hidden');
+        document.getElementById('panicBanner').classList.remove('hidden');
+        document.getElementById('panicMessage').textContent = events.aula_pesan || 'Mohon perhatian, ada kendala teknis.';
+        return;
+      } else {
+        document.getElementById('normalContent').classList.remove('hidden');
+        document.getElementById('panicBanner').classList.add('hidden');
+      }
+
       const filterTingkatId = document.getElementById('filterTingkat').value;
       const tbody = document.getElementById('aulaTableBody');
       tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-slate-500">Memuat data...</td></tr>`;
@@ -135,11 +178,11 @@
       }
       allTim = timData || [];
 
-      // Ambil Data Nilai (Hanya yang statusnya final/direvisi)
+      // Ambil Data Nilai (Status dari database)
       const { data: nilaiData, error: errNilai } = await window.supabaseClient
         .from('penilaian_pos')
         .select('*')
-        .in('status', ['final', 'direvisi']);
+        .in('status', statusFinalList);
 
       if (errNilai) {
         tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-red-500">Gagal memuat nilai: ${errNilai.message}</td></tr>`;
@@ -156,7 +199,6 @@
           html += `<td class="text-left font-mono font-bold text-red-600">${tim.kode_kontingen}</td>`;
           
           allPos.forEach(pos => {
-            // Cari nilai untuk tim dan pos ini
             const nilai = nilaiData.find(n => n.tim_id === tim.id && n.pos_id === pos.id);
             
             if (nilai && nilai.nilai_final !== null) {
@@ -171,11 +213,10 @@
         tbody.innerHTML = html;
       }
 
-      // Update Waktu
       document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
     }
 
-    // Auto Refresh setiap 30 detik
+    // Auto Refresh setiap 30 detik (termasuk cek panic mode)
     setInterval(() => {
       loadDataAula();
     }, 30000);
