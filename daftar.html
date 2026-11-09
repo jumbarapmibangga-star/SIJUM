@@ -46,13 +46,30 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script>
+    let statusDraft = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
+      // Ambil daftar tingkat
       const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
       const selectTingkat = document.getElementById('tingkatId');
       if (tingkatData) {
         tingkatData.forEach(t => {
           selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
         });
+      }
+
+      // Ambil status draft dari database (bebas hardcode)
+      const { data: statusData } = await window.supabaseClient
+        .from('status_kontingen')
+        .select('nama')
+        .eq('bisa_diedit', true)
+        .limit(1)
+        .maybeSingle();
+
+      if (statusData) {
+        statusDraft = statusData.nama;
+      } else {
+        console.error('Status draft tidak ditemukan di database!');
       }
     });
 
@@ -65,6 +82,11 @@
       const namaSekolah = document.getElementById('namaSekolah').value;
       const tingkatId = document.getElementById('tingkatId').value;
       const email = `${username}@jumbara.id`;
+
+      if (!statusDraft) {
+        alert('Sistem sedang sibuk. Silakan coba lagi nanti.');
+        return;
+      }
 
       btn.innerHTML = 'Memproses...'; btn.disabled = true; errDiv.classList.add('hidden');
 
@@ -87,7 +109,7 @@
             
             if (kodeOtomatis) {
               const { data: newKontingen } = await window.supabaseClient.from('kontingen_event').insert([{
-                event_id: eventId, akun_id: data.user.id, nama_kontingen: namaSekolah, tingkat_id: tingkatId, status: 'draft'
+                event_id: eventId, akun_id: data.user.id, nama_kontingen: namaSekolah, tingkat_id: tingkatId, status: statusDraft
               }]).select().single();
 
               if (newKontingen) {
