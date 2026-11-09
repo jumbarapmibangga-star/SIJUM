@@ -1,204 +1,26 @@
-<!doctype html>
-<html lang="id">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Daftar Akun Kontingen — Jumbara PMI</title>
-  
-  <base href="./">
-  
-  <link rel="icon" type="image/png" href="assets/img/favicon.png">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="assets/css/custom.css">
-</head>
-<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
-
-  <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in">
-    
-    <div class="text-center mb-8">
-      <div class="flex justify-center mb-3">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-12 md:h-14 w-auto object-contain animate-heartbeat">
-      </div>
-      <h1 class="text-2xl font-bold text-red-700">Daftar Akun</h1>
-      <p class="text-sm text-slate-500">Khusus Kontingen / Sekolah</p>
-    </div>
-
-    <form id="registerForm" class="space-y-5">
-      
-      <div>
-        <label class="input-label">Tingkat Perlombaan</label>
-        <select id="tingkatId" required class="input-field" onchange="onTingkatChange()">
-          <option value="">-- Pilih Tingkat --</option>
-        </select>
-      </div>
-
-      <div id="kecamatanWrapper" class="hidden">
-        <label class="input-label">Kecamatan</label>
-        <select id="kecamatanId" required class="input-field" onchange="onKecamatanChange()">
-          <option value="">Memuat kecamatan...</option>
-        </select>
-      </div>
-
-      <div id="sekolahWrapper" class="hidden">
-        <label class="input-label">Nama Sekolah</label>
-        <select id="sekolahId" required class="input-field">
-          <option value="">Memuat sekolah...</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="input-label">Username (Tanpa Spasi)</label>
-        <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field">
-      </div>
-
-      <div>
-        <label class="input-label">Password</label>
-        <input type="password" id="password" required placeholder="Minimal 6 karakter" class="input-field">
-      </div>
-
-      <div id="errorMsg" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200"></div>
-
-      <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
-        Daftar Sekarang
-      </button>
-    </form>
-
-    <div class="mt-6 text-center border-t border-slate-200 pt-6">
-      <a href="login.html" class="text-sm text-slate-500 hover:text-red-600 transition-colors">
-        Sudah punya akun? Login di sini
-      </a>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-client.js"></script>
-  <script>
-    let listTingkat = [];
-    let currentJenjang = '';
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
-      listTingkat = tingkatData || [];
-      const selectTingkat = document.getElementById('tingkatId');
-      listTingkat.forEach(t => {
-        selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
-      });
-    });
-
-    async function onTingkatChange() {
-      const tingkatId = document.getElementById('tingkatId').value;
-      const kecamatanWrapper = document.getElementById('kecamatanWrapper');
-      const sekolahWrapper = document.getElementById('sekolahWrapper');
-      const kecamatanSelect = document.getElementById('kecamatanId');
-
-      sekolahWrapper.classList.add('hidden');
-      document.getElementById('sekolahId').innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-
-      if (!tingkatId) {
-        kecamatanWrapper.classList.add('hidden');
-        return;
-      }
-
-      const tingkatObj = listTingkat.find(t => t.id === tingkatId);
-      currentJenjang = tingkatObj ? tingkatObj.nama : '';
-
-      kecamatanWrapper.classList.remove('hidden');
-      kecamatanSelect.innerHTML = '<option value="">Memuat kecamatan...</option>';
-
-      const { data: sekolahData, error } = await window.supabaseClient
-        .from('sekolah')
-        .select('kecamatan')
-        .eq('jenjang', currentJenjang)
-        .not('kecamatan', 'is', null);
-
-      if (error) {
-        console.error(error);
-        kecamatanSelect.innerHTML = '<option value="">Gagal memuat kecamatan</option>';
-        return;
-      }
-
-      const uniqueKecamatan = [...new Set(sekolahData.map(s => s.kecamatan))].sort();
-      
-      kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-      uniqueKecamatan.forEach(k => {
-        kecamatanSelect.innerHTML += `<option value="${k}">${k}</option>`;
-      });
-    }
-
-    async function onKecamatanChange() {
-      const kecamatan = document.getElementById('kecamatanId').value;
-      const sekolahWrapper = document.getElementById('sekolahWrapper');
-      const sekolahSelect = document.getElementById('sekolahId');
-
-      if (!kecamatan) {
-        sekolahWrapper.classList.add('hidden');
-        return;
-      }
-
-      sekolahWrapper.classList.remove('hidden');
-      sekolahSelect.innerHTML = '<option value="">Memuat sekolah...</option>';
-
-      const { data: sekolahData, error } = await window.supabaseClient
-        .from('sekolah')
-        .select('nama')
-        .eq('jenjang', currentJenjang)
-        .eq('kecamatan', kecamatan)
-        .order('nama');
-
-      if (error) {
-        console.error(error);
-        sekolahSelect.innerHTML = '<option value="">Gagal memuat sekolah</option>';
-        return;
-      }
-
-      sekolahSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-      sekolahData.forEach(s => {
-        sekolahSelect.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
-      });
-    }
-
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('btnSubmit');
-      const errDiv = document.getElementById('errorMsg');
-      const username = document.getElementById('username').value.trim().toLowerCase();
-      const password = document.getElementById('password').value;
-      const namaSekolah = document.getElementById('sekolahId').value;
-      
-      // GUNAKAN DOMAIN YANG VALID
-      const email = `${username}@jumbara.id`;
-
-      if (!namaSekolah) {
-        errDiv.textContent = 'Silakan pilih sekolah terlebih dahulu.';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
-      btn.innerHTML = 'Memproses...'; btn.disabled = true; errDiv.classList.add('hidden');
-
       try {
+        // 1. Daftar ke Auth
+        const tingkatId = document.getElementById('tingkatId').value;
         const { data, error } = await window.supabaseClient.auth.signUp({
           email: email,
           password: password,
           options: {
-            data: { nama: namaSekolah }
+            data: { 
+              nama: namaSekolah,
+              tingkat_id: tingkatId 
+            }
           }
         });
 
         if (error) throw error;
 
-        const { error: rpcError } = await window.supabaseClient.rpc('set_user_role', {
+        // 2. Set Role (jika RPC ini masih dipakai)
+        await window.supabaseClient.rpc('set_user_role', {
           user_email: email,
           user_role: 'kontingen'
         });
 
-        if (rpcError) {
-          console.warn('Gagal set role otomatis.', rpcError);
-          alert('Akun dibuat, tapi gagal set role. Silakan hubungi panitia.');
-        } else {
-          alert('Pendaftaran akun berhasil! Silakan login.');
-        }
-        
+        alert('Pendaftaran akun berhasil! Silakan login.');
         window.location.href = 'login.html';
 
       } catch (error) {
@@ -207,7 +29,3 @@
         btn.innerHTML = 'Daftar Sekarang'; 
         btn.disabled = false;
       }
-    });
-  </script>
-</body>
-</html>
