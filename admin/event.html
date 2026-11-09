@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kelola Event — Jumbara PMI</title>
+  
+  <base href="../">
+  
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola Event</h2>
+        <p class="text-sm md:text-base text-slate-500">Atur event, status pendaftaran, dan konfigurasi lomba.</p>
+      </div>
+      <button onclick="bukaModalEvent()" class="btn-primary w-full md:w-auto shadow-md">+ Tambah Event</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full">
+        <thead>
+          <tr>
+            <th>Tahun</th>
+            <th>Nama Event</th>
+            <th>Tempat</th>
+            <th>Status Pendaftaran</th>
+            <th>Aula Mode</th>
+            <th>Config Locked</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="eventTableBody">
+          <tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat data event...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL EVENT -->
+  <div id="modalEvent" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 form-card animate-fade-in">
+      <h3 class="text-lg font-bold text-slate-800 mb-4" id="modalTitle">Tambah Event</h3>
+      <form id="eventForm" class="space-y-4">
+        <input type="hidden" id="eventId" value="">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="input-label">Tahun</label>
+            <input type="number" id="tahun" required placeholder="Contoh: 2026" class="input-field">
+          </div>
+          <div>
+            <label class="input-label">Nama Event</label>
+            <input type="text" id="nama" required placeholder="Contoh: Jumbara PMR 2026" class="input-field">
+          </div>
+        </div>
+
+        <div>
+          <label class="input-label">Tempat Pelaksanaan</label>
+          <input type="text" id="tempat" required placeholder="Contoh: Buper Munjulluhur" class="input-field">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="input-label">Status Pendaftaran</label>
+            <select id="pendaftaranStatus" class="input-field">
+              <option value="buka">Buka</option>
+              <option value="tutup">Tutup</option>
+            </select>
+          </div>
+          <div>
+            <label class="input-label">Aula Mode</label>
+            <select id="aulaMode" class="input-field">
+              <option value="normal">Normal</option>
+              <option value="panic">Panic (Darurat)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="border-t pt-4 border-slate-200">
+          <label class="flex items-center space-x-3 cursor-pointer">
+            <input type="checkbox" id="urutanPosLocked" class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
+            <span class="text-sm font-medium text-slate-700">Kunci Konfigurasi Pos</span>
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="btnBatal" class="btn-secondary">Batal</button>
+          <button type="submit" id="btnSimpan" class="btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'event');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'event');
+
+      document.getElementById('btnBatal').addEventListener('click', () => {
+        document.getElementById('modalEvent').classList.add('hidden');
+      });
+
+      loadEvent();
+    });
+
+    async function loadEvent() {
+      const tbody = document.getElementById('eventTableBody');
+      const { data, error } = await window.supabaseClient
+        .from('event')
+        .select('*')
+        .order('tahun', { ascending: false });
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Belum ada event.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach((ev) => {
+        const statusBadge = ev.pendaftaran_status === 'buka' 
+          ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Buka</span>`
+          : `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Tutup</span>`;
+        
+        const lockedBadge = ev.urutan_pos_locked 
+          ? `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Terkunci</span>`
+          : `<span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-bold">Draft</span>`;
+
+        html += `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="font-bold text-slate-800">${ev.tahun}</td>
+            <td class="font-medium text-slate-800">${ev.nama}</td>
+            <td class="text-slate-600">${ev.tempat_pelaksanaan || '-'}</td>
+            <td>${statusBadge}</td>
+            <td class="text-slate-600">${ev.aula_mode || 'normal'}</td>
+            <td>${lockedBadge}</td>
+            <td class="text-right space-x-2">
+              <button onclick="editEvent('${ev.id}')" class="text-blue-600 hover:underline font-semibold text-sm">Edit</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    window.bukaModalEvent = () => {
+      document.getElementById('modalTitle').textContent = 'Tambah Event';
+      document.getElementById('eventId').value = '';
+      document.getElementById('tahun').value = '';
+      document.getElementById('nama').value = '';
+      document.getElementById('tempat').value = '';
+      document.getElementById('pendaftaranStatus').value = 'buka';
+      document.getElementById('aulaMode').value = 'normal';
+      document.getElementById('urutanPosLocked').checked = false;
+      document.getElementById('modalEvent').classList.remove('hidden');
+    };
+
+    window.editEvent = async (id) => {
+      const { data: ev } = await window.supabaseClient.from('event').select('*').eq('id', id).single();
+      if (!ev) return;
+
+      document.getElementById('modalTitle').textContent = 'Edit Event';
+      document.getElementById('eventId').value = ev.id;
+      document.getElementById('tahun').value = ev.tahun;
+      document.getElementById('nama').value = ev.nama;
+      document.getElementById('tempat').value = ev.tempat_pelaksanaan || '';
+      document.getElementById('pendaftaranStatus').value = ev.pendaftaran_status;
+      document.getElementById('aulaMode').value = ev.aula_mode || 'normal';
+      document.getElementById('urutanPosLocked').checked = ev.urutan_pos_locked;
+      document.getElementById('modalEvent').classList.remove('hidden');
+    };
+
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSimpan');
+      btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+      const id = document.getElementById('eventId').value;
+      const payload = {
+        tahun: parseInt(document.getElementById('tahun').value),
+        nama: document.getElementById('nama').value,
+        tempat_pelaksanaan: document.getElementById('tempat').value,
+        pendaftaran_status: document.getElementById('pendaftaranStatus').value,
+        aula_mode: document.getElementById('aulaMode').value,
+        urutan_pos_locked: document.getElementById('urutanPosLocked').checked
+      };
+
+      let error;
+      if (id) {
+        const res = await window.supabaseClient.from('event').update(payload).eq('id', id);
+        error = res.error;
+      } else {
+        const res = await window.supabaseClient.from('event').insert([payload]);
+        error = res.error;
+      }
+
+      if (error) {
+        alert('Gagal menyimpan: ' + error.message);
+      } else {
+        document.getElementById('modalEvent').classList.add('hidden');
+        loadEvent();
+      }
+      btn.innerHTML = 'Simpan'; btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
