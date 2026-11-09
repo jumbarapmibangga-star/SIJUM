@@ -432,26 +432,13 @@
       }
     }
 
-    // FUNGSI PERBAIKI DATA (Dengan Fallback)
+    // FUNGSI PERBAIKI DATA (Jalan Pintas: Paksa ke 'draft')
     window.perbaikiData = async () => {
       if (!confirm('Apakah Anda yakin ingin memperbaiki data? Status akan kembali menjadi Draft.')) return;
       
-      // Cari status yang bisa diedit
-      let draftStatus = listStatus.find(s => s.bisa_diedit === true);
-      
-      // Jika tidak ketemu, paksa cari yang namanya 'draft' (sebagai fallback)
-      if (!draftStatus) {
-        draftStatus = listStatus.find(s => s.nama === 'draft');
-      }
-
-      if (!draftStatus) {
-        alert('Error: Status draft tidak ditemukan di database. Hubungi panitia.');
-        return;
-      }
-
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: draftStatus.nama, catatan_verifikasi: null })
+        .update({ status: 'draft', catatan_verifikasi: null })
         .eq('id', currentKontingenId);
 
       if (error) {
