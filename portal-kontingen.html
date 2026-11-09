@@ -143,6 +143,7 @@
     let currentEventId, currentKontingenId, currentTimId, currentKodeKontingen, currentTingkatId;
     let listPeran = [];
     let currentEventData = null;
+    let statusDraft = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['kontingen']);
@@ -159,6 +160,15 @@
 
       const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
       listPeran = peranData || [];
+
+      // AMBIL STATUS DRAFT DARI DATABASE (BEBAS HARDCODE)
+      const { data: statusData } = await window.supabaseClient
+        .from('status_kontingen')
+        .select('nama')
+        .eq('bisa_diedit', true)
+        .limit(1)
+        .maybeSingle();
+      if (statusData) statusDraft = statusData.nama;
 
       const { data: kontingen } = await window.supabaseClient.from('kontingen_event').select('*').eq('event_id', currentEventId).eq('akun_id', auth.user.id).maybeSingle();
 
@@ -177,7 +187,17 @@
           if (peserta) pesertaData = peserta;
         }
 
-        if (kontingen.status === 'draft') {
+        // Cek status dari tabel referensi (bebas hardcode)
+        const { data: statusRef } = await window.supabaseClient
+          .from('status_kontingen')
+          .select('bisa_diedit, bisa_dicetak')
+          .eq('nama', kontingen.status)
+          .maybeSingle();
+        
+        const bisaDiedit = statusRef ? statusRef.bisa_diedit : false;
+        const bisaDicetak = statusRef ? statusRef.bisa_dicetak : false;
+
+        if (bisaDiedit) {
           document.getElementById('formSection').classList.remove('hidden');
           document.getElementById('displayKodeKontingen').textContent = currentKodeKontingen;
           document.getElementById('displayNamaKontingen').textContent = namaSekolah;
@@ -206,7 +226,7 @@
           document.getElementById('statusBanner').innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
           info.innerHTML = `<div class="bg-white p-8 rounded-xl shadow-sm border max-w-lg mx-auto"><h2 class="text-xl font-bold mb-2">Formulir Sedang Diverifikasi</h2><p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p></div>`;
 
-        } else if (kontingen.status === 'verified') {
+        } else if (bisaDicetak) {
           document.getElementById('printSection').classList.remove('hidden');
           document.getElementById('statusBanner').classList.remove('hidden');
           document.getElementById('statusBanner').className = 'mb-6 p-4 rounded-xl border bg-green-50 border-green-200 text-green-800 no-print';
@@ -300,7 +320,11 @@
 
     window.perbaikiData = async () => {
       if (!confirm('Perbaiki data? Status kembali menjadi Draft.')) return;
-      await window.supabaseClient.from('kontingen_event').update({ status: 'draft', catatan_verifikasi: null }).eq('id', currentKontingenId);
+      if (!statusDraft) {
+        alert('Error: Status draft tidak ditemukan di database.');
+        return;
+      }
+      await window.supabaseClient.from('kontingen_event').update({ status: statusDraft, catatan_verifikasi: null }).eq('id', currentKontingenId);
       window.location.reload();
     };
   </script>
