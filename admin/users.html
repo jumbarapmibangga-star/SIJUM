@@ -68,7 +68,6 @@
         <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola User</h2>
         <p class="text-sm md:text-base text-slate-500">Daftar semua akun yang terdaftar di sistem.</p>
       </div>
-      <!-- Tombol Aksi Cepat ke Supabase -->
       <a href="https://supabase.com/dashboard/project/_/auth/users" target="_blank" class="btn-primary w-full md:w-auto text-center shadow-md flex justify-center items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
         Buka Supabase Auth
@@ -92,20 +91,19 @@
       </table>
     </div>
     
-    <!-- PANDUAN CARA MENGELOLA USER -->
     <div class="mt-6 bg-blue-50 border border-blue-200 p-5 rounded-xl text-sm text-blue-900 space-y-3">
       <h3 class="font-bold text-base mb-2">📖 Panduan Mengelola User (Via Supabase)</h3>
       
       <div>
         <p class="font-semibold">1. Menambah User Baru (Juri/Panitia/Kontingen)</p>
-        <p>Buka Supabase -> Authentication -> Users -> Klik <b>"Add User"</b> -> Isi Email (contoh: <i>juri2@jumbara.local</i>) dan Password -> Centang <b>"Auto Confirm User"</b>.</p>
+        <p>Buka Supabase -> Authentication -> Users -> Klik <b>"Add User"</b> -> Isi Email (contoh: <i>juri2@jumbara.id</i>) dan Password -> Centang <b>"Auto Confirm User"</b>.</p>
       </div>
 
       <div>
         <p class="font-semibold">2. Mengubah Role User</p>
         <p>Buka Supabase -> SQL Editor -> Jalankan perintah:</p>
         <code class="block bg-white p-2 rounded mt-1 border border-blue-200 text-xs">
-          update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role": "juri"}'::jsonb where email = 'juri2@jumbara.local';
+          update auth.users set raw_app_meta_data = raw_app_meta_data || '{"role": "juri"}'::jsonb where email = 'juri2@jumbara.id';
         </code>
         <p class="text-xs mt-1 text-blue-700">*(Ganti "juri" dengan role yang diinginkan: super_admin, koordinator, admin_event, juri, kontingen).*</p>
       </div>
@@ -137,23 +135,11 @@
       document.getElementById('userRoleDisplay').textContent = roleText;
       document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
+      // RENDER MENU
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
-        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
-        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>
-        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link active">Kelola User</a>
-      `;
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'users');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'users');
 
       loadUsers();
     });
