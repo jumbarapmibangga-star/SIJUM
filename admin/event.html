@@ -152,7 +152,8 @@
   <script src="assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      // HANYA SUPER ADMIN YANG BISA AKSES
+      const auth = await protectPage(['super_admin']);
       if (!auth) return;
 
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
