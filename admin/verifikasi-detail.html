@@ -225,15 +225,19 @@
         if (peserta && peserta.length > 0) {
           let html = '';
           peserta.forEach((p, index) => {
-            const tgl = p.peserta_master.tgl_lahir ? new Date(p.peserta_master.tgl_lahir).toLocaleDateString('id-ID') : '-';
+            // PENANGANAN KHUSUS: Jika peserta_master berbentuk array, ambil elemen pertama
+            const master = Array.isArray(p.peserta_master) ? p.peserta_master[0] : p.peserta_master;
+            if (!master) return; // Skip jika data master null/kosong
+
+            const tgl = master.tgl_lahir ? new Date(master.tgl_lahir).toLocaleDateString('id-ID') : '-';
             html += `
               <tr class="hover:bg-slate-50 transition-colors">
                 <td class="text-slate-600">${index + 1}</td>
-                <td class="font-semibold text-slate-800">${p.peserta_master.nama}</td>
-                <td class="text-slate-600">${p.peserta_master.nama_panggilan || '-'}</td>
+                <td class="font-semibold text-slate-800">${master.nama}</td>
+                <td class="text-slate-600">${master.nama_panggilan || '-'}</td>
                 <td class="text-slate-600">${tgl}</td>
-                <td class="text-slate-600">${p.peserta_master.alamat || '-'}</td>
-                <td class="text-slate-600">${p.peserta_master.no_hp || '-'}</td>
+                <td class="text-slate-600">${master.alamat || '-'}</td>
+                <td class="text-slate-600">${master.no_hp || '-'}</td>
                 <td class="text-slate-600">${p.peran_utama}</td>
               </tr>
             `;
