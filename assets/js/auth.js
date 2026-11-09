@@ -74,3 +74,35 @@ async function catatLog(kategori, aksi, deskripsi, jenis, alasan = null) {
     throw err; 
   }
 }
+// FUNGSI GLOBAL UNTUK MERENDER MENU SIDEBAR (BEBAS HARDCODE)
+async function renderMenu(role, activePage = '') {
+  // Ambil menu dari database
+  const { data: menus, error } = await window.supabaseClient
+    .from('menu_admin')
+    .select('*')
+    .eq('is_active', true)
+    .order('urutan');
+
+  if (error || !menus) {
+    console.error('Gagal memuat menu:', error);
+    return '<p class="text-red-500 text-sm">Gagal memuat menu.</p>';
+  }
+
+  // Filter menu yang boleh diakses oleh role ini
+  const filteredMenus = menus.filter(m => m.role_akses.includes(role));
+
+  let html = '';
+  let lastKategori = '';
+
+  filteredMenus.forEach(m => {
+    if (m.kategori !== lastKategori) {
+      if (lastKategori !== '') html += '<div class="my-2 border-t border-slate-200"></div>';
+      lastKategori = m.kategori;
+    }
+
+    const isActive = m.url.includes(activePage) ? 'active' : '';
+    html += `<a href="${m.url}" class="sidebar-link ${isActive}">${m.icon || ''} ${m.label}</a>`;
+  });
+
+  return html;
+}
