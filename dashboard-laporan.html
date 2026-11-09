@@ -3,287 +3,176 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Dashboard Laporan — Jumbara PMI</title>
+  <title>Papan Skor (Aula) — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
-<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+<body class="halaman-aula bg-slate-50 min-h-screen flex flex-col font-sans">
 
-  <!-- HEADER MOBILE -->
-  <div class="md:hidden relative z-50">
-    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+  <header class="bg-red-700 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex items-center gap-3">
-        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-        <div class="flex items-center gap-2">
-          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
-          <div>
-            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
-            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
-          </div>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        </button>
-        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
-      </div>
-    </div>
-    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
-      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
-    </div>
-  </div>
-
-  <!-- SIDEBAR DESKTOP -->
-  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
-    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-      <div class="flex items-center space-x-3">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 md:h-12 w-auto object-contain animate-heartbeat">
         <div>
-          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
-          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+          <h1 class="text-xl md:text-2xl font-bold tracking-wide">Papan Skor Jumbara</h1>
+          <p class="text-xs md:text-sm text-red-100">PMI Kabupaten Purbalingga</p>
         </div>
       </div>
+      
+      <div class="flex items-center gap-3">
+        <button class="btn-theme-toggle text-xs px-3 py-1.5" onclick="toggleTheme()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+          Mode
+        </button>
+        <a href="index.html" class="bg-white text-red-700 px-4 py-1.5 rounded font-semibold text-sm hover:bg-slate-100 transition shadow-sm">Kembali</a>
+      </div>
     </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-      <button class="btn-theme-toggle" onclick="toggleTheme()">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        <span>Mode Gelap</span>
-      </button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
-    </div>
-  </aside>
+  </header>
 
-  <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
     
-    <div class="mb-6">
-      <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Pusat Laporan</h2>
-      <p class="text-slate-500 mt-1">Rekapitulasi hasil lomba dan data peserta.</p>
-    </div>
-
-    <!-- Navigasi Tab Laporan -->
-    <div class="flex overflow-x-auto gap-2 mb-6 pb-2 border-b border-slate-200">
-      <button onclick="showTab('juara-umum')" class="tab-btn active px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap bg-red-600 text-white">Juara Umum</button>
-      <button onclick="showTab('juara-pos')" class="tab-btn px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap bg-slate-200 text-slate-700 hover:bg-slate-300">Juara per Pos</button>
-      <button onclick="showTab('tergiat')" class="tab-btn px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap bg-slate-200 text-slate-700 hover:bg-slate-300">Peserta Tergiat</button>
-    </div>
-
-    <!-- Konten Laporan -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 animate-fade-in">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-2xl md:text-3xl font-bold text-slate-800">Nilai Per Pos</h2>
+        <p class="text-slate-500 mt-1">Menampilkan nilai yang sudah dikunci (final).</p>
+      </div>
       
-      <!-- Tab 1: Juara Umum -->
-      <div id="tab-juara-umum" class="tab-content block">
-        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Rekap Juara Umum</h3>
-        <div class="overflow-x-auto">
-          <table class="table-custom min-w-full">
-            <thead>
-              <tr>
-                <th>Peringkat</th>
-                <th>Kode Kontingen</th>
-                <th>Nama Tim</th>
-                <th>Tingkat</th>
-              </tr>
-            </thead>
-            <tbody id="juaraUmumBody">
-              <tr><td colspan="4" class="p-4 text-center text-slate-500">Memuat data...</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="w-full md:w-auto">
+        <select id="filterTingkat" class="input-field md:w-64" onchange="loadDataAula()">
+          <option value="">Semua Tingkat</option>
+        </select>
       </div>
-
-      <!-- Tab 2: Juara per Pos -->
-      <div id="tab-juara-pos" class="tab-content hidden">
-        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Rekap Juara per Pos</h3>
-        <div class="overflow-x-auto">
-          <table class="table-custom min-w-full">
-            <thead>
-              <tr>
-                <th>Pos</th>
-                <th>Juara 1</th>
-                <th>Juara 2</th>
-                <th>Juara 3</th>
-              </tr>
-            </thead>
-            <tbody id="juaraPosBody">
-              <tr><td colspan="4" class="p-4 text-center text-slate-500">Memuat data...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Tab 3: Peserta Tergiat -->
-      <div id="tab-tergiat" class="tab-content hidden">
-        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Rekap Peserta Tergiat</h3>
-        <p class="text-sm text-slate-500 mb-4">Berdasarkan frekuensi kehadiran (scan QR) di setiap pos.</p>
-        <div class="overflow-x-auto">
-          <table class="table-custom min-w-full">
-            <thead>
-              <tr>
-                <th>Peringkat</th>
-                <th>Nama Peserta</th>
-                <th>Sekolah</th>
-                <th>Jumlah Lomba</th>
-              </tr>
-            </thead>
-            <tbody id="tergiatBody">
-              <tr><td colspan="4" class="p-4 text-center text-slate-500">Memuat data...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full text-center">
+        <thead>
+          <tr>
+            <th class="text-left">Kode Kontingen</th>
+          </tr>
+        </thead>
+        <tbody id="aulaTableBody">
+          <tr><td class="p-8 text-center text-slate-500">Memuat data nilai...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 text-center text-sm text-slate-400">
+      Terakhir diperbarui: <span id="lastUpdate">-</span>
+    </div>
+
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
-  <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
+    let allPos = [];
+    let allTim = [];
+    let statusFinalList = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
-      // Proteksi Halaman
-      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
-      if (!auth) return;
-
-      // Setup Logout & Menu
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
-      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
-      
-      const btnMenu = document.getElementById('btnMobileMenu');
-      const dropdown = document.getElementById('mobileMenuDropdown');
-      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
-
-      const roleText = auth.role.replace('_', ' ').toUpperCase();
-      document.getElementById('userRoleDisplay').textContent = roleText;
-      document.getElementById('userRoleDisplayMobile').textContent = roleText;
-
-      // Render Menu Sidebar
-      const menuDesktop = document.getElementById('navMenu');
-      const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-        <a href="dashboard-laporan.html" class="sidebar-link active">📊 Laporan & Rekap</a>
-      `;
-      if (['koordinator', 'super_admin'].includes(auth.role)) {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      // 1. Load Master Tingkat
+      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      const selectTingkat = document.getElementById('filterTingkat');
+      if (tingkatData) {
+        tingkatData.forEach(t => {
+          selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+        });
       }
-      if (auth.role === 'super_admin') {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
-      }
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
 
-      // Load Data
-      loadJuaraUmum();
-      loadJuaraPos();
-      loadPesertaTergiat();
+      // 2. Load Master Pos (Hanya Pos Induk)
+      const { data: posData } = await window.supabaseClient
+        .from('pos')
+        .select('*')
+        .is('induk_pos_id', null)
+        .order('urutan', { ascending: true });
+      
+      allPos = posData || [];
+      
+      // 3. Render Header Tabel Dinamis
+      const theadTr = document.querySelector('thead tr');
+      theadTr.innerHTML = '<th class="text-left">Kode Kontingen</th>';
+      allPos.forEach(p => {
+        theadTr.innerHTML += `<th>${p.kode_pos}</th>`;
+      });
+
+      // 4. AMBIL STATUS FINAL DARI DATABASE (BEBAS HARDCODE)
+      const { data: statusData } = await window.supabaseClient
+        .from('status_kontingen')
+        .select('nama')
+        .eq('bisa_dicetak', true);
+      
+      statusFinalList = (statusData || []).map(s => s.nama);
+      if (statusFinalList.length === 0) {
+        statusFinalList = ['final', 'direvisi']; // fallback jika data kosong
+      }
+
+      // 5. Load Data Awal
+      loadDataAula();
     });
 
-    // Navigasi Tab
-    window.showTab = (tabId) => {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-red-600', 'text-white');
-        btn.classList.add('bg-slate-200', 'text-slate-700');
-      });
-      event.target.classList.remove('bg-slate-200', 'text-slate-700');
-      event.target.classList.add('bg-red-600', 'text-white');
-    };
+    async function loadDataAula() {
+      const filterTingkatId = document.getElementById('filterTingkat').value;
+      const tbody = document.getElementById('aulaTableBody');
+      tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-slate-500">Memuat data...</td></tr>`;
 
-    // 1. Load Juara Umum
-    async function loadJuaraUmum() {
-      const tbody = document.getElementById('juaraUmumBody');
-      tbody.innerHTML = `
-        <tr class="hover:bg-slate-50"><td class="font-bold text-yellow-600 text-lg">1</td><td class="font-mono">MU-01</td><td>SD N 1 Purbalingga</td><td>Mula</td></tr>
-        <tr class="hover:bg-slate-50"><td class="font-bold text-gray-400 text-lg">2</td><td class="font-mono">MU-03</td><td>SMP N 1 Purbalingga</td><td>Mula</td></tr>
-        <tr class="hover:bg-slate-50"><td class="font-bold text-amber-700 text-lg">3</td><td class="font-mono">MU-02</td><td>SD N 2 Purbalingga</td><td>Mula</td></tr>
-      `;
-    }
-
-    // 2. Load Juara per Pos
-    async function loadJuaraPos() {
-      const tbody = document.getElementById('juaraPosBody');
-      const { data: posList } = await window.supabaseClient.from('pos').select('*').is('induk_pos_id', null).order('urutan');
+      // Ambil Data Tim
+      let queryTim = window.supabaseClient.from('tim').select('*').order('kode_kontingen', { ascending: true });
+      if (filterTingkatId) queryTim = queryTim.eq('tingkat_id', filterTingkatId);
       
-      if (!posList || posList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Belum ada data pos.</td></tr>`;
+      const { data: timData, error: errTim } = await queryTim;
+      if (errTim) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-red-500">Gagal memuat tim: ${errTim.message}</td></tr>`;
         return;
       }
+      allTim = timData || [];
 
-      const { data: nilaiData } = await window.supabaseClient
+      // Ambil Data Nilai (Status dari database, bebas hardcode)
+      const { data: nilaiData, error: errNilai } = await window.supabaseClient
         .from('penilaian_pos')
-        .select(`nilai_final, tim (kode_kontingen, nama_tim), pos_id`)
-        .in('status', ['final', 'direvisi']);
+        .select('*')
+        .in('status', statusFinalList);
 
-      let html = '';
-      posList.forEach(pos => {
-        const nilaiPos = (nilaiData || [])
-          .filter(n => n.pos_id === pos.id && n.nilai_final !== null)
-          .sort((a, b) => b.nilai_final - a.nilai_final);
-
-        const j1 = nilaiPos[0] ? `${nilaiPos[0].tim.kode_kontingen} (${nilaiPos[0].nilai_final})` : '-';
-        const j2 = nilaiPos[1] ? `${nilaiPos[1].tim.kode_kontingen} (${nilaiPos[1].nilai_final})` : '-';
-        const j3 = nilaiPos[2] ? `${nilaiPos[2].tim.kode_kontingen} (${nilaiPos[2].nilai_final})` : '-';
-
-        html += `
-          <tr class="hover:bg-slate-50">
-            <td class="font-bold text-slate-800">${pos.kode_pos} - ${pos.nama_pos}</td>
-            <td class="text-green-700 font-semibold">${j1}</td>
-            <td class="text-slate-600">${j2}</td>
-            <td class="text-slate-600">${j3}</td>
-          </tr>
-        `;
-      });
-      tbody.innerHTML = html;
-    }
-
-    // 3. Load Peserta Tergiat
-    async function loadPesertaTergiat() {
-      const tbody = document.getElementById('tergiatBody');
-      const { data, error } = await window.supabaseClient.from('v_peserta_tergiat').select('*').limit(10);
-      
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+      if (errNilai) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-red-500">Gagal memuat nilai: ${errNilai.message}</td></tr>`;
         return;
       }
 
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">Belum ada data presensi.</td></tr>`;
+      // Render Tabel
+      if (allTim.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${allPos.length + 1}" class="p-8 text-center text-slate-500">Belum ada tim di tingkat ini.</td></tr>`;
       } else {
         let html = '';
-        data.forEach((p, index) => {
-          const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1;
-          html += `
-            <tr class="hover:bg-slate-50">
-              <td class="font-bold text-lg">${medal}</td>
-              <td class="font-semibold text-slate-800">${p.nama_peserta}</td>
-              <td class="text-slate-600">${p.nama_sekolah || '-'}</td>
-              <td class="font-bold text-red-600">${p.jumlah_lomba_diikuti} Lomba</td>
-            </tr>
-          `;
+        allTim.forEach(tim => {
+          html += `<tr class="hover:bg-slate-50 transition-colors">`;
+          html += `<td class="text-left font-mono font-bold text-red-600">${tim.kode_kontingen}</td>`;
+          
+          allPos.forEach(pos => {
+            const nilai = nilaiData.find(n => n.tim_id === tim.id && n.pos_id === pos.id);
+            
+            if (nilai && nilai.nilai_final !== null) {
+              html += `<td class="font-bold text-slate-800 text-lg">${parseFloat(nilai.nilai_final).toFixed(2)}</td>`;
+            } else {
+              html += `<td class="text-slate-400">-</td>`;
+            }
+          });
+
+          html += `</tr>`;
         });
         tbody.innerHTML = html;
       }
+
+      document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('id-ID');
     }
+
+    setInterval(() => {
+      loadDataAula();
+    }, 30000);
   </script>
 </body>
 </html>
