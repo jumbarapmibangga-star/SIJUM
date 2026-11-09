@@ -123,25 +123,11 @@
       document.getElementById('userRoleDisplay').textContent = roleText;
       document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
+      // RENDER MENU
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link active">Penugasan Juri</a>
-      `;
-      if (['koordinator', 'super_admin'].includes(auth.role)) {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
-      }
-      if (auth.role === 'super_admin') {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
-      }
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'juri');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'juri');
 
       // Ambil Event ID
       const { data: events } = await window.supabaseClient.from('event').select('id').eq('tahun', 2026).single();
@@ -176,7 +162,6 @@
         });
         posContainer.innerHTML = html;
 
-        // Tampilkan select slot jika checkbox dicentang
         document.querySelectorAll('.pos-checkbox').forEach(cb => {
           cb.addEventListener('change', (e) => {
             const posId = e.target.value;
@@ -233,7 +218,6 @@
         let juriId = id;
         let error;
 
-        // Cari User ID dari Supabase Auth berdasarkan email
         const { data: userIdData, error: userError } = await window.supabaseClient.rpc('get_user_id_by_email', { email_input: email });
 
         if (userError || !userIdData) {
@@ -243,7 +227,6 @@
         }
         const finalUserId = userIdData;
 
-        // Simpan ke tabel JURI
         if (id) {
           const res = await window.supabaseClient.from('juri').update({ nama, email, user_id: finalUserId }).eq('id', id);
           error = res.error;
@@ -259,7 +242,6 @@
           return;
         }
 
-        // Simpan Penugasan Pos & Slot
         if (juriId) {
           if (id) await window.supabaseClient.from('juri_pos').delete().eq('juri_id', juriId);
           
