@@ -4,38 +4,61 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Detail Verifikasi — Jumbara PMI</title>
+  
   <base href="../">
+  
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
 </head>
 <body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
-  <!-- HEADER MOBILE & SIDEBAR (Sama seperti halaman admin lain) -->
+  <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
     <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
-        <h1 class="text-sm font-bold text-red-700">Detail Verifikasi</h1>
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
       </div>
-      <a href="admin/verifikasi.html" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200">Kembali</a>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
     </div>
   </div>
 
+  <!-- SIDEBAR DESKTOP -->
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
         <div>
-          <h1 class="text-lg font-bold">Jumbara PMI</h1>
-          <p class="text-xs text-red-100">Panitia</p>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
         </div>
       </div>
     </div>
-    <nav class="flex-1 p-4 space-y-1">
-      <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-      <a href="admin/verifikasi.html" class="sidebar-link active">Verifikasi Kontingen</a>
-    </nav>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
   </aside>
 
   <!-- MAIN CONTENT -->
@@ -44,11 +67,11 @@
       <div>
         <a href="admin/verifikasi.html" class="text-sm text-red-600 hover:underline font-semibold mb-1 inline-block">&larr; Kembali ke Daftar</a>
         <h2 class="text-xl md:text-2xl font-bold text-slate-800">Detail Pendaftaran</h2>
-        <p class="text-sm text-slate-500" id="detailHeader">Memuat data...</p>
+        <p class="text-sm md:text-base text-slate-500" id="detailHeader">Memuat data...</p>
       </div>
     </div>
 
-    <!-- Kartu Identitas -->
+    <!-- Identitas -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div class="form-card">
         <p class="text-xs font-bold text-slate-400 uppercase">Nama Kontingen / Sekolah</p>
@@ -61,23 +84,25 @@
     </div>
 
     <!-- Data Peserta -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto mb-6">
-      <table class="table-custom min-w-full">
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Nama Lengkap</th>
-            <th>Panggilan</th>
-            <th>Tgl Lahir</th>
-            <th>Alamat</th>
-            <th>No HP</th>
-            <th>Peran</th>
-          </tr>
-        </thead>
-        <tbody id="pesertaBody">
-          <tr><td colspan="7" class="p-4 text-center text-slate-500">Memuat peserta...</td></tr>
-        </tbody>
-      </table>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+      <div class="overflow-x-auto">
+        <table class="table-custom min-w-full">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Lengkap</th>
+              <th>Panggilan</th>
+              <th>Tgl Lahir</th>
+              <th>Alamat</th>
+              <th>No HP</th>
+              <th>Peran</th>
+            </tr>
+          </thead>
+          <tbody id="pesertaBody">
+            <tr><td colspan="7" class="p-8 text-center text-slate-500">Memuat peserta...</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Data Tanda Tangan -->
@@ -97,7 +122,7 @@
 
     <!-- Tombol Aksi -->
     <div class="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t border-slate-200">
-      <button onclick="tolakData()" class="btn-secondary border-red-600 text-red-600 hover:bg-red-50 w-full md:w-auto">Tolak / Kembalikan</button>
+      <button onclick="tolakData()" class="btn-secondary text-red-600 border-red-600 hover:bg-red-50 w-full md:w-auto">Tolak / Kembalikan</button>
       <button onclick="setujuiData()" class="btn-primary w-full md:w-auto">Setujui Pendaftaran</button>
     </div>
   </main>
@@ -108,10 +133,46 @@
   <script src="assets/js/theme.js"></script>
   <script>
     let currentKontingenId = null;
+    let listStatus = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link active">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+        <a href="admin/kelola-berita.html" class="sidebar-link">📰 Kelola Berita</a>
+        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
+        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
 
       const urlParams = new URLSearchParams(window.location.search);
       currentKontingenId = urlParams.get('id');
@@ -122,11 +183,14 @@
         return;
       }
 
+      // Ambil referensi status dari database
+      const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
+      listStatus = statusData || [];
+
       loadDetail();
     });
 
     async function loadDetail() {
-      // 1. Ambil data kontingen & tim
       const { data: kontingen, error: errK } = await window.supabaseClient
         .from('kontingen_event')
         .select(`*, tingkat(nama), tim(*)`)
@@ -139,8 +203,11 @@
       }
 
       const tim = kontingen.tim && kontingen.tim.length > 0 ? kontingen.tim[0] : null;
+      
+      const statusData = listStatus.find(s => s.nama === kontingen.status);
+      const statusLabel = statusData ? statusData.label : kontingen.status;
 
-      document.getElementById('detailHeader').textContent = `Status saat ini: ${kontingen.status.toUpperCase()}`;
+      document.getElementById('detailHeader').textContent = `Status saat ini: ${statusLabel.toUpperCase()}`;
       document.getElementById('detailNamaSekolah').textContent = kontingen.nama_kontingen;
       document.getElementById('detailKode').textContent = `${tim ? tim.kode_kontingen : '-'} (${kontingen.tingkat.nama})`;
 
@@ -148,7 +215,6 @@
         document.getElementById('detailKepsek').textContent = tim.nama_kepala_sekolah || 'Belum diisi';
         document.getElementById('detailNip').textContent = tim.nip_kepala_sekolah || 'Belum diisi';
 
-        // 2. Ambil data peserta
         const { data: peserta } = await window.supabaseClient
           .from('peserta_event')
           .select(`peran_utama, peserta_master (nama, tgl_lahir, nama_panggilan, alamat, no_hp)`)
@@ -160,7 +226,7 @@
           peserta.forEach((p, index) => {
             const tgl = p.peserta_master.tgl_lahir ? new Date(p.peserta_master.tgl_lahir).toLocaleDateString('id-ID') : '-';
             html += `
-              <tr class="hover:bg-slate-50">
+              <tr class="hover:bg-slate-50 transition-colors">
                 <td class="text-slate-600">${index + 1}</td>
                 <td class="font-semibold text-slate-800">${p.peserta_master.nama}</td>
                 <td class="text-slate-600">${p.peserta_master.nama_panggilan || '-'}</td>
@@ -173,7 +239,7 @@
           });
           tbody.innerHTML = html;
         } else {
-          tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada peserta yang didaftarkan.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500">Belum ada peserta yang didaftarkan.</td></tr>`;
         }
       }
     }
@@ -181,9 +247,15 @@
     window.setujuiData = async () => {
       if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
       
+      const statusVerified = listStatus.find(s => s.nama === 'verified');
+      if (!statusVerified) {
+        alert('Error: Status "verified" tidak ditemukan di database.');
+        return;
+      }
+      
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: 'verified', verified_at: new Date().toISOString() })
+        .update({ status: statusVerified.nama, verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
       if (error) alert('Gagal: ' + error.message);
@@ -195,9 +267,15 @@
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
+      const statusRejected = listStatus.find(s => s.nama === 'rejected');
+      if (!statusRejected) {
+        alert('Error: Status "rejected" tidak ditemukan di database.');
+        return;
+      }
+
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: 'rejected', catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
+        .update({ status: statusRejected.nama, catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
       if (error) alert('Gagal: ' + error.message);
