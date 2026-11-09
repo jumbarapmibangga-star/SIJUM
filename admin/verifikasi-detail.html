@@ -129,7 +129,7 @@
     </div>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
+  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT (TANPA ../ KARENA SUDAH ADA BASE HREF) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -251,16 +251,9 @@
     window.setujuiData = async () => {
       if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
       
-      // BEBAS HARDCODE: Cari status berdasarkan aksi 'setujui'
-      const statusVerified = listStatus.find(s => s.aksi === 'setujui');
-      if (!statusVerified) {
-        alert('Error: Status untuk aksi "setujui" tidak ditemukan di database.');
-        return;
-      }
-      
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: statusVerified.nama, verified_at: new Date().toISOString() })
+        .update({ status: 'verified', verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
       if (error) {
@@ -276,16 +269,9 @@
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
-      // BEBAS HARDCODE: Cari status berdasarkan aksi 'tolak'
-      const statusRejected = listStatus.find(s => s.aksi === 'tolak');
-      if (!statusRejected) {
-        alert('Error: Status untuk aksi "tolak" tidak ditemukan di database.');
-        return;
-      }
-
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: statusRejected.nama, catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
+        .update({ status: 'rejected', catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
       if (error) {
