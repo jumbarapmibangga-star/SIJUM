@@ -70,8 +70,9 @@
       <p class="text-sm md:text-base text-slate-500">Catatan aktivitas sistem (append-only).</p>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
-      <table class="table-custom min-w-full">
+    <!-- Tampilan Desktop (Tabel) -->
+    <div class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <table class="table-custom">
         <thead>
           <tr>
             <th>Waktu</th>
@@ -87,6 +88,11 @@
       </table>
     </div>
 
+    <!-- Tampilan Mobile (Kartu) -->
+    <div id="auditCardContainer" class="md:hidden space-y-4">
+      <p class="text-slate-500 text-center">Memuat data...</p>
+    </div>
+
     <div class="mt-4 bg-blue-50 border border-blue-200 p-4 rounded-xl text-sm text-blue-800">
       <p><strong>Info:</strong> Audit log bersifat <i>append-only</i> (tidak dapat diubah/dihapus). Data disimpan permanen untuk keperluan audit.</p>
     </div>
@@ -94,9 +100,9 @@
 
   <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-client.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/theme.js"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/theme.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       // Proteksi: Hanya Super Admin yang boleh melihat Audit Log
@@ -138,33 +144,37 @@
 
     async function loadAuditLog() {
       const tbody = document.getElementById('auditTableBody');
+      const cardContainer = document.getElementById('auditCardContainer');
       
       try {
         const { data, error } = await window.supabaseClient
           .from('audit_log')
           .select('*')
           .order('waktu', { ascending: false })
-          .limit(100); // Ambil 100 data terbaru
+          .limit(100);
 
         if (error) throw error;
 
         if (!data || data.length === 0) {
           tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-slate-500">Belum ada aktivitas tercatat.</td></tr>`;
+          cardContainer.innerHTML = `<p class="text-slate-500 text-center py-10">Belum ada aktivitas tercatat.</p>`;
           return;
         }
 
-        let html = '';
+        let htmlTable = '';
+        let htmlCard = '';
+
         data.forEach((log) => {
           const tgl = new Date(log.waktu).toLocaleString('id-ID');
           
-          // Warna badge kategori
+          // Warna badge kategori (DIPERBAIKI)
           let badgeColor = 'bg-slate-100 text-slate-700';
-          if (log.kategori === 'login') badgeColor = 'bg-green-100 text-green-700';
+          if (log.kategori === 'auth') badgeColor = 'bg-green-100 text-green-700';
           else if (log.kategori === 'penilaian') badgeColor = 'bg-blue-100 text-blue-700';
           else if (log.kategori === 'koreksi') badgeColor = 'bg-orange-100 text-orange-700';
           else if (log.kategori === 'verifikasi') badgeColor = 'bg-purple-100 text-purple-700';
 
-          html += `
+          htmlTable += `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="text-slate-600 text-xs whitespace-nowrap">${tgl}</td>
               <td class="font-medium text-slate-800">${log.username || 'Anonim'}</td>
@@ -173,11 +183,28 @@
               <td class="text-slate-500 text-sm italic">${log.alasan || '-'}</td>
             </tr>
           `;
+
+          htmlCard += `
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 animate-fade-in">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <p class="font-bold text-slate-800 text-sm">${log.username || 'Anonim'}</p>
+                  <p class="text-xs text-slate-500">${tgl}</p>
+                </div>
+                <span class="${badgeColor} px-2 py-1 rounded text-[10px] font-bold uppercase">${log.kategori}</span>
+              </div>
+              <p class="text-sm text-slate-700 font-medium mt-2">Aksi: ${log.aksi}</p>
+              ${log.alasan ? `<p class="text-xs text-slate-500 mt-1">Alasan: ${log.alasan}</p>` : ''}
+            </div>
+          `;
         });
-        tbody.innerHTML = html;
+
+        tbody.innerHTML = htmlTable;
+        cardContainer.innerHTML = htmlCard;
 
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-red-500">Gagal memuat audit log: ${err.message}</td></tr>`;
+        cardContainer.innerHTML = `<p class="text-red-500 text-center">Gagal memuat audit log: ${err.message}</p>`;
       }
     }
   </script>
