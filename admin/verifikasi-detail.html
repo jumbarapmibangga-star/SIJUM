@@ -134,7 +134,6 @@
   
   <script>
     let currentKontingenId = null;
-    let listStatus = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
@@ -184,10 +183,6 @@
         return;
       }
 
-      // Ambil referensi status dari database
-      const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
-      listStatus = statusData || [];
-
       loadDetail();
     });
 
@@ -205,10 +200,7 @@
 
       const tim = kontingen.tim && kontingen.tim.length > 0 ? kontingen.tim[0] : null;
       
-      const statusData = listStatus.find(s => s.nama === kontingen.status);
-      const statusLabel = statusData ? statusData.label : kontingen.status;
-
-      document.getElementById('detailHeader').textContent = `Status saat ini: ${statusLabel.toUpperCase()}`;
+      document.getElementById('detailHeader').textContent = `Status saat ini: ${kontingen.status.toUpperCase()}`;
       document.getElementById('detailNamaSekolah').textContent = kontingen.nama_kontingen;
       document.getElementById('detailKode').textContent = `${tim ? tim.kode_kontingen : '-'} (${kontingen.tingkat.nama})`;
 
@@ -225,9 +217,8 @@
         if (peserta && peserta.length > 0) {
           let html = '';
           peserta.forEach((p, index) => {
-            // PENANGANAN KHUSUS: Jika peserta_master berbentuk array, ambil elemen pertama
             const master = Array.isArray(p.peserta_master) ? p.peserta_master[0] : p.peserta_master;
-            if (!master) return; // Skip jika data master null/kosong
+            if (!master) return;
 
             const tgl = master.tgl_lahir ? new Date(master.tgl_lahir).toLocaleDateString('id-ID') : '-';
             html += `
@@ -249,19 +240,13 @@
       }
     }
 
-    // BEBAS HARDCODE: Cari status berdasarkan aksi
+    // FUNGSI SETUJUI (LANGSUNG PAKAI TEKS)
     window.setujuiData = async () => {
       if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
       
-      const statusVerified = listStatus.find(s => s.aksi === 'setujui');
-      if (!statusVerified) {
-        alert('Error: Status untuk aksi "setujui" tidak ditemukan di database.');
-        return;
-      }
-      
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: statusVerified.nama, verified_at: new Date().toISOString() })
+        .update({ status: 'verified', verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
       if (error) {
@@ -272,21 +257,15 @@
       }
     };
 
+    // FUNGSI TOLAK (LANGSUNG PAKAI TEKS)
     window.tolakData = async () => {
       const alasan = prompt("Masukkan alasan penolakan (misal: Mohon lengkapi No HP):");
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
-      // BEBAS HARDCODE: Cari status berdasarkan aksi 'tolak'
-      const statusRejected = listStatus.find(s => s.aksi === 'tolak');
-      if (!statusRejected) {
-        alert('Error: Status untuk aksi "tolak" tidak ditemukan di database.');
-        return;
-      }
-
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: statusRejected.nama, catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
+        .update({ status: 'rejected', catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
       if (error) {
