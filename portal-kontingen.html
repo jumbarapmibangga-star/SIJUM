@@ -14,7 +14,7 @@
       .no-print { display: none !important; }
       .print-area { box-shadow: none; border: none; padding: 0; }
       header, .btn-theme-toggle, #btnLogout { display: none !important; }
-      table { font-size: 10px; } /* Perkecil font saat dicetak */
+      table { font-size: 10px; }
       th, td { padding: 4px !important; }
     }
   </style>
@@ -42,7 +42,7 @@
   <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 pb-20">
     <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm animate-fade-in no-print"></div>
 
-    <!-- SECTION FORM (DRAFT) -->
+    <!-- FORM SECTION (DRAFT) -->
     <div id="formSection" class="space-y-6 animate-fade-in hidden">
       
       <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200">
@@ -76,17 +76,17 @@
         <p class="text-xs text-slate-500 mt-2">* Isi data dengan benar. Minimal 1 peserta.</p>
       </div>
 
-      <!-- Data Kepala Sekolah (Untuk Tanda Tangan) -->
+      <!-- Data Kepala Sekolah -->
       <div class="form-card">
         <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-4 border-b pb-2">3. Data Tanda Tangan (Kepala Sekolah)</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="input-label">Nama Kepala Sekolah</label>
-            <input type="text" id="namaKepsek" class="input-field" placeholder="Contoh: Farida Margianti, S.Pd.SD.">
+            <input type="text" id="namaKepsek" class="input-field" placeholder="Ketik nama...">
           </div>
           <div>
             <label class="input-label">NIP Kepala Sekolah</label>
-            <input type="text" id="nipKepsek" class="input-field" placeholder="Contoh: 197107171999032007">
+            <input type="text" id="nipKepsek" class="input-field" placeholder="Ketik NIP...">
           </div>
         </div>
       </div>
@@ -97,24 +97,24 @@
       </div>
     </div>
 
-    <!-- SECTION CETAK (VERIFIED) -->
+    <!-- PRINT SECTION (VERIFIED) -->
     <div id="printSection" class="hidden">
       <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 print-area max-w-4xl mx-auto">
         
-        <!-- Header PDF -->
+        <!-- Header PDF Dinamis -->
         <div class="flex items-center justify-between mb-4 border-b-2 border-slate-800 pb-4">
           <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-16">
           <div class="text-center flex-1 px-4">
             <h1 class="text-xl font-bold text-slate-800">DATA PESERTA</h1>
-            <h2 class="text-lg font-bold text-slate-800">JUMBARA PMR MULA KE-4 PMI KABUPATEN PURBALINGGA</h2>
-            <h3 class="text-md font-semibold text-slate-700">TAHUN 2026</h3>
+            <h2 class="text-lg font-bold text-slate-800" id="printNamaEvent">Memuat Event...</h2>
+            <h3 class="text-md font-semibold text-slate-700" id="printTahunEvent">Memuat Tahun...</h3>
           </div>
-          <div class="w-16"></div> <!-- Spacer agar seimbang -->
+          <div class="w-16"></div>
         </div>
 
         <div class="text-sm mb-4">
           <p><strong>Kode:</strong> <span id="printKode" class="font-mono text-red-700 font-bold"></span></p>
-          <p><strong>Unit PMR Mula:</strong> <span id="printNama"></span></p>
+          <p><strong>Unit PMR Mula:</strong> <span id="printNamaSekolah"></span></p>
         </div>
 
         <!-- Tabel PDF -->
@@ -133,10 +133,10 @@
           <tbody id="printPesertaBody" class="text-xs"></tbody>
         </table>
 
-        <!-- Tanda Tangan -->
+        <!-- Tanda Tangan Dinamis -->
         <div class="flex justify-end mt-12 text-sm">
           <div class="text-center">
-            <p>Kaligondang, <span id="printTanggalTtd"></span></p>
+            <p><span id="printTempatEvent">Memuat...</span>, <span id="printTanggalTtd"></span></p>
             <p>Kepala Sekolah <span id="printNamaSekolahTtd"></span></p>
             <div class="h-20"></div>
             <p class="font-bold underline" id="printNamaKepsek">(___________________)</p>
@@ -169,6 +169,8 @@
     let currentTimId = null;
     let currentKodeKontingen = null;
     let currentTingkatId = null;
+    let currentNamaTingkat = null;
+    let currentEventData = null;
     let listPeran = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -180,13 +182,17 @@
       const namaSekolah = auth.user.user_metadata?.nama || 'Nama Sekolah Belum Diatur';
       document.getElementById('namaKontingenHeader').textContent = namaSekolah;
 
-      const { data: events } = await window.supabaseClient.from('event').select('id').order('tahun', { ascending: false }).limit(1);
+      // Ambil Data Event
+      const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
       if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
       currentEventId = events[0].id;
+      currentEventData = events[0];
 
+      // Ambil Data Peran
       const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
       listPeran = peranData || [];
 
+      // Ambil Data Kontingen
       const { data: kontingen } = await window.supabaseClient
         .from('kontingen_event')
         .select('*')
@@ -197,6 +203,9 @@
       if (kontingen) {
         currentKontingenId = kontingen.id;
         currentTingkatId = kontingen.tingkat_id;
+
+        const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', currentTingkatId).single();
+        currentNamaTingkat = tk ? tk.nama : 'Tingkat';
 
         const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
         if (tim) {
@@ -222,7 +231,7 @@
 
         if (kontingen.status === 'draft') {
           formSection.classList.remove('hidden');
-          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentTingkatId})`;
+          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
           document.getElementById('displayNamaKontingen').textContent = namaSekolah;
 
           if (pesertaData.length > 0) {
@@ -259,8 +268,13 @@
           banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
           banner.innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
 
-          document.getElementById('printKode').textContent = `${currentKodeKontingen}`;
-          document.getElementById('printNama').textContent = namaSekolah;
+          // Isi Data Cetak Dinamis (Dari Event)
+          document.getElementById('printNamaEvent').textContent = currentEventData.nama;
+          document.getElementById('printTahunEvent').textContent = `TAHUN ${currentEventData.tahun}`;
+          document.getElementById('printTempatEvent').textContent = currentEventData.tempat_pelaksanaan || 'Purbalingga';
+          
+          document.getElementById('printKode').textContent = currentKodeKontingen;
+          document.getElementById('printNamaSekolah').textContent = namaSekolah;
           document.getElementById('printNamaSekolahTtd').textContent = namaSekolah;
           document.getElementById('printTanggalTtd').textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
           
@@ -278,6 +292,12 @@
           banner.classList.remove('hidden');
           banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
           banner.innerHTML = '❌ Pendaftaran ditolak. Hubungi panitia.';
+          infoSection.innerHTML = `
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
+              <h2 class="text-xl font-bold text-slate-800 mb-2">Pendaftaran Ditolak</h2>
+              <p class="text-slate-500">Mohon maaf, pendaftaran Anda ditolak oleh Panitia. Silakan hubungi panitia.</p>
+            </div>
+          `;
         }
 
       } else {
@@ -355,21 +375,13 @@
           const peran = inputs[5].value;
           
           if (nama && tgl) {
-            listPeserta.push({ 
-              nama, 
-              nama_panggilan: panggilan, 
-              tgl_lahir: tgl, 
-              alamat, 
-              no_hp: hp, 
-              peran 
-            });
+            listPeserta.push({ nama, nama_panggilan: panggilan, tgl_lahir: tgl, alamat, no_hp: hp, peran });
           }
         }
 
         const namaKepsek = document.getElementById('namaKepsek').value;
         const nipKepsek = document.getElementById('nipKepsek').value;
 
-        // Update Status & Data Kepsek
         const { error: errK } = await window.supabaseClient.from('kontingen_event')
           .update({ status: actionStatus }).eq('id', currentKontingenId);
         if (errK) throw errK;
@@ -379,7 +391,6 @@
           nip_kepala_sekolah: nipKepsek 
         }).eq('id', currentTimId);
 
-        // Simpan Peserta via RPC
         const { error: errRpc } = await window.supabaseClient.rpc('simpan_peserta_kontingen', {
           p_tim_id: currentTimId,
           p_tingkat_id: currentTingkatId,
@@ -399,3 +410,4 @@
   </script>
 </body>
 </html>
+
