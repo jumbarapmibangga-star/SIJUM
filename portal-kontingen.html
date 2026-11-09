@@ -9,6 +9,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
   <style>
+    /* CSS Khusus Cetak */
     @media print {
       body { background: white; }
       .no-print { display: none !important; }
@@ -42,7 +43,7 @@
   <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 pb-20">
     <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm animate-fade-in no-print"></div>
 
-    <!-- FORM SECTION (DRAFT) -->
+    <!-- FORM SECTION (DRAFT / REVISI) -->
     <div id="formSection" class="space-y-6 animate-fade-in hidden">
       
       <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200">
@@ -76,7 +77,6 @@
         <p class="text-xs text-slate-500 mt-2">* Isi data dengan benar. Minimal 1 peserta.</p>
       </div>
 
-      <!-- Data Kepala Sekolah -->
       <div class="form-card">
         <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-4 border-b pb-2">3. Data Tanda Tangan (Kepala Sekolah)</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -101,7 +101,6 @@
     <div id="printSection" class="hidden">
       <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 print-area max-w-4xl mx-auto">
         
-        <!-- Header PDF Dinamis -->
         <div class="flex items-center justify-between mb-4 border-b-2 border-slate-800 pb-4">
           <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-16">
           <div class="text-center flex-1 px-4">
@@ -117,7 +116,6 @@
           <p><strong>Unit PMR Mula:</strong> <span id="printNamaSekolah"></span></p>
         </div>
 
-        <!-- Tabel PDF -->
         <table class="w-full text-left border-collapse mb-8 border border-slate-400">
           <thead>
             <tr class="bg-slate-200 border-b border-slate-400 text-xs">
@@ -133,7 +131,6 @@
           <tbody id="printPesertaBody" class="text-xs"></tbody>
         </table>
 
-        <!-- Tanda Tangan Dinamis -->
         <div class="flex justify-end mt-12 text-sm">
           <div class="text-center">
             <p><span id="printTempatEvent">Memuat...</span>, <span id="printTanggalTtd"></span></p>
@@ -154,7 +151,7 @@
       </div>
     </div>
 
-    <!-- SECTION INFO (SUBMITTED / REJECTED) -->
+    <!-- INFO SECTION (SUBMITTED / REJECTED) -->
     <div id="infoSection" class="hidden text-center py-12"></div>
 
   </main>
@@ -172,6 +169,7 @@
     let currentNamaTingkat = null;
     let currentEventData = null;
     let listPeran = [];
+    let listStatus = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['kontingen']);
@@ -188,9 +186,12 @@
       currentEventId = events[0].id;
       currentEventData = events[0];
 
-      // Ambil Data Peran
+      // Ambil Data Peran & Status
       const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
       listPeran = peranData || [];
+
+      const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
+      listStatus = statusData || [];
 
       // Ambil Data Kontingen
       const { data: kontingen } = await window.supabaseClient
@@ -229,10 +230,22 @@
         const printSection = document.getElementById('printSection');
         const infoSection = document.getElementById('infoSection');
 
-        if (kontingen.status === 'draft') {
+        // Cari data status dari tabel referensi
+        const statusData = listStatus.find(s => s.nama === kontingen.status);
+        const bisaDiedit = statusData ? statusData.bisa_diedit : false;
+
+        if (bisaDiedit) {
+          // TAMPILKAN FORM INPUT
           formSection.classList.remove('hidden');
+          
           document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
           document.getElementById('displayNamaKontingen').textContent = namaSekolah;
+
+          if (kontingen.catatan_verifikasi) {
+            banner.classList.remove('hidden');
+            banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
+            banner.innerHTML = `⚠️ Catatan Panitia: "${kontingen.catatan_verifikasi}"<br><span class="text-sm font-normal">Silakan perbaiki data Anda dan submit ulang.</span>`;
+          }
 
           if (pesertaData.length > 0) {
             pesertaData.forEach(p => {
@@ -268,7 +281,6 @@
           banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
           banner.innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
 
-          // Isi Data Cetak Dinamis (Dari Event)
           document.getElementById('printNamaEvent').textContent = currentEventData.nama;
           document.getElementById('printTahunEvent').textContent = `TAHUN ${currentEventData.tahun}`;
           document.getElementById('printTempatEvent').textContent = currentEventData.tempat_pelaksanaan || 'Purbalingga';
@@ -292,14 +304,21 @@
           banner.classList.remove('hidden');
           banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
           banner.innerHTML = '❌ Pendaftaran ditolak. Hubungi panitia.';
+          
+          const catatan = kontingen.catatan_verifikasi || 'Tidak ada catatan dari panitia.';
           infoSection.innerHTML = `
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-red-200 max-w-lg mx-auto relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
               <h2 class="text-xl font-bold text-slate-800 mb-2">Pendaftaran Ditolak</h2>
-              <p class="text-slate-500">Mohon maaf, pendaftaran Anda ditolak oleh Panitia. Silakan hubungi panitia.</p>
+              <p class="text-slate-500 mb-4">Mohon maaf, pendaftaran Anda ditolak oleh Panitia.</p>
+              <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-left mb-6">
+                <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Catatan Panitia:</p>
+                <p class="text-sm text-red-700 font-medium">"${catatan}"</p>
+              </div>
+              <button onclick="perbaikiData()" class="btn-primary w-full">Perbaiki Data Sekarang</button>
             </div>
           `;
         }
-
       } else {
         infoSection.classList.remove('hidden');
         infoSection.innerHTML = '<p class="text-red-500 font-bold">Data kontingen belum siap. Hubungi Panitia.</p>';
@@ -383,7 +402,7 @@
         const nipKepsek = document.getElementById('nipKepsek').value;
 
         const { error: errK } = await window.supabaseClient.from('kontingen_event')
-          .update({ status: actionStatus }).eq('id', currentKontingenId);
+          .update({ status: actionStatus, catatan_verifikasi: null }).eq('id', currentKontingenId);
         if (errK) throw errK;
 
         await window.supabaseClient.from('tim').update({ 
@@ -407,6 +426,26 @@
         btn.innerHTML = actionStatus === 'draft' ? 'Simpan Draft' : 'Submit & Kunci Data'; btn.disabled = false;
       }
     }
+
+    // FUNGSI BARU: Memperbaiki data setelah ditolak
+    window.perbaikiData = async () => {
+      if (!confirm('Apakah Anda yakin ingin memperbaiki data? Status akan kembali menjadi Draft.')) return;
+      
+      // Cari status 'draft' dari referensi
+      const draftStatus = listStatus.find(s => s.bisa_diedit === true);
+      if (!draftStatus) {
+        alert('Error: Status draft tidak ditemukan.');
+        return;
+      }
+
+      const { error } = await window.supabaseClient
+        .from('kontingen_event')
+        .update({ status: draftStatus.nama, catatan_verifikasi: null })
+        .eq('id', currentKontingenId);
+
+      if (error) alert('Gagal: ' + error.message);
+      else { alert('Silakan perbaiki data Anda.'); window.location.reload(); }
+    };
   </script>
 </body>
 </html>
