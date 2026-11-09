@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Penilaian — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
   <script src="https://unpkg.com/html5-qrcode"></script>
-  
-  <!-- LIBRARY QR CODE (qrcode-generator) -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
   
   <style>
@@ -103,15 +99,15 @@
     </div>
   </div>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-client.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/theme.js"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/auth.js"></script>
+  <script src="../assets/js/theme.js"></script>
   
   <script>
     let currentPosId = null;
     let currentJuriId = null;
+    let currentSlotJuri = 'juri1';
     let currentEventId = null;
     let currentPos = null;
     let currentTim = null;
@@ -136,11 +132,15 @@
       document.getElementById('userNameDisplay').textContent = juri.nama;
       document.getElementById('userNameDisplayMobile').textContent = juri.nama;
 
+      // Ambil slot juri dari tabel juri_pos
+      const { data: juriPos } = await window.supabaseClient.from('juri_pos').select('slot').eq('juri_id', currentJuriId).eq('pos_id', currentPosId).maybeSingle();
+      if (juriPos && juriPos.slot) currentSlotJuri = juriPos.slot;
+
       const { data: pos } = await window.supabaseClient.from('pos').select('*').eq('id', currentPosId).single();
       currentPos = pos;
       currentEventId = pos.event_id;
       document.getElementById('posTitle').textContent = pos.nama_pos;
-      document.getElementById('posSubtitle').textContent = `Kode: ${pos.kode_pos} | Metode: ${pos.metode_hitung}`;
+      document.getElementById('posSubtitle').textContent = `Kode: ${pos.kode_pos} | Slot: ${currentSlotJuri} | Metode: ${pos.metode_hitung}`;
 
       const { data: rubrik } = await window.supabaseClient.from('rubrik').select('*').eq('pos_id', currentPosId).order('urutan');
       rubrikList = rubrik || [];
@@ -295,7 +295,7 @@
           }
 
           const { data: penJuri, error: errPJ } = await window.supabaseClient.from('penilaian_juri').insert({
-            penilaian_pos_id: penPos.id, juri_id: currentJuriId, slot_juri: `juri_${currentJuriId.substring(0,4)}`, nilai_juri: totalNilai, status: 'locked'
+            penilaian_pos_id: penPos.id, juri_id: currentJuriId, slot_juri: currentSlotJuri, nilai_juri: totalNilai, status: 'locked'
           }).select().single();
           if (errPJ) throw errPJ;
 
@@ -312,7 +312,7 @@
 
           if (currentPos.pakai_timer) {
             await window.supabaseClient.from('tierbreaker').upsert({
-              penilaian_pos_id: penPos.id, jenis: 'timer', waktu_selesai_server: new Date().toISOString(), status: 'final'
+              penilaian_pos_id: penPos.id, jenis: 'timer', waktu_mulai_server: new Date().toISOString(), waktu_selesai_server: new Date().toISOString(), status: 'final'
             }, { onConflict: 'penilaian_pos_id, jenis' });
           }
 
@@ -455,10 +455,8 @@ Waktu: ${new Date().toLocaleTimeString('id-ID')}
       const dataBytes = encoder.encode(teksStruk);
       
       try {
-        // 1. Cetak Teks
         await bluetoothCharacteristic.writeValue(dataBytes);
         
-        // 2. Cetak QR Code (Perintah ESC/POS)
         const qrData = encoder.encode(urlVerifikasi);
         const qrLength = qrData.length + 3;
         const pL = qrLength & 0xFF;
@@ -480,11 +478,9 @@ Waktu: ${new Date().toLocaleTimeString('id-ID')}
       }
     }
 
-    // FUNGSI BARU: Menggunakan qrcode-generator untuk Data URL
     window.cetakStrukBrowser = (data) => {
       const urlVerifikasi = `https://pmi-bangga.github.io/SIJUM/verifikasi.html?id=${data.penilaianPosId}`;
       
-      // Generate QR Code sebagai Data URL
       const qr = qrcode(0, 'M');
       qr.addData(urlVerifikasi);
       qr.make();
