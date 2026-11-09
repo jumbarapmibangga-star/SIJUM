@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Detail Verifikasi — Jumbara PMI</title>
+  <base href="../">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE & SIDEBAR (Sama seperti halaman admin lain) -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+        <h1 class="text-sm font-bold text-red-700">Detail Verifikasi</h1>
+      </div>
+      <a href="admin/verifikasi.html" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200">Kembali</a>
+    </div>
+  </div>
+
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain">
+        <div>
+          <h1 class="text-lg font-bold">Jumbara PMI</h1>
+          <p class="text-xs text-red-100">Panitia</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1">
+      <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+      <a href="admin/verifikasi.html" class="sidebar-link active">Verifikasi Kontingen</a>
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <a href="admin/verifikasi.html" class="text-sm text-red-600 hover:underline font-semibold mb-1 inline-block">&larr; Kembali ke Daftar</a>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Detail Pendaftaran</h2>
+        <p class="text-sm text-slate-500" id="detailHeader">Memuat data...</p>
+      </div>
+    </div>
+
+    <!-- Kartu Identitas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="form-card">
+        <p class="text-xs font-bold text-slate-400 uppercase">Nama Kontingen / Sekolah</p>
+        <p class="text-lg font-bold text-slate-800" id="detailNamaSekolah">-</p>
+      </div>
+      <div class="form-card">
+        <p class="text-xs font-bold text-slate-400 uppercase">Kode & Tingkat</p>
+        <p class="text-lg font-bold text-red-600 font-mono" id="detailKode">-</p>
+      </div>
+    </div>
+
+    <!-- Data Peserta -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto mb-6">
+      <table class="table-custom min-w-full">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Lengkap</th>
+            <th>Panggilan</th>
+            <th>Tgl Lahir</th>
+            <th>Alamat</th>
+            <th>No HP</th>
+            <th>Peran</th>
+          </tr>
+        </thead>
+        <tbody id="pesertaBody">
+          <tr><td colspan="7" class="p-4 text-center text-slate-500">Memuat peserta...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Data Tanda Tangan -->
+    <div class="form-card mb-8">
+      <h3 class="text-sm font-bold text-slate-800 border-b pb-2 mb-3">Data Kepala Sekolah (Tanda Tangan)</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-slate-500">Nama Kepala Sekolah</p>
+          <p class="font-bold text-slate-800" id="detailKepsek">-</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">NIP</p>
+          <p class="font-bold text-slate-800" id="detailNip">-</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="flex flex-col md:flex-row justify-end gap-3 pt-4 border-t border-slate-200">
+      <button onclick="tolakData()" class="btn-secondary border-red-600 text-red-600 hover:bg-red-50 w-full md:w-auto">Tolak / Kembalikan</button>
+      <button onclick="setujuiData()" class="btn-primary w-full md:w-auto">Setujui Pendaftaran</button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    let currentKontingenId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      currentKontingenId = urlParams.get('id');
+
+      if (!currentKontingenId) {
+        alert('ID Kontingen tidak valid.');
+        window.location.href = 'admin/verifikasi.html';
+        return;
+      }
+
+      loadDetail();
+    });
+
+    async function loadDetail() {
+      // 1. Ambil data kontingen & tim
+      const { data: kontingen, error: errK } = await window.supabaseClient
+        .from('kontingen_event')
+        .select(`*, tingkat(nama), tim(*)`)
+        .eq('id', currentKontingenId)
+        .single();
+
+      if (errK || !kontingen) {
+        alert('Data tidak ditemukan.');
+        return;
+      }
+
+      const tim = kontingen.tim && kontingen.tim.length > 0 ? kontingen.tim[0] : null;
+
+      document.getElementById('detailHeader').textContent = `Status saat ini: ${kontingen.status.toUpperCase()}`;
+      document.getElementById('detailNamaSekolah').textContent = kontingen.nama_kontingen;
+      document.getElementById('detailKode').textContent = `${tim ? tim.kode_kontingen : '-'} (${kontingen.tingkat.nama})`;
+
+      if (tim) {
+        document.getElementById('detailKepsek').textContent = tim.nama_kepala_sekolah || 'Belum diisi';
+        document.getElementById('detailNip').textContent = tim.nip_kepala_sekolah || 'Belum diisi';
+
+        // 2. Ambil data peserta
+        const { data: peserta } = await window.supabaseClient
+          .from('peserta_event')
+          .select(`peran_utama, peserta_master (nama, tgl_lahir, nama_panggilan, alamat, no_hp)`)
+          .eq('tim_id', tim.id);
+
+        const tbody = document.getElementById('pesertaBody');
+        if (peserta && peserta.length > 0) {
+          let html = '';
+          peserta.forEach((p, index) => {
+            const tgl = p.peserta_master.tgl_lahir ? new Date(p.peserta_master.tgl_lahir).toLocaleDateString('id-ID') : '-';
+            html += `
+              <tr class="hover:bg-slate-50">
+                <td class="text-slate-600">${index + 1}</td>
+                <td class="font-semibold text-slate-800">${p.peserta_master.nama}</td>
+                <td class="text-slate-600">${p.peserta_master.nama_panggilan || '-'}</td>
+                <td class="text-slate-600">${tgl}</td>
+                <td class="text-slate-600">${p.peserta_master.alamat || '-'}</td>
+                <td class="text-slate-600">${p.peserta_master.no_hp || '-'}</td>
+                <td class="text-slate-600">${p.peran_utama}</td>
+              </tr>
+            `;
+          });
+          tbody.innerHTML = html;
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada peserta yang didaftarkan.</td></tr>`;
+        }
+      }
+    }
+
+    window.setujuiData = async () => {
+      if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
+      
+      const { error } = await window.supabaseClient
+        .from('kontingen_event')
+        .update({ status: 'verified', verified_at: new Date().toISOString() })
+        .eq('id', currentKontingenId);
+
+      if (error) alert('Gagal: ' + error.message);
+      else { alert('Pendaftaran disetujui!'); window.location.href = 'admin/verifikasi.html'; }
+    };
+
+    window.tolakData = async () => {
+      const alasan = prompt("Masukkan alasan penolakan (misal: Mohon lengkapi No HP):");
+      if (alasan === null) return;
+      if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
+
+      const { error } = await window.supabaseClient
+        .from('kontingen_event')
+        .update({ status: 'rejected', catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
+        .eq('id', currentKontingenId);
+
+      if (error) alert('Gagal: ' + error.message);
+      else { alert('Pendaftaran ditolak dengan catatan.'); window.location.href = 'admin/verifikasi.html'; }
+    };
+  </script>
+</body>
+</html>
