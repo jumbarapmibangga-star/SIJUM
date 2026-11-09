@@ -160,26 +160,11 @@
       document.getElementById('userRoleDisplay').textContent = roleText;
       document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
+      // RENDER MENU
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
-        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
-        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link active">Koreksi Nilai</a>
-      `;
-      if (auth.role === 'super_admin') {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
-        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
-      }
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'koreksi');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'koreksi');
 
       const { data: posList } = await window.supabaseClient.from('pos').select('*').is('induk_pos_id', null).order('urutan');
       const selectPos = document.getElementById('filterPos');
@@ -300,7 +285,6 @@
         
         if (errLog) throw errLog;
 
-        // CATAT LOG AKTIVITAS KOREKSI (Kirim alasan ke parameter kelima)
         await catatLog('koreksi', 'update_nilai', `Mengoreksi nilai dari ${nilaiLama} menjadi ${nilaiBaru}`, 'penilaian_pos', alasan);
 
         alert('Nilai berhasil dikoreksi!');
