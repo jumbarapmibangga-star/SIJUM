@@ -93,4 +93,34 @@
         const tbody = document.getElementById('pesertaBody');
         if (peserta && peserta.length > 0) {
           let html = '';
-          peserta.forEach((p
+          peserta.forEach((p, i) => {
+            const master = Array.isArray(p.peserta_master) ? p.peserta_master[0] : p.peserta_master;
+            if (!master) return;
+            const tgl = master.tgl_lahir ? new Date(master.tgl_lahir).toLocaleDateString('id-ID') : '-';
+            html += `<tr><td>${i+1}</td><td class="font-semibold">${master.nama}</td><td>${tgl}</td><td>${p.peran_utama}</td></tr>`;
+          });
+          tbody.innerHTML = html;
+        } else {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada peserta.</td></tr>`;
+        }
+      }
+    }
+
+    window.setujuiData = async () => {
+      if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
+      const { error } = await window.supabaseClient.from('kontingen_event').update({ status: 'verified', verified_at: new Date().toISOString() }).eq('id', currentKontingenId);
+      if (error) alert('Gagal: ' + error.message);
+      else { alert('Pendaftaran disetujui!'); window.location.href = 'admin/verifikasi.html'; }
+    };
+
+    window.tolakData = async () => {
+      const alasan = prompt("Masukkan alasan penolakan:");
+      if (alasan === null) return;
+      if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
+      const { error } = await window.supabaseClient.from('kontingen_event').update({ status: 'rejected', catatan_verifikasi: alasan, verified_at: new Date().toISOString() }).eq('id', currentKontingenId);
+      if (error) alert('Gagal: ' + error.message);
+      else { alert('Pendaftaran ditolak dengan catatan.'); window.location.href = 'admin/verifikasi.html'; }
+    };
+  </script>
+</body>
+</html>
