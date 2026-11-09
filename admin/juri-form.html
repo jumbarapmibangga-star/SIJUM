@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Form Juri — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -78,7 +76,7 @@
         <div>
           <label class="input-label">Username</label>
           <input type="text" id="username" required placeholder="Contoh: juri1" class="input-field">
-          <p class="text-xs text-slate-400 mt-1">Ketik tanpa @jumbara.local.</p>
+          <p class="text-xs text-slate-400 mt-1">Ketik tanpa @jumbara.id.</p>
         </div>
         <div>
           <label class="input-label">Nama Lengkap</label>
@@ -87,10 +85,10 @@
       </div>
 
       <div class="border-t pt-4 border-slate-200">
-        <h3 class="text-md font-bold text-slate-800 mb-3">Penugasan Pos</h3>
-        <p class="text-sm text-slate-500 mb-4">Pilih pos mana saja yang akan dinilai oleh juri ini.</p>
+        <h3 class="text-md font-bold text-slate-800 mb-3">Penugasan Pos & Slot</h3>
+        <p class="text-sm text-slate-500 mb-4">Pilih pos dan tentukan slot juri (juri1, juri2, dst). Satu juri bisa ditugaskan ke banyak pos.</p>
         
-        <div id="posCheckboxList" class="space-y-2 max-h-64 overflow-y-auto pr-2 border border-slate-200 rounded-lg p-2 bg-slate-50">
+        <div id="posCheckboxList" class="space-y-3 max-h-96 overflow-y-auto pr-2 border border-slate-200 rounded-lg p-3 bg-slate-50">
           <p class="text-sm text-slate-400 italic">Memuat daftar pos...</p>
         </div>
       </div>
@@ -102,13 +100,13 @@
     </form>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
     let currentEventId = null;
+    let listPos = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
@@ -149,24 +147,44 @@
       const { data: events } = await window.supabaseClient.from('event').select('id').eq('tahun', 2026).single();
       if (events) currentEventId = events.id;
 
-      // Ambil Daftar Pos untuk Checkbox
+      // Ambil Daftar Pos
       const { data: posList } = await window.supabaseClient.from('pos').select('*').eq('event_id', currentEventId).order('urutan');
+      listPos = posList || [];
       const posContainer = document.getElementById('posCheckboxList');
       
-      if (posList && posList.length > 0) {
+      if (listPos.length > 0) {
         let html = '';
-        posList.forEach(p => {
+        listPos.forEach(p => {
           html += `
-            <label class="flex items-center space-x-3 p-3 bg-white border border-slate-200 rounded-lg hover:bg-red-50 cursor-pointer transition-colors">
-              <input type="checkbox" name="pos_ids" value="${p.id}" class="w-5 h-5 text-red-600 rounded focus:ring-red-500 pos-checkbox">
-              <div>
-                <span class="font-mono font-bold text-red-600">${p.kode_pos}</span> - 
-                <span class="font-medium text-slate-800">${p.nama_pos}</span>
+            <div class="flex flex-col md:flex-row md:items-center justify-between p-3 bg-white border border-slate-200 rounded-lg hover:bg-red-50 transition-colors">
+              <label class="flex items-center space-x-3 cursor-pointer mb-2 md:mb-0">
+                <input type="checkbox" name="pos_ids" value="${p.id}" class="w-5 h-5 text-red-600 rounded focus:ring-red-500 pos-checkbox">
+                <div>
+                  <span class="font-mono font-bold text-red-600">${p.kode_pos}</span> - 
+                  <span class="font-medium text-slate-800">${p.nama_pos}</span>
+                </div>
+              </label>
+              <div class="ml-8 md:ml-0">
+                <select class="input-field text-sm slot-select hidden" data-pos-id="${p.id}">
+                  <option value="juri1">Slot: Juri 1</option>
+                  <option value="juri2">Slot: Juri 2</option>
+                  <option value="juri3">Slot: Juri 3</option>
+                </select>
               </div>
-            </label>
+            </div>
           `;
         });
         posContainer.innerHTML = html;
+
+        // Tampilkan select slot jika checkbox dicentang
+        document.querySelectorAll('.pos-checkbox').forEach(cb => {
+          cb.addEventListener('change', (e) => {
+            const posId = e.target.value;
+            const select = document.querySelector(`.slot-select[data-pos-id="${posId}"]`);
+            if (e.target.checked) select.classList.remove('hidden');
+            else select.classList.add('hidden');
+          });
+        });
       } else {
         posContainer.innerHTML = '<p class="text-sm text-slate-500 italic">Belum ada pos.</p>';
       }
@@ -187,11 +205,16 @@
           document.getElementById('username').classList.add('bg-slate-100');
         }
 
-        const { data: penugasan } = await window.supabaseClient.from('juri_pos').select('pos_id').eq('juri_id', editId);
+        const { data: penugasan } = await window.supabaseClient.from('juri_pos').select('pos_id, slot').eq('juri_id', editId);
         if (penugasan) {
           penugasan.forEach(p => {
             const cb = document.querySelector(`.pos-checkbox[value="${p.pos_id}"]`);
-            if (cb) cb.checked = true;
+            if (cb) {
+              cb.checked = true;
+              const select = document.querySelector(`.slot-select[data-pos-id="${p.pos_id}"]`);
+              select.classList.remove('hidden');
+              select.value = p.slot || 'juri1';
+            }
           });
         }
       }
@@ -205,9 +228,8 @@
         const id = document.getElementById('juriId').value;
         const username = document.getElementById('username').value.trim();
         const nama = document.getElementById('nama').value.trim();
-        const email = `${username}@jumbara.local`;
-        const selectedPos = Array.from(document.querySelectorAll('.pos-checkbox:checked')).map(cb => cb.value);
-
+        const email = `${username}@jumbara.id`;
+        
         let juriId = id;
         let error;
 
@@ -237,12 +259,18 @@
           return;
         }
 
-        // Simpan Penugasan Pos
+        // Simpan Penugasan Pos & Slot
         if (juriId) {
           if (id) await window.supabaseClient.from('juri_pos').delete().eq('juri_id', juriId);
           
-          if (selectedPos.length > 0) {
-            const posPayload = selectedPos.map(posId => ({ juri_id: juriId, pos_id: posId }));
+          const checkedPos = document.querySelectorAll('.pos-checkbox:checked');
+          if (checkedPos.length > 0) {
+            const posPayload = Array.from(checkedPos).map(cb => {
+              const posId = cb.value;
+              const slotVal = document.querySelector(`.slot-select[data-pos-id="${posId}"]`).value;
+              return { juri_id: juriId, pos_id: posId, slot: slotVal };
+            });
+            
             const resPos = await window.supabaseClient.from('juri_pos').insert(posPayload);
             if (resPos.error) {
               alert('Gagal simpan penugasan pos: ' + resPos.error.message);
