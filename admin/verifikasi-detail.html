@@ -277,6 +277,7 @@
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
+      // BEBAS HARDCODE: Cari status berdasarkan aksi 'tolak'
       const statusRejected = listStatus.find(s => s.aksi === 'tolak');
       if (!statusRejected) {
         alert('Error: Status untuk aksi "tolak" tidak ditemukan di database.');
