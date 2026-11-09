@@ -8,9 +8,6 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
-  <style>
-    @media print { .no-print { display: none !important; } .print-area { box-shadow: none; border: none; } }
-  </style>
 </head>
 <body class="halaman-kontingen bg-slate-50 min-h-screen flex flex-col font-sans">
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50 no-print">
@@ -52,7 +49,7 @@
       </div>
     </div>
 
-    <!-- INFO SECTION (SUBMITTED / REJECTED) -->
+    <!-- INFO SECTION (SUBMITTED / REJECTED / VERIFIED) -->
     <div id="infoSection" class="hidden text-center py-12"></div>
   </main>
 
@@ -95,10 +92,14 @@
           document.getElementById('displayKodeKontingen').textContent = currentKodeKontingen;
           document.getElementById('displayNamaKontingen').textContent = namaSekolah;
 
+          // TAMPILKAN PESERTA YANG SUDAH ADA
           const { data: peserta } = await window.supabaseClient.from('peserta_event').select(`peran_utama, peserta_master (nama, tgl_lahir)`).eq('tim_id', currentTimId);
           const tbody = document.getElementById('pesertaTableBody');
           if (peserta && peserta.length > 0) {
-            peserta.forEach(p => addPesertaRow(p.peserta_master, p.peran_utama));
+            peserta.forEach(p => {
+              const master = Array.isArray(p.peserta_master) ? p.peserta_master[0] : p.peserta_master;
+              if (master) addPesertaRow({ nama: master.nama, tgl_lahir: master.tgl_lahir }, p.peran_utama);
+            });
           } else {
             addPesertaRow();
           }
