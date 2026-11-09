@@ -132,7 +132,6 @@
       document.getElementById('userNameDisplay').textContent = juri.nama;
       document.getElementById('userNameDisplayMobile').textContent = juri.nama;
 
-      // Ambil slot juri dari tabel juri_pos
       const { data: juriPos } = await window.supabaseClient.from('juri_pos').select('slot').eq('juri_id', currentJuriId).eq('pos_id', currentPosId).maybeSingle();
       if (juriPos && juriPos.slot) currentSlotJuri = juriPos.slot;
 
@@ -153,22 +152,27 @@
     });
 
     async function loadTim() {
-      // Ambil semua tim untuk event ini
+      // 1. Ambil semua tim untuk event ini
       const { data: allTim } = await window.supabaseClient
         .from('tim')
         .select('*, tingkat(nama)')
         .eq('event_id', currentEventId)
         .order('kode_kontingen');
       
-      // Ambil penilaian Juri HANYA untuk pos ini (filter pos_id)
-      const { data: sudahDinilai } = await window.supabaseClient
+      // 2. Ambil SEMUA penilaian Juri (dengan relasi penilaian_pos)
+      const { data: semuaPenilaian } = await window.supabaseClient
         .from('penilaian_juri')
-        .select('penilaian_pos_id, status, penilaian_pos!inner(tim_id, pos_id)')
-        .eq('juri_id', currentJuriId)
-        .eq('penilaian_pos.pos_id', currentPosId);
+        .select('penilaian_pos_id, status, penilaian_pos(tim_id, pos_id)')
+        .eq('juri_id', currentJuriId);
       
-      const timSudahDinilaiIds = (sudahDinilai || [])
-        .filter(sd => sd.status === 'locked' && sd.penilaian_pos && sd.penilaian_pos.tim_id)
+      // 3. Filter manual: hanya penilaian untuk POS INI yang dianggap "sudah dinilai"
+      const timSudahDinilaiIds = (semuaPenilaian || [])
+        .filter(sd => 
+          sd.status === 'locked' && 
+          sd.penilaian_pos && 
+          sd.penilaian_pos.tim_id &&
+          sd.penilaian_pos.pos_id === currentPosId
+        )
         .map(sd => sd.penilaian_pos.tim_id);
 
       const timBelumDinilai = allTim.filter(t => !timSudahDinilaiIds.includes(t.id));
