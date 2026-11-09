@@ -232,13 +232,19 @@
         const printSection = document.getElementById('printSection');
         const infoSection = document.getElementById('infoSection');
 
-        // Cari data status dari tabel referensi
+        // Cari data status
         const statusData = listStatus.find(s => s.nama === kontingen.status);
         const bisaDiedit = statusData ? statusData.bisa_diedit : false;
         const bisaDicetak = statusData ? statusData.bisa_dicetak : false;
+        const isRejected = kontingen.status === 'rejected';
+        const isSubmitted = kontingen.status === 'submitted';
 
+        // ==========================================
+        // URUTAN PENGECEKAN (PALING PENTING)
+        // ==========================================
+        
+        // 1. CEK DRAFT / BISA DIEDIT (PALING AWAL)
         if (bisaDiedit) {
-          // TAMPILKAN FORM INPUT
           formSection.classList.remove('hidden');
           
           document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
@@ -266,19 +272,9 @@
             }
           });
 
-        } else if (kontingen.status === 'submitted') {
-          infoSection.classList.remove('hidden');
-          banner.classList.remove('hidden');
-          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
-          banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
-          infoSection.innerHTML = `
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
-              <h2 class="text-xl font-bold text-slate-800 mb-2">Formulir Sedang Diverifikasi</h2>
-              <p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p>
-            </div>
-          `;
-
-        } else if (bisaDicetak) {
+        } 
+        // 2. CEK VERIFIED / BISA DICETAK
+        else if (bisaDicetak) {
           printSection.classList.remove('hidden');
           banner.classList.remove('hidden');
           banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
@@ -301,9 +297,22 @@
               addPrintRow(index + 1, p.peserta_master, p.peran_utama);
             });
           }
-
-        } else {
-          // Status Rejected atau status lain yang tidak bisa diedit & tidak bisa dicetak
+        }
+        // 3. CEK SUBMITTED / MENUNGGU
+        else if (isSubmitted) {
+          infoSection.classList.remove('hidden');
+          banner.classList.remove('hidden');
+          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
+          banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
+          infoSection.innerHTML = `
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
+              <h2 class="text-xl font-bold text-slate-800 mb-2">Formulir Sedang Diverifikasi</h2>
+              <p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p>
+            </div>
+          `;
+        }
+        // 4. CEK REJECTED / DITOLAK
+        else if (isRejected) {
           infoSection.classList.remove('hidden');
           banner.classList.remove('hidden');
           banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
@@ -322,6 +331,26 @@
               <button onclick="perbaikiData()" class="btn-primary w-full">Perbaiki Data Sekarang</button>
             </div>
           `;
+        }
+        // 5. FALLBACK (JIKA STATUS TIDAK DIKENALI)
+        else {
+          formSection.classList.remove('hidden');
+          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
+          document.getElementById('displayNamaKontingen').textContent = namaSekolah;
+          
+          if (pesertaData.length > 0) {
+            pesertaData.forEach(p => addPesertaRow(p.peserta_master, p.peran_utama));
+          } else {
+            addPesertaRow();
+          }
+          
+          document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
+          document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
+          document.getElementById('btnSubmit').addEventListener('click', () => {
+            if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Lanjutkan?')) {
+              saveData('submitted');
+            }
+          });
         }
       } else {
         infoSection.classList.remove('hidden');
@@ -431,7 +460,7 @@
       }
     }
 
-    // BEBAS HARDCODE: Cari status yang bisa diedit
+    // FUNGSI PERBAIKI DATA (Bebas Hardcode)
     window.perbaikiData = async () => {
       if (!confirm('Apakah Anda yakin ingin memperbaiki data? Status akan kembali menjadi Draft.')) return;
       
