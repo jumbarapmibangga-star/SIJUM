@@ -4,161 +4,56 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Portal Kontingen — Jumbara PMI</title>
-  
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
-  
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
-  
   <style>
-    /* CSS Khusus Cetak */
-    @media print {
-      body { background: white; }
-      .no-print { display: none !important; }
-      .print-area { box-shadow: none; border: none; padding: 0; }
-      header, .btn-theme-toggle, #btnLogout { display: none !important; }
-      table { font-size: 10px; }
-      th, td { padding: 4px !important; }
-    }
+    @media print { .no-print { display: none !important; } .print-area { box-shadow: none; border: none; } }
   </style>
 </head>
 <body class="halaman-kontingen bg-slate-50 min-h-screen flex flex-col font-sans">
-
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50 no-print">
     <div class="max-w-5xl mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-2 md:gap-3">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
+      <div class="flex items-center gap-2">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 md:h-10 w-auto">
         <div>
-          <h1 class="text-sm md:text-lg font-bold leading-tight">Portal Kontingen</h1>
+          <h1 class="text-sm md:text-lg font-bold">Portal Kontingen</h1>
           <p id="namaKontingenHeader" class="text-[10px] md:text-xs text-red-100">Memuat...</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        </button>
-        <button id="btnLogout" class="text-xs font-bold bg-white text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-slate-100 transition-colors shadow-sm">Keluar</button>
-      </div>
+      <button id="btnLogout" class="text-xs font-bold bg-white text-red-700 px-3 py-1.5 rounded-lg">Keluar</button>
     </div>
   </header>
 
   <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 pb-20">
-    <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm animate-fade-in no-print"></div>
+    <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold no-print"></div>
 
-    <!-- FORM SECTION (DRAFT / REVISI) -->
-    <div id="formSection" class="space-y-6 animate-fade-in hidden">
-      
-      <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">1. Identitas Sekolah</h2>
-        <p id="displayKodeKontingen" class="font-mono font-extrabold text-red-700 text-2xl md:text-3xl leading-none mb-1">Memuat...</p>
-        <p id="displayNamaKontingen" class="font-medium text-slate-700 text-sm md:text-base">Memuat...</p>
+    <!-- FORM INPUT (DRAFT) -->
+    <div id="formSection" class="space-y-6 hidden">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-xs font-bold text-slate-400 uppercase mb-2">Identitas Sekolah</h2>
+        <p id="displayKodeKontingen" class="font-mono font-extrabold text-red-700 text-2xl mb-1">Memuat...</p>
+        <p id="displayNamaKontingen" class="font-medium text-slate-700 text-sm">Memuat...</p>
       </div>
-
       <div class="form-card">
         <div class="flex justify-between items-center mb-4 border-b pb-2">
-          <h2 class="text-lg md:text-xl font-bold text-slate-800">2. Daftar Peserta & Pembina</h2>
-          <button type="button" id="btnTambahPeserta" class="btn-primary text-xs md:text-sm py-1.5 px-3">+ Tambah</button>
+          <h2 class="text-lg font-bold text-slate-800">Daftar Peserta</h2>
+          <button type="button" id="btnTambahPeserta" class="btn-primary text-xs py-1.5 px-3">+ Tambah</button>
         </div>
-        
-        <div class="overflow-x-auto">
-          <table class="table-custom min-w-full text-sm">
-            <thead>
-              <tr>
-                <th>Nama Lengkap</th>
-                <th>Panggilan</th>
-                <th>Tgl Lahir</th>
-                <th>Alamat</th>
-                <th>No HP</th>
-                <th>Peran/Tugas</th>
-                <th class="text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="pesertaTableBody"></tbody>
-          </table>
-        </div>
-        <p class="text-xs text-slate-500 mt-2">* Isi data dengan benar. Minimal 1 peserta.</p>
-      </div>
-
-      <div class="form-card">
-        <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-4 border-b pb-2">3. Data Tanda Tangan (Kepala Sekolah)</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="input-label">Nama Kepala Sekolah</label>
-            <input type="text" id="namaKepsek" class="input-field" placeholder="Ketik nama...">
-          </div>
-          <div>
-            <label class="input-label">NIP Kepala Sekolah</label>
-            <input type="text" id="nipKepsek" class="input-field" placeholder="Ketik NIP...">
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-col md:flex-row justify-end gap-3 pt-4">
-        <button type="button" id="btnSimpanDraft" class="btn-secondary w-full md:w-auto">Simpan Draft</button>
-        <button type="button" id="btnSubmit" class="btn-primary w-full md:w-auto text-lg py-3 px-8 shadow-lg">Submit & Kunci Data</button>
-      </div>
-    </div>
-
-    <!-- PRINT SECTION (VERIFIED) -->
-    <div id="printSection" class="hidden">
-      <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 print-area max-w-4xl mx-auto">
-        
-        <div class="flex items-center justify-between mb-4 border-b-2 border-slate-800 pb-4">
-          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-16">
-          <div class="text-center flex-1 px-4">
-            <h1 class="text-xl font-bold text-slate-800">DATA PESERTA</h1>
-            <h2 class="text-lg font-bold text-slate-800" id="printNamaEvent">Memuat Event...</h2>
-            <h3 class="text-md font-semibold text-slate-700" id="printTahunEvent">Memuat Tahun...</h3>
-          </div>
-          <div class="w-16"></div>
-        </div>
-
-        <div class="text-sm mb-4">
-          <p><strong>Kode:</strong> <span id="printKode" class="font-mono text-red-700 font-bold"></span></p>
-          <p><strong>Unit PMR Mula:</strong> <span id="printNamaSekolah"></span></p>
-        </div>
-
-        <table class="w-full text-left border-collapse mb-8 border border-slate-400">
-          <thead>
-            <tr class="bg-slate-200 border-b border-slate-400 text-xs">
-              <th class="py-2 px-2 border-r border-slate-400">No</th>
-              <th class="py-2 px-2 border-r border-slate-400">Nama Lengkap</th>
-              <th class="py-2 px-2 border-r border-slate-400">Panggilan</th>
-              <th class="py-2 px-2 border-r border-slate-400">Tempat Tanggal Lahir</th>
-              <th class="py-2 px-2 border-r border-slate-400">Alamat</th>
-              <th class="py-2 px-2 border-r border-slate-400">No HP/Tlp</th>
-              <th class="py-2 px-2">Tugas dlm Kontingen</th>
-            </tr>
-          </thead>
-          <tbody id="printPesertaBody" class="text-xs"></tbody>
+        <table class="table-custom min-w-full text-sm">
+          <thead><tr><th>Nama Lengkap</th><th>Tgl Lahir</th><th>Peran</th><th class="text-right">Aksi</th></tr></thead>
+          <tbody id="pesertaTableBody"></tbody>
         </table>
-
-        <div class="flex justify-end mt-12 text-sm">
-          <div class="text-center">
-            <p><span id="printTempatEvent">Memuat...</span>, <span id="printTanggalTtd"></span></p>
-            <p>Kepala Sekolah <span id="printNamaSekolahTtd"></span></p>
-            <div class="h-20"></div>
-            <p class="font-bold underline" id="printNamaKepsek">(___________________)</p>
-            <p>NIP. <span id="printNipKepsek">-</span></p>
-          </div>
-        </div>
-
       </div>
-
-      <div class="flex justify-center gap-4 mt-6 no-print">
-        <button onclick="window.print()" class="btn-primary text-lg px-8 py-3 shadow-lg flex items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-          Cetak / Simpan PDF
-        </button>
+      <div class="flex justify-end gap-3 pt-4">
+        <button type="button" id="btnSimpanDraft" class="btn-secondary">Simpan Draft</button>
+        <button type="button" id="btnSubmit" class="btn-primary">Submit & Kunci Data</button>
       </div>
     </div>
 
     <!-- INFO SECTION (SUBMITTED / REJECTED) -->
     <div id="infoSection" class="hidden text-center py-12"></div>
-
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -166,103 +61,44 @@
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
-    let currentEventId = null;
-    let currentKontingenId = null;
-    let currentTimId = null;
-    let currentKodeKontingen = null;
-    let currentTingkatId = null;
-    let currentNamaTingkat = null;
-    let currentEventData = null;
+    let currentEventId, currentKontingenId, currentTimId, currentKodeKontingen, currentTingkatId;
     let listPeran = [];
-    let listStatus = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['kontingen']);
       if (!auth) return;
-
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
-      const namaSekolah = auth.user.user_metadata?.nama || 'Nama Sekolah Belum Diatur';
+      const namaSekolah = auth.user.user_metadata?.nama || '-';
       document.getElementById('namaKontingenHeader').textContent = namaSekolah;
 
-      // Ambil Data Event
-      const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
+      const { data: events } = await window.supabaseClient.from('event').select('id').order('tahun', { ascending: false }).limit(1);
       if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
       currentEventId = events[0].id;
-      currentEventData = events[0];
 
-      // Ambil Data Peran & Status
       const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
       listPeran = peranData || [];
 
-      const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
-      listStatus = statusData || [];
-
-      // Ambil Data Kontingen
-      const { data: kontingen } = await window.supabaseClient
-        .from('kontingen_event')
-        .select('*')
-        .eq('event_id', currentEventId)
-        .eq('akun_id', auth.user.id)
-        .maybeSingle();
+      const { data: kontingen } = await window.supabaseClient.from('kontingen_event').select('*').eq('event_id', currentEventId).eq('akun_id', auth.user.id).maybeSingle();
 
       if (kontingen) {
         currentKontingenId = kontingen.id;
         currentTingkatId = kontingen.tingkat_id;
-
-        const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', currentTingkatId).single();
-        currentNamaTingkat = tk ? tk.nama : 'Tingkat';
-
         const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
         if (tim) {
           currentTimId = tim.id;
           currentKodeKontingen = tim.kode_kontingen;
-          document.getElementById('namaKepsek').value = tim.nama_kepala_sekolah || '';
-          document.getElementById('nipKepsek').value = tim.nip_kepala_sekolah || '';
         }
 
-        let pesertaData = [];
-        if (currentTimId) {
-          const { data: peserta } = await window.supabaseClient
-            .from('peserta_event')
-            .select(`id, peran_utama, peserta_master (nama, tgl_lahir, nama_panggilan, alamat, no_hp)`)
-            .eq('tim_id', currentTimId);
-          if (peserta) pesertaData = peserta;
-        }
-
-        const banner = document.getElementById('statusBanner');
-        const formSection = document.getElementById('formSection');
-        const printSection = document.getElementById('printSection');
-        const infoSection = document.getElementById('infoSection');
-
-        // Cari data status
-        const statusData = listStatus.find(s => s.nama === kontingen.status);
-        const bisaDiedit = statusData ? statusData.bisa_diedit : false;
-        const bisaDicetak = statusData ? statusData.bisa_dicetak : false;
-        const isRejected = kontingen.status === 'rejected';
-        const isSubmitted = kontingen.status === 'submitted';
-
-        // ==========================================
-        // URUTAN PENGECEKAN (PALING PENTING)
-        // ==========================================
-        
-        // 1. CEK DRAFT / BISA DIEDIT (PALING AWAL)
-        if (bisaDiedit) {
-          formSection.classList.remove('hidden');
-          
-          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
+        if (kontingen.status === 'draft') {
+          document.getElementById('formSection').classList.remove('hidden');
+          document.getElementById('displayKodeKontingen').textContent = currentKodeKontingen;
           document.getElementById('displayNamaKontingen').textContent = namaSekolah;
 
-          if (kontingen.catatan_verifikasi) {
-            banner.classList.remove('hidden');
-            banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
-            banner.innerHTML = `⚠️ Catatan Panitia: "${kontingen.catatan_verifikasi}"<br><span class="text-sm font-normal">Silakan perbaiki data Anda dan submit ulang.</span>`;
-          }
-
-          if (pesertaData.length > 0) {
-            pesertaData.forEach(p => {
-              addPesertaRow(p.peserta_master, p.peran_utama);
-            });
+          const { data: peserta } = await window.supabaseClient.from('peserta_event').select(`peran_utama, peserta_master (nama, tgl_lahir)`).eq('tim_id', currentTimId);
+          const tbody = document.getElementById('pesertaTableBody');
+          if (peserta && peserta.length > 0) {
+            peserta.forEach(p => addPesertaRow(p.peserta_master, p.peran_utama));
           } else {
             addPesertaRow();
           }
@@ -270,143 +106,51 @@
           document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
           document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
           document.getElementById('btnSubmit').addEventListener('click', () => {
-            if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Lanjutkan?')) {
-              saveData('submitted');
-            }
+            if (confirm('Setelah disubmit, data tidak dapat diubah. Lanjutkan?')) saveData('submitted');
           });
 
-        } 
-        // 2. CEK VERIFIED / BISA DICETAK
-        else if (bisaDicetak) {
-          printSection.classList.remove('hidden');
-          banner.classList.remove('hidden');
-          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
-          banner.innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
-
-          document.getElementById('printNamaEvent').textContent = currentEventData.nama;
-          document.getElementById('printTahunEvent').textContent = `TAHUN ${currentEventData.tahun}`;
-          document.getElementById('printTempatEvent').textContent = currentEventData.tempat_pelaksanaan || 'Purbalingga';
-          
-          document.getElementById('printKode').textContent = currentKodeKontingen;
-          document.getElementById('printNamaSekolah').textContent = namaSekolah;
-          document.getElementById('printNamaSekolahTtd').textContent = namaSekolah;
-          document.getElementById('printTanggalTtd').textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-          
-          document.getElementById('printNamaKepsek').textContent = tim.nama_kepala_sekolah || '(___________________)';
-          document.getElementById('printNipKepsek').textContent = tim.nip_kepala_sekolah || '-';
-
-          if (pesertaData.length > 0) {
-            pesertaData.forEach((p, index) => {
-              addPrintRow(index + 1, p.peserta_master, p.peran_utama);
-            });
-          }
-        }
-        // 3. CEK SUBMITTED / MENUNGGU
-        else if (isSubmitted) {
-          infoSection.classList.remove('hidden');
-          banner.classList.remove('hidden');
-          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
-          banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
-          infoSection.innerHTML = `
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
-              <h2 class="text-xl font-bold text-slate-800 mb-2">Formulir Sedang Diverifikasi</h2>
-              <p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p>
-            </div>
-          `;
-        }
-        // 4. CEK REJECTED / DITOLAK
-        else if (isRejected) {
-          infoSection.classList.remove('hidden');
-          banner.classList.remove('hidden');
-          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
-          banner.innerHTML = '❌ Pendaftaran ditolak. Hubungi panitia.';
-          
-          const catatan = kontingen.catatan_verifikasi || 'Tidak ada catatan dari panitia.';
-          infoSection.innerHTML = `
-            <div class="bg-white p-8 rounded-xl shadow-sm border border-red-200 max-w-lg mx-auto relative overflow-hidden">
-              <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
-              <h2 class="text-xl font-bold text-slate-800 mb-2">Pendaftaran Ditolak</h2>
-              <p class="text-slate-500 mb-4">Mohon maaf, pendaftaran Anda ditolak oleh Panitia.</p>
-              <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-left mb-6">
-                <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Catatan Panitia:</p>
-                <p class="text-sm text-red-700 font-medium">"${catatan}"</p>
-              </div>
-              <button onclick="perbaikiData()" class="btn-primary w-full">Perbaiki Data Sekarang</button>
-            </div>
-          `;
-        }
-        // 5. FALLBACK (JIKA STATUS TIDAK DIKENALI)
-        else {
-          formSection.classList.remove('hidden');
-          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
-          document.getElementById('displayNamaKontingen').textContent = namaSekolah;
-          
-          if (pesertaData.length > 0) {
-            pesertaData.forEach(p => addPesertaRow(p.peserta_master, p.peran_utama));
-          } else {
-            addPesertaRow();
-          }
-          
-          document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
-          document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
-          document.getElementById('btnSubmit').addEventListener('click', () => {
-            if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Lanjutkan?')) {
-              saveData('submitted');
-            }
-          });
+        } else if (kontingen.status === 'submitted') {
+          const info = document.getElementById('infoSection');
+          info.classList.remove('hidden');
+          document.getElementById('statusBanner').classList.remove('hidden');
+          document.getElementById('statusBanner').className = 'mb-6 p-4 rounded-xl border bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
+          document.getElementById('statusBanner').innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
+          info.innerHTML = `<div class="bg-white p-8 rounded-xl shadow-sm border max-w-lg mx-auto"><h2 class="text-xl font-bold mb-2">Formulir Sedang Diverifikasi</h2><p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p></div>`;
+        } else if (kontingen.status === 'verified') {
+          const info = document.getElementById('infoSection');
+          info.classList.remove('hidden');
+          document.getElementById('statusBanner').classList.remove('hidden');
+          document.getElementById('statusBanner').className = 'mb-6 p-4 rounded-xl border bg-green-50 border-green-200 text-green-800 no-print';
+          document.getElementById('statusBanner').innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
+          info.innerHTML = `<div class="bg-white p-8 rounded-xl shadow-sm border max-w-lg mx-auto"><h2 class="text-xl font-bold mb-2">Pendaftaran Disetujui</h2><p class="text-slate-500">Data Anda sudah diverifikasi.</p></div>`;
+        } else if (kontingen.status === 'rejected') {
+          const info = document.getElementById('infoSection');
+          info.classList.remove('hidden');
+          document.getElementById('statusBanner').classList.remove('hidden');
+          document.getElementById('statusBanner').className = 'mb-6 p-4 rounded-xl border bg-red-50 border-red-200 text-red-800 no-print';
+          document.getElementById('statusBanner').innerHTML = '❌ Pendaftaran ditolak.';
+          const catatan = kontingen.catatan_verifikasi || 'Tidak ada catatan.';
+          info.innerHTML = `<div class="bg-white p-8 rounded-xl shadow-sm border border-red-200 max-w-lg mx-auto"><h2 class="text-xl font-bold mb-2">Pendaftaran Ditolak</h2><p class="text-slate-500 mb-4">Mohon maaf, pendaftaran Anda ditolak.</p><div class="bg-red-50 p-4 rounded-lg border text-left mb-6"><p class="text-xs font-bold text-red-800 uppercase mb-1">Catatan Panitia:</p><p class="text-sm text-red-700 font-medium">"${catatan}"</p></div><button onclick="perbaikiData()" class="btn-primary w-full">Perbaiki Data Sekarang</button></div>`;
         }
       } else {
-        infoSection.classList.remove('hidden');
-        infoSection.innerHTML = '<p class="text-red-500 font-bold">Data kontingen belum siap. Hubungi Panitia.</p>';
+        document.getElementById('infoSection').classList.remove('hidden');
+        document.getElementById('infoSection').innerHTML = '<p class="text-red-500 font-bold">Data kontingen belum siap. Hubungi Panitia.</p>';
       }
     });
 
     function addPesertaRow(data = null, peran = null) {
       const tbody = document.getElementById('pesertaTableBody');
       const tr = document.createElement('tr');
-      
       let peranOptions = '';
       listPeran.forEach(p => {
         const isSelected = peran === p.nama ? 'selected' : '';
         peranOptions += `<option value="${p.nama}" ${isSelected}>${p.nama}</option>`;
       });
-
       tr.innerHTML = `
-        <td><input type="text" class="input-field text-sm min-w-[150px]" placeholder="Nama Lengkap" value="${data ? data.nama : ''}" required></td>
-        <td><input type="text" class="input-field text-sm min-w-[100px]" placeholder="Panggilan" value="${data ? data.nama_panggilan || '' : ''}"></td>
-        <td><input type="date" class="input-field text-sm min-w-[120px]" value="${data ? data.tgl_lahir : ''}" required></td>
-        <td><input type="text" class="input-field text-sm min-w-[150px]" placeholder="Alamat" value="${data ? data.alamat || '' : ''}"></td>
-        <td><input type="text" class="input-field text-sm min-w-[120px]" placeholder="No HP" value="${data ? data.no_hp || '' : ''}"></td>
-        <td>
-          <select class="input-field text-sm min-w-[100px]">
-            ${peranOptions || '<option value="">-- Pilih --</option>'}
-          </select>
-        </td>
-        <td class="text-right">
-          <button type="button" class="text-red-600 hover:underline text-sm font-semibold" onclick="this.closest('tr').remove()">Hapus</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-
-    function addPrintRow(no, p, peran) {
-      const tbody = document.getElementById('printPesertaBody');
-      const tr = document.createElement('tr');
-      tr.className = 'border-b border-slate-400';
-      
-      let tglLahir = '-';
-      if (p.tgl_lahir) {
-        tglLahir = 'Purbalingga, ' + new Date(p.tgl_lahir).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-      }
-      
-      tr.innerHTML = `
-        <td class="py-1 px-2 border-r border-slate-400 text-center">${no}</td>
-        <td class="py-1 px-2 border-r border-slate-400">${p.nama}</td>
-        <td class="py-1 px-2 border-r border-slate-400">${p.nama_panggilan || '-'}</td>
-        <td class="py-1 px-2 border-r border-slate-400">${tglLahir}</td>
-        <td class="py-1 px-2 border-r border-slate-400">${p.alamat || '-'}</td>
-        <td class="py-1 px-2 border-r border-slate-400">${p.no_hp || '-'}</td>
-        <td class="py-1 px-2">${peran}</td>
+        <td><input type="text" class="input-field text-sm" placeholder="Nama Lengkap" value="${data ? data.nama : ''}" required></td>
+        <td><input type="date" class="input-field text-sm" value="${data ? data.tgl_lahir : ''}" required></td>
+        <td><select class="input-field text-sm">${peranOptions}</select></td>
+        <td class="text-right"><button type="button" class="text-red-600 font-semibold" onclick="this.closest('tr').remove()">Hapus</button></td>
       `;
       tbody.appendChild(tr);
     }
@@ -414,76 +158,34 @@
     async function saveData(actionStatus) {
       const btn = actionStatus === 'draft' ? document.getElementById('btnSimpanDraft') : document.getElementById('btnSubmit');
       btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
-
       try {
         const rows = document.querySelectorAll('#pesertaTableBody tr');
-        if (rows.length === 0) throw new Error('Minimal harus ada 1 peserta.');
-        
+        if (rows.length === 0) throw new Error('Minimal 1 peserta.');
         const listPeserta = [];
         for (const row of rows) {
           const inputs = row.querySelectorAll('input, select');
           const nama = inputs[0].value;
-          const panggilan = inputs[1].value;
-          const tgl = inputs[2].value;
-          const alamat = inputs[3].value;
-          const hp = inputs[4].value;
-          const peran = inputs[5].value;
-          
-          if (nama && tgl) {
-            listPeserta.push({ nama, nama_panggilan: panggilan, tgl_lahir: tgl, alamat, no_hp: hp, peran });
-          }
+          const tgl = inputs[1].value;
+          const peran = inputs[2].value;
+          if (nama && tgl) listPeserta.push({ nama, tgl_lahir: tgl, peran });
         }
-
-        const namaKepsek = document.getElementById('namaKepsek').value;
-        const nipKepsek = document.getElementById('nipKepsek').value;
-
-        const { error: errK } = await window.supabaseClient.from('kontingen_event')
-          .update({ status: actionStatus, catatan_verifikasi: null }).eq('id', currentKontingenId);
-        if (errK) throw errK;
-
-        await window.supabaseClient.from('tim').update({ 
-          nama_kepala_sekolah: namaKepsek, 
-          nip_kepala_sekolah: nipKepsek 
-        }).eq('id', currentTimId);
-
+        await window.supabaseClient.from('kontingen_event').update({ status: actionStatus }).eq('id', currentKontingenId);
         const { error: errRpc } = await window.supabaseClient.rpc('simpan_peserta_kontingen', {
-          p_tim_id: currentTimId,
-          p_tingkat_id: currentTingkatId,
-          p_event_id: currentEventId,
-          p_peserta: listPeserta
+          p_tim_id: currentTimId, p_tingkat_id: currentTingkatId, p_event_id: currentEventId, p_peserta: listPeserta
         });
         if (errRpc) throw errRpc;
-
-        alert(actionStatus === 'draft' ? 'Draft berhasil disimpan.' : 'Pendaftaran berhasil dikirim!');
+        alert(actionStatus === 'draft' ? 'Draft disimpan.' : 'Pendaftaran dikirim!');
         window.location.reload();
-
       } catch (err) {
         alert('Error: ' + err.message);
         btn.innerHTML = actionStatus === 'draft' ? 'Simpan Draft' : 'Submit & Kunci Data'; btn.disabled = false;
       }
     }
 
-    // FUNGSI PERBAIKI DATA (Bebas Hardcode)
     window.perbaikiData = async () => {
-      if (!confirm('Apakah Anda yakin ingin memperbaiki data? Status akan kembali menjadi Draft.')) return;
-      
-      const draftStatus = listStatus.find(s => s.bisa_diedit === true);
-      if (!draftStatus) {
-        alert('Error: Status untuk mengedit tidak ditemukan di database. Hubungi panitia.');
-        return;
-      }
-
-      const { error } = await window.supabaseClient
-        .from('kontingen_event')
-        .update({ status: draftStatus.nama, catatan_verifikasi: null })
-        .eq('id', currentKontingenId);
-
-      if (error) {
-        alert('Gagal: ' + error.message);
-      } else {
-        alert('Silakan perbaiki data Anda.');
-        window.location.reload();
-      }
+      if (!confirm('Perbaiki data? Status kembali menjadi Draft.')) return;
+      await window.supabaseClient.from('kontingen_event').update({ status: 'draft', catatan_verifikasi: null }).eq('id', currentKontingenId);
+      window.location.reload();
     };
   </script>
 </body>
