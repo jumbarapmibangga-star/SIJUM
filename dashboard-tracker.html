@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Tracker Panitia — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -85,7 +83,6 @@
           <tr>
             <th class="text-left">Kode Tim</th>
             <th class="text-left">Nama Tim</th>
-            <!-- Header Pos akan diisi JS -->
           </tr>
         </thead>
         <tbody id="trackerBody">
@@ -102,19 +99,18 @@
 
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
     let allPos = [];
+    let statusFinalList = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
       if (!auth) return;
 
-      // Setup Logout & Menu
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
       document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
       
@@ -126,28 +122,11 @@
       document.getElementById('userRoleDisplay').textContent = roleText;
       document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
-      // Render Menu Sidebar
+      // RENDER MENU
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
-        <a href="dashboard-tracker.html" class="sidebar-link active">📡 Tracker Penilaian</a>
-      `;
-      if (['koordinator', 'super_admin'].includes(auth.role)) {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
-      }
-      if (auth.role === 'super_admin') {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
-      }
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'dashboard-tracker');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'dashboard-tracker');
 
       // Load Master Tingkat
       const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
@@ -173,6 +152,17 @@
       allPos.forEach(p => {
         theadTr.innerHTML += `<th class="text-center">${p.kode_pos}</th>`;
       });
+
+      // Ambil Status Final dari database (Bebas Hardcode)
+      const { data: statusData } = await window.supabaseClient
+        .from('status_kontingen')
+        .select('nama')
+        .eq('bisa_dicetak', true);
+      
+      statusFinalList = (statusData || []).map(s => s.nama);
+      if (statusFinalList.length === 0) {
+        statusFinalList = ['final', 'direvisi'];
+      }
 
       loadTracker();
     });
@@ -213,19 +203,15 @@
           html += `<td class="text-left font-medium text-slate-800">${tim.nama_tim}</td>`;
           
           allPos.forEach(pos => {
-            // Cari status penilaian untuk tim dan pos ini
             const nilai = nilaiData.find(n => n.tim_id === tim.id && n.pos_id === pos.id);
             
             if (nilai) {
-              if (nilai.status === 'final' || nilai.status === 'direvisi') {
-                // Selesai (Hijau)
+              if (statusFinalList.includes(nilai.status)) {
                 html += `<td class="text-center"><span class="inline-block w-6 h-6 rounded bg-green-500" title="Final"></span></td>`;
               } else {
-                // Proses (Kuning)
                 html += `<td class="text-center"><span class="inline-block w-6 h-6 rounded bg-yellow-400" title="Menunggu Juri: ${nilai.jumlah_juri_submit}/${nilai.jumlah_juri_wajib}"></span></td>`;
               }
             } else {
-              // Belum Dinilai (Abu-abu)
               html += `<td class="text-center"><span class="inline-block w-6 h-6 rounded bg-slate-200" title="Belum Dinilai"></span></td>`;
             }
           });
