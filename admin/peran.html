@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kelola Peran — Jumbara PMI</title>
+  
+  <base href="../">
+  
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div>
+        <h2 class="text-xl md:text-2xl font-bold text-slate-800">Kelola Peran Peserta</h2>
+        <p class="text-sm md:text-base text-slate-500">Atur daftar peran yang bisa dipilih oleh Kontingen.</p>
+      </div>
+      <button onclick="bukaModalPeran()" class="btn-primary w-full md:w-auto shadow-md">+ Tambah Peran</button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+      <table class="table-custom min-w-full">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Peran</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="peranTableBody">
+          <tr><td colspan="3" class="p-8 text-center text-slate-500">Memuat data peran...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL PERAN -->
+  <div id="modalPeran" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6 form-card animate-fade-in">
+      <h3 class="text-lg font-bold text-slate-800 mb-4" id="modalTitle">Tambah Peran</h3>
+      <form id="peranForm" class="space-y-4">
+        <input type="hidden" id="peranId" value="">
+        <div>
+          <label class="input-label">Nama Peran</label>
+          <input type="text" id="namaPeran" required placeholder="Contoh: Melukis" class="input-field">
+        </div>
+        <div class="flex justify-end gap-3 pt-4">
+          <button type="button" id="btnBatal" class="btn-secondary">Batal</button>
+          <button type="submit" id="btnSimpan" class="btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/peran.html" class="sidebar-link active">👥 Kelola Peran</a>
+        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+        <a href="admin/kelola-berita.html" class="sidebar-link">📰 Kelola Berita</a>
+        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
+        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
+      `;
+      if (['koordinator', 'super_admin'].includes(auth.role)) {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
+        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
+      }
+      if (auth.role === 'super_admin') {
+        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
+      }
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      document.getElementById('btnBatal').addEventListener('click', () => {
+        document.getElementById('modalPeran').classList.add('hidden');
+      });
+
+      loadPeran();
+    });
+
+    async function loadPeran() {
+      const tbody = document.getElementById('peranTableBody');
+      const { data, error } = await window.supabaseClient
+        .from('peran')
+        .select('*')
+        .order('nama', { ascending: true });
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-red-500">Gagal memuat: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-500">Belum ada peran.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      data.forEach((p, index) => {
+        html += `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="text-slate-600">${index + 1}</td>
+            <td class="font-semibold text-slate-800">${p.nama}</td>
+            <td class="text-right space-x-3">
+              <button onclick="editPeran('${p.id}')" class="text-blue-600 hover:underline font-semibold text-sm">Edit</button>
+              <button onclick="hapusPeran('${p.id}')" class="text-red-600 hover:underline font-semibold text-sm">Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    window.bukaModalPeran = () => {
+      document.getElementById('modalTitle').textContent = 'Tambah Peran';
+      document.getElementById('peranId').value = '';
+      document.getElementById('namaPeran').value = '';
+      document.getElementById('modalPeran').classList.remove('hidden');
+    };
+
+    window.editPeran = async (id) => {
+      const { data: p } = await window.supabaseClient.from('peran').select('*').eq('id', id).single();
+      if (!p) return;
+
+      document.getElementById('modalTitle').textContent = 'Edit Peran';
+      document.getElementById('peranId').value = p.id;
+      document.getElementById('namaPeran').value = p.nama;
+      document.getElementById('modalPeran').classList.remove('hidden');
+    };
+
+    window.hapusPeran = async (id) => {
+      if (!confirm('Yakin ingin menghapus peran ini?')) return;
+      const { error } = await window.supabaseClient.from('peran').delete().eq('id', id);
+      if (error) alert('Gagal menghapus: ' + error.message);
+      else loadPeran();
+    };
+
+    document.getElementById('peranForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnSimpan');
+      btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+      const id = document.getElementById('peranId').value;
+      const nama = document.getElementById('namaPeran').value;
+
+      let error;
+      if (id) {
+        const res = await window.supabaseClient.from('peran').update({ nama }).eq('id', id);
+        error = res.error;
+      } else {
+        const res = await window.supabaseClient.from('peran').insert([{ nama }]);
+        error = res.error;
+      }
+
+      if (error) {
+        alert('Gagal menyimpan: ' + error.message);
+      } else {
+        document.getElementById('modalPeran').classList.add('hidden');
+        loadPeran();
+      }
+      btn.innerHTML = 'Simpan'; btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
