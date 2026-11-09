@@ -102,7 +102,7 @@
       const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
       listPeran = peranData || [];
 
-      // Ambil data kontingen & tim (yang sudah dibuat saat daftar)
+      // Ambil data kontingen & tim (dibuat otomatis oleh Trigger)
       const { data: kontingen } = await window.supabaseClient
         .from('kontingen_event')
         .select('*')
@@ -122,8 +122,6 @@
           // Tampilkan Kode & Tingkat
           const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', currentTingkatId).single();
           const namaTingkat = tk ? tk.nama : 'Tingkat';
-          
-          // Format: MU-001 (Mula) atau WI-001 (Wira)
           document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${namaTingkat})`;
         } else {
           document.getElementById('displayKodeKontingen').textContent = 'Error: Tim tidak ditemukan.';
@@ -150,7 +148,6 @@
           }
         }
       } else {
-        // Fallback jika data tidak ada (misal akun lama)
         document.getElementById('displayKodeKontingen').textContent = 'Data belum siap. Silakan hubungi panitia.';
       }
 
@@ -226,38 +223,36 @@
       }
 
       try {
-        // Update status kontingen
-        const { error: errK } = await window.supabaseClient.from('kontingen_event').update({
-          status: actionStatus
-        }).eq('id', currentKontingenId);
-        if (errK) throw errK;
-
-        // Simpan peserta
-        await window.supabaseClient.from('peserta_event').delete().eq('tim_id', currentTimId);
+        // 1. Kumpulkan data peserta dari form
         const rows = document.querySelectorAll('#pesertaTableBody tr');
         if (rows.length === 0) throw new Error('Minimal harus ada 1 peserta.');
-
+        
+        const listPeserta = [];
         for (const row of rows) {
           const inputs = row.querySelectorAll('input, select');
           const nama = inputs[0].value;
           const tgl = inputs[1].value;
           const peran = inputs[2].value;
-
+          
           if (nama && tgl) {
-            let { data: pm } = await window.supabaseClient.from('peserta_master').select('id').eq('nama', nama).eq('tgl_lahir', tgl).maybeSingle();
-            if (!pm) {
-              const kodePeserta = `${currentKodeKontingen}-${Math.floor(Math.random() * 90) + 10}`;
-              const { data: newPm, error: errPm } = await window.supabaseClient.from('peserta_master')
-                .insert([{ nama, tgl_lahir: tgl, kode_peserta: kodePeserta }]).select().single();
-              if (errPm) throw errPm;
-              pm = newPm;
-            }
-
-            await window.supabaseClient.from('peserta_event').insert([{
-              event_id: currentEventId, peserta_master_id: pm.id, tim_id: currentTimId, tingkat_id: currentTingkatId, peran_utama: peran
-            }]);
+            listPeserta.push({ nama: nama, tgl_lahir: tgl, peran: peran });
           }
         }
+
+        // 2. Update status kontingen (draft / submitted)
+        const { error: errK } = await window.supabaseClient.from('kontingen_event')
+          .update({ status: actionStatus }).eq('id', currentKontingenId);
+        if (errK) throw errK;
+
+        // 3. Panggil RPC untuk simpan peserta (Bebas Hardcode di Frontend)
+        const { error: errRpc } = await window.supabaseClient.rpc('simpan_peserta_kontingen', {
+          p_tim_id: currentTimId,
+          p_tingkat_id: currentTingkatId,
+          p_event_id: currentEventId,
+          p_peserta: listPeserta
+        });
+
+        if (errRpc) throw errRpc;
 
         alert(actionStatus === 'draft' ? 'Draft berhasil disimpan.' : 'Pendaftaran berhasil dikirim!');
         window.location.reload();
