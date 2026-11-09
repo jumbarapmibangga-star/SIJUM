@@ -74,6 +74,7 @@ async function catatLog(kategori, aksi, deskripsi, jenis, alasan = null) {
     throw err; 
   }
 }
+
 // FUNGSI GLOBAL UNTUK MERENDER MENU SIDEBAR (BEBAS HARDCODE)
 async function renderMenu(role, activePage = '') {
   // Ambil menu dari database
@@ -100,7 +101,10 @@ async function renderMenu(role, activePage = '') {
       lastKategori = m.kategori;
     }
 
-    const isActive = m.url.includes(activePage) ? 'active' : '';
+    // PERBAIKAN: Cek nama file, bukan includes
+    const fileName = m.url.split('/').pop().replace('.html', '');
+    const isActive = fileName === activePage ? 'active' : '';
+    
     html += `<a href="${m.url}" class="sidebar-link ${isActive}">${m.icon || ''} ${m.label}</a>`;
   });
 
