@@ -247,10 +247,10 @@
     window.setujuiData = async () => {
       if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
       
-      // Cari status yang 'bisa_dicetak' (Terverifikasi)
-      const statusVerified = listStatus.find(s => s.bisa_dicetak === true);
+      // BEBAS HARDCODE: Cari status berdasarkan aksi 'setujui'
+      const statusVerified = listStatus.find(s => s.aksi === 'setujui');
       if (!statusVerified) {
-        alert('Error: Status "Terverifikasi" tidak ditemukan di database.');
+        alert('Error: Status untuk aksi "setujui" tidak ditemukan di database.');
         return;
       }
       
@@ -272,10 +272,10 @@
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
-      // Cari status 'rejected'
-      const statusRejected = listStatus.find(s => s.nama === 'rejected');
+      // BEBAS HARDCODE: Cari status berdasarkan aksi 'tolak'
+      const statusRejected = listStatus.find(s => s.aksi === 'tolak');
       if (!statusRejected) {
-        alert('Error: Status "rejected" tidak ditemukan di database.');
+        alert('Error: Status untuk aksi "tolak" tidak ditemukan di database.');
         return;
       }
 
