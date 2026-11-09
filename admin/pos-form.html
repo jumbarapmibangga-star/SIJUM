@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Form Pos — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -125,7 +123,6 @@
     </form>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -146,25 +143,11 @@
       document.getElementById('userRoleDisplay').textContent = roleText;
       document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
+      // RENDER MENU
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link active">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-      `;
-      if (['koordinator', 'super_admin'].includes(auth.role)) {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>`;
-      }
-      if (auth.role === 'super_admin') {
-        menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
-      }
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'pos');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'pos');
 
       // Ambil Event ID
       const { data: events } = await window.supabaseClient.from('event').select('id').eq('tahun', 2026).single();
