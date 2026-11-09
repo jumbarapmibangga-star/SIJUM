@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Audit Log — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -115,12 +113,11 @@
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
-    let allAuditData = []; // Menyimpan semua data dari database
+    let allAuditData = [];
     let currentPage = 1;
-    const rowsPerPage = 10; // Jumlah data per halaman (Bisa diubah sesuai selera)
+    const rowsPerPage = 10;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // Proteksi: Hanya Super Admin yang boleh melihat Audit Log
       const auth = await protectPage(['super_admin']);
       if (!auth) return;
 
@@ -135,24 +132,11 @@
       document.getElementById('userRoleDisplay').textContent = roleText;
       document.getElementById('userRoleDisplayMobile').textContent = roleText;
 
+      // RENDER MENU MENGGUNAKAN FUNGSI GLOBAL
       const menuDesktop = document.getElementById('navMenu');
       const menuMobile = document.getElementById('navMenuMobile');
-      
-      let menuHtml = `
-        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
-        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
-        <a href="admin/verifikasi.html" class="sidebar-link">Verifikasi Kontingen</a>
-        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
-        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
-        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
-        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
-        <a href="admin/koreksi.html" class="sidebar-link">Koreksi Nilai</a>
-        <div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
-        <a href="admin/audit.html" class="sidebar-link active">Audit Log</a>
-      `;
-      menuDesktop.innerHTML = menuHtml;
-      menuMobile.innerHTML = menuHtml;
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'audit');
+      menuMobile.innerHTML = await renderMenu(auth.role, 'audit');
 
       loadAuditLog();
     });
@@ -166,7 +150,7 @@
           .from('audit_log')
           .select('*')
           .order('waktu', { ascending: false })
-          .limit(500); // Ambil maksimal 500 data terbaru
+          .limit(500);
 
         if (error) throw error;
 
@@ -191,7 +175,6 @@
       const tbody = document.getElementById('auditTableBody');
       const cardContainer = document.getElementById('auditCardContainer');
       
-      // Hitung index awal & akhir
       const startIndex = (currentPage - 1) * rowsPerPage;
       const endIndex = startIndex + rowsPerPage;
       const paginatedData = allAuditData.slice(startIndex, endIndex);
@@ -202,7 +185,6 @@
       paginatedData.forEach((log) => {
         const tgl = new Date(log.waktu).toLocaleString('id-ID');
         
-        // Warna badge kategori
         let badgeColor = 'bg-slate-100 text-slate-700';
         if (log.kategori === 'auth') badgeColor = 'bg-green-100 text-green-700';
         else if (log.kategori === 'penilaian') badgeColor = 'bg-blue-100 text-blue-700';
@@ -237,7 +219,6 @@
       tbody.innerHTML = htmlTable;
       cardContainer.innerHTML = htmlCard;
 
-      // Update Pagination Controls
       const totalPages = Math.ceil(allAuditData.length / rowsPerPage);
       document.getElementById('paginationControls').classList.remove('hidden');
       document.getElementById('pageInfo').textContent = `Halaman ${currentPage} dari ${totalPages}`;
