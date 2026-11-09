@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Portal Kontingen — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
   
   <style>
-    /* CSS Khusus Cetak */
     @media print {
       body { background: white; }
       .no-print { display: none !important; }
@@ -177,175 +174,158 @@
     let listStatus = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const auth = await protectPage(['kontingen']);
-        if (!auth) return;
+      const auth = await protectPage(['kontingen']);
+      if (!auth) return;
 
-        document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
-        const namaSekolah = auth.user.user_metadata?.nama || 'Nama Sekolah Belum Diatur';
-        document.getElementById('namaKontingenHeader').textContent = namaSekolah;
+      const namaSekolah = auth.user.user_metadata?.nama || 'Nama Sekolah Belum Diatur';
+      document.getElementById('namaKontingenHeader').textContent = namaSekolah;
 
-        // Ambil Data Event
-        const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
-        if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
-        currentEventId = events[0].id;
-        currentEventData = events[0];
+      // Ambil Data Event
+      const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
+      if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
+      currentEventId = events[0].id;
+      currentEventData = events[0];
 
-        // Ambil Data Peran & Status
-        const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
-        listPeran = peranData || [];
+      // Ambil Data Peran & Status
+      const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
+      listPeran = peranData || [];
 
-        const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
-        listStatus = statusData || [];
+      const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
+      listStatus = statusData || [];
 
-        // Ambil Data Kontingen
-        const { data: kontingen, error: errK } = await window.supabaseClient
-          .from('kontingen_event')
-          .select('*')
-          .eq('event_id', currentEventId)
-          .eq('akun_id', auth.user.id)
-          .maybeSingle();
+      // Ambil Data Kontingen
+      const { data: kontingen } = await window.supabaseClient
+        .from('kontingen_event')
+        .select('*')
+        .eq('event_id', currentEventId)
+        .eq('akun_id', auth.user.id)
+        .maybeSingle();
 
-        if (errK) {
-          console.error('Error kontingen:', errK);
+      if (kontingen) {
+        currentKontingenId = kontingen.id;
+        currentTingkatId = kontingen.tingkat_id;
+
+        const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', currentTingkatId).single();
+        currentNamaTingkat = tk ? tk.nama : 'Tingkat';
+
+        const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
+        if (tim) {
+          currentTimId = tim.id;
+          currentKodeKontingen = tim.kode_kontingen;
+          document.getElementById('namaKepsek').value = tim.nama_kepala_sekolah || '';
+          document.getElementById('nipKepsek').value = tim.nip_kepala_sekolah || '';
         }
 
-        if (kontingen) {
-          currentKontingenId = kontingen.id;
-          currentTingkatId = kontingen.tingkat_id;
+        let pesertaData = [];
+        if (currentTimId) {
+          const { data: peserta } = await window.supabaseClient
+            .from('peserta_event')
+            .select(`id, peran_utama, peserta_master (nama, tgl_lahir, nama_panggilan, alamat, no_hp)`)
+            .eq('tim_id', currentTimId);
+          if (peserta) pesertaData = peserta;
+        }
 
-          const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', currentTingkatId).single();
-          currentNamaTingkat = tk ? tk.nama : 'Tingkat';
+        const banner = document.getElementById('statusBanner');
+        const formSection = document.getElementById('formSection');
+        const printSection = document.getElementById('printSection');
+        const infoSection = document.getElementById('infoSection');
 
-          const { data: tim } = await window.supabaseClient.from('tim').select('*').eq('kontingen_event_id', kontingen.id).maybeSingle();
-          if (tim) {
-            currentTimId = tim.id;
-            currentKodeKontingen = tim.kode_kontingen;
-            document.getElementById('namaKepsek').value = tim.nama_kepala_sekolah || '';
-            document.getElementById('nipKepsek').value = tim.nip_kepala_sekolah || '';
-          }
+        // Cari data status dari tabel referensi
+        const statusData = listStatus.find(s => s.nama === kontingen.status);
+        const bisaDiedit = statusData ? statusData.bisa_diedit : false;
+        const bisaDicetak = statusData ? statusData.bisa_dicetak : false;
 
-          let pesertaData = [];
-          if (currentTimId) {
-            const { data: peserta } = await window.supabaseClient
-              .from('peserta_event')
-              .select(`id, peran_utama, peserta_master (nama, tgl_lahir, nama_panggilan, alamat, no_hp)`)
-              .eq('tim_id', currentTimId);
-            if (peserta) pesertaData = peserta;
-          }
-
-          const banner = document.getElementById('statusBanner');
-          const formSection = document.getElementById('formSection');
-          const printSection = document.getElementById('printSection');
-          const infoSection = document.getElementById('infoSection');
-
-          // ==========================================
-          // LOGIKA TAMPILAN (ANTI BLANK)
-          // ==========================================
+        if (bisaDiedit) {
+          // TAMPILKAN FORM INPUT
+          formSection.classList.remove('hidden');
           
-          // Cek apakah statusnya draft atau ditolak (bisa diedit)
-          const isRejected = kontingen.status === 'rejected';
-          const isSubmitted = kontingen.status === 'submitted';
-          const isVerified = kontingen.status === 'verified';
-          
-          if (isVerified) {
-            // TAMPILKAN FORM CETAK
-            printSection.classList.remove('hidden');
-            banner.classList.remove('hidden');
-            banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
-            banner.innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
+          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
+          document.getElementById('displayNamaKontingen').textContent = namaSekolah;
 
-            document.getElementById('printNamaEvent').textContent = currentEventData.nama;
-            document.getElementById('printTahunEvent').textContent = `TAHUN ${currentEventData.tahun}`;
-            document.getElementById('printTempatEvent').textContent = currentEventData.tempat_pelaksanaan || 'Purbalingga';
-            
-            document.getElementById('printKode').textContent = currentKodeKontingen;
-            document.getElementById('printNamaSekolah').textContent = namaSekolah;
-            document.getElementById('printNamaSekolahTtd').textContent = namaSekolah;
-            document.getElementById('printTanggalTtd').textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            
-            document.getElementById('printNamaKepsek').textContent = tim.nama_kepala_sekolah || '(___________________)';
-            document.getElementById('printNipKepsek').textContent = tim.nip_kepala_sekolah || '-';
-
-            if (pesertaData.length > 0) {
-              pesertaData.forEach((p, index) => {
-                addPrintRow(index + 1, p.peserta_master, p.peran_utama);
-              });
-            }
-          } 
-          else if (isSubmitted) {
-            // TAMPILKAN INFO MENUNGGU
-            infoSection.classList.remove('hidden');
-            banner.classList.remove('hidden');
-            banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
-            banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
-            infoSection.innerHTML = `
-              <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
-                <h2 class="text-xl font-bold text-slate-800 mb-2">Formulir Sedang Diverifikasi</h2>
-                <p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p>
-              </div>
-            `;
-          }
-          else if (isRejected) {
-            // TAMPILKAN INFO DITOLAK + TOMBOL PERBAIKI
-            infoSection.classList.remove('hidden');
+          if (kontingen.catatan_verifikasi) {
             banner.classList.remove('hidden');
             banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
-            banner.innerHTML = '❌ Pendaftaran ditolak. Hubungi panitia.';
-            
-            const catatan = kontingen.catatan_verifikasi || 'Tidak ada catatan dari panitia.';
-            infoSection.innerHTML = `
-              <div class="bg-white p-8 rounded-xl shadow-sm border border-red-200 max-w-lg mx-auto relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
-                <h2 class="text-xl font-bold text-slate-800 mb-2">Pendaftaran Ditolak</h2>
-                <p class="text-slate-500 mb-4">Mohon maaf, pendaftaran Anda ditolak oleh Panitia.</p>
-                <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-left mb-6">
-                  <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Catatan Panitia:</p>
-                  <p class="text-sm text-red-700 font-medium">"${catatan}"</p>
-                </div>
-                <button onclick="perbaikiData()" class="btn-primary w-full">Perbaiki Data Sekarang</button>
-              </div>
-            `;
+            banner.innerHTML = `⚠️ Catatan Panitia: "${kontingen.catatan_verifikasi}"<br><span class="text-sm font-normal">Silakan perbaiki data Anda dan submit ulang.</span>`;
           }
-          else {
-            // DRAFT ATAU STATUS LAIN YANG BELUM DIKENALI -> TAMPILKAN FORM INPUT
-            formSection.classList.remove('hidden');
-            
-            document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
-            document.getElementById('displayNamaKontingen').textContent = namaSekolah;
 
-            if (kontingen.catatan_verifikasi) {
-              banner.classList.remove('hidden');
-              banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
-              banner.innerHTML = `⚠️ Catatan Panitia: "${kontingen.catatan_verifikasi}"<br><span class="text-sm font-normal">Silakan perbaiki data Anda dan submit ulang.</span>`;
+          if (pesertaData.length > 0) {
+            pesertaData.forEach(p => {
+              addPesertaRow(p.peserta_master, p.peran_utama);
+            });
+          } else {
+            addPesertaRow();
+          }
+
+          document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
+          document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
+          document.getElementById('btnSubmit').addEventListener('click', () => {
+            if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Lanjutkan?')) {
+              saveData('submitted');
             }
+          });
 
-            if (pesertaData.length > 0) {
-              pesertaData.forEach(p => {
-                addPesertaRow(p.peserta_master, p.peran_utama);
-              });
-            } else {
-              addPesertaRow();
-            }
+        } else if (kontingen.status === 'submitted') {
+          infoSection.classList.remove('hidden');
+          banner.classList.remove('hidden');
+          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
+          banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
+          infoSection.innerHTML = `
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 max-w-lg mx-auto">
+              <h2 class="text-xl font-bold text-slate-800 mb-2">Formulir Sedang Diverifikasi</h2>
+              <p class="text-slate-500">Data Anda sudah dikirim dan sedang dalam proses peninjauan oleh Panitia.</p>
+            </div>
+          `;
 
-            document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
-            document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
-            document.getElementById('btnSubmit').addEventListener('click', () => {
-              if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Lanjutkan?')) {
-                saveData('submitted');
-              }
+        } else if (bisaDicetak) {
+          printSection.classList.remove('hidden');
+          banner.classList.remove('hidden');
+          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
+          banner.innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
+
+          document.getElementById('printNamaEvent').textContent = currentEventData.nama;
+          document.getElementById('printTahunEvent').textContent = `TAHUN ${currentEventData.tahun}`;
+          document.getElementById('printTempatEvent').textContent = currentEventData.tempat_pelaksanaan || 'Purbalingga';
+          
+          document.getElementById('printKode').textContent = currentKodeKontingen;
+          document.getElementById('printNamaSekolah').textContent = namaSekolah;
+          document.getElementById('printNamaSekolahTtd').textContent = namaSekolah;
+          document.getElementById('printTanggalTtd').textContent = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+          
+          document.getElementById('printNamaKepsek').textContent = tim.nama_kepala_sekolah || '(___________________)';
+          document.getElementById('printNipKepsek').textContent = tim.nip_kepala_sekolah || '-';
+
+          if (pesertaData.length > 0) {
+            pesertaData.forEach((p, index) => {
+              addPrintRow(index + 1, p.peserta_master, p.peran_utama);
             });
           }
+
         } else {
-          // Jika data kontingen tidak ada (misal RLS memblokir)
-          const infoSection = document.getElementById('infoSection');
+          // Status Rejected atau status lain yang tidak bisa diedit & tidak bisa dicetak
           infoSection.classList.remove('hidden');
-          infoSection.innerHTML = '<p class="text-red-500 font-bold">Data kontingen belum siap. Hubungi Panitia.</p>';
+          banner.classList.remove('hidden');
+          banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800 no-print';
+          banner.innerHTML = '❌ Pendaftaran ditolak. Hubungi panitia.';
+          
+          const catatan = kontingen.catatan_verifikasi || 'Tidak ada catatan dari panitia.';
+          infoSection.innerHTML = `
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-red-200 max-w-lg mx-auto relative overflow-hidden">
+              <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+              <h2 class="text-xl font-bold text-slate-800 mb-2">Pendaftaran Ditolak</h2>
+              <p class="text-slate-500 mb-4">Mohon maaf, pendaftaran Anda ditolak oleh Panitia.</p>
+              <div class="bg-red-50 p-4 rounded-lg border border-red-100 text-left mb-6">
+                <p class="text-xs font-bold text-red-800 uppercase tracking-wider mb-1">Catatan Panitia:</p>
+                <p class="text-sm text-red-700 font-medium">"${catatan}"</p>
+              </div>
+              <button onclick="perbaikiData()" class="btn-primary w-full">Perbaiki Data Sekarang</button>
+            </div>
+          `;
         }
-      } catch (globalErr) {
-        console.error('Global error:', globalErr);
-        alert('Terjadi kesalahan sistem: ' + globalErr.message);
+      } else {
+        infoSection.classList.remove('hidden');
+        infoSection.innerHTML = '<p class="text-red-500 font-bold">Data kontingen belum siap. Hubungi Panitia.</p>';
       }
     });
 
@@ -451,13 +431,19 @@
       }
     }
 
-    // FUNGSI PERBAIKI DATA (Jalan Pintas: Paksa ke 'draft')
+    // BEBAS HARDCODE: Cari status yang bisa diedit
     window.perbaikiData = async () => {
       if (!confirm('Apakah Anda yakin ingin memperbaiki data? Status akan kembali menjadi Draft.')) return;
       
+      const draftStatus = listStatus.find(s => s.bisa_diedit === true);
+      if (!draftStatus) {
+        alert('Error: Status untuk mengedit tidak ditemukan di database. Hubungi panitia.');
+        return;
+      }
+
       const { error } = await window.supabaseClient
         .from('kontingen_event')
-        .update({ status: 'draft', catatan_verifikasi: null })
+        .update({ status: draftStatus.nama, catatan_verifikasi: null })
         .eq('id', currentKontingenId);
 
       if (error) {
