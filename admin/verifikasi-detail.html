@@ -183,7 +183,7 @@
         return;
       }
 
-      // Ambil referensi status dari database (termasuk kolom aksi)
+      // Ambil referensi status dari database
       const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
       listStatus = statusData || [];
 
@@ -247,10 +247,10 @@
     window.setujuiData = async () => {
       if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
       
-      // BEBAS HARDCODE: Cari status berdasarkan aksi 'setujui'
-      const statusVerified = listStatus.find(s => s.aksi === 'setujui');
+      // Cari status yang 'bisa_dicetak' (Terverifikasi)
+      const statusVerified = listStatus.find(s => s.bisa_dicetak === true);
       if (!statusVerified) {
-        alert('Error: Status untuk aksi "setujui" tidak ditemukan di tabel referensi.');
+        alert('Error: Status "Terverifikasi" tidak ditemukan di database.');
         return;
       }
       
@@ -272,10 +272,10 @@
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
-      // BEBAS HARDCODE: Cari status berdasarkan aksi 'tolak'
-      const statusRejected = listStatus.find(s => s.aksi === 'tolak');
+      // Cari status 'rejected'
+      const statusRejected = listStatus.find(s => s.nama === 'rejected');
       if (!statusRejected) {
-        alert('Error: Status untuk aksi "tolak" tidak ditemukan di tabel referensi.');
+        alert('Error: Status "rejected" tidak ditemukan di database.');
         return;
       }
 
