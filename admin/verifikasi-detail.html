@@ -74,11 +74,11 @@
     <!-- Identitas -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
       <div class="form-card">
-        <p class="text-xs font-bold text-slate-400 uppercase">Nama Kontingen / Sekolah</p>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Kontingen / Sekolah</p>
         <p class="text-lg font-bold text-slate-800" id="detailNamaSekolah">-</p>
       </div>
       <div class="form-card">
-        <p class="text-xs font-bold text-slate-400 uppercase">Kode & Tingkat</p>
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kode & Tingkat</p>
         <p class="text-lg font-bold text-red-600 font-mono" id="detailKode">-</p>
       </div>
     </div>
@@ -107,7 +107,7 @@
 
     <!-- Data Tanda Tangan -->
     <div class="form-card mb-8">
-      <h3 class="text-sm font-bold text-slate-800 border-b pb-2 mb-3">Data Kepala Sekolah (Tanda Tangan)</h3>
+      <h3 class="text-sm font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3">Data Kepala Sekolah (Tanda Tangan)</h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p class="text-xs text-slate-500">Nama Kepala Sekolah</p>
@@ -183,7 +183,7 @@
         return;
       }
 
-      // Ambil referensi status dari database
+      // Ambil referensi status dari database (termasuk kolom aksi)
       const { data: statusData } = await window.supabaseClient.from('status_kontingen').select('*');
       listStatus = statusData || [];
 
@@ -247,9 +247,10 @@
     window.setujuiData = async () => {
       if (!confirm('Yakin ingin menyetujui pendaftaran ini?')) return;
       
-      const statusVerified = listStatus.find(s => s.nama === 'verified');
+      // BEBAS HARDCODE: Cari status berdasarkan aksi 'setujui'
+      const statusVerified = listStatus.find(s => s.aksi === 'setujui');
       if (!statusVerified) {
-        alert('Error: Status "verified" tidak ditemukan di database.');
+        alert('Error: Status untuk aksi "setujui" tidak ditemukan di tabel referensi.');
         return;
       }
       
@@ -258,8 +259,12 @@
         .update({ status: statusVerified.nama, verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
-      if (error) alert('Gagal: ' + error.message);
-      else { alert('Pendaftaran disetujui!'); window.location.href = 'admin/verifikasi.html'; }
+      if (error) {
+        alert('Gagal: ' + error.message);
+      } else {
+        alert('Pendaftaran disetujui!');
+        window.location.href = 'admin/verifikasi.html';
+      }
     };
 
     window.tolakData = async () => {
@@ -267,9 +272,10 @@
       if (alasan === null) return;
       if (alasan.trim() === '') { alert('Alasan wajib diisi!'); return; }
 
-      const statusRejected = listStatus.find(s => s.nama === 'rejected');
+      // BEBAS HARDCODE: Cari status berdasarkan aksi 'tolak'
+      const statusRejected = listStatus.find(s => s.aksi === 'tolak');
       if (!statusRejected) {
-        alert('Error: Status "rejected" tidak ditemukan di database.');
+        alert('Error: Status untuk aksi "tolak" tidak ditemukan di tabel referensi.');
         return;
       }
 
@@ -278,8 +284,12 @@
         .update({ status: statusRejected.nama, catatan_verifikasi: alasan, verified_at: new Date().toISOString() })
         .eq('id', currentKontingenId);
 
-      if (error) alert('Gagal: ' + error.message);
-      else { alert('Pendaftaran ditolak dengan catatan.'); window.location.href = 'admin/verifikasi.html'; }
+      if (error) {
+        alert('Gagal: ' + error.message);
+      } else {
+        alert('Pendaftaran ditolak dengan catatan.');
+        window.location.href = 'admin/verifikasi.html';
+      }
     };
   </script>
 </body>
