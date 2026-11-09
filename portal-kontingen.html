@@ -8,10 +8,18 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
+  <style>
+    @media print {
+      body { background: white; }
+      .no-print { display: none !important; }
+      .print-area { box-shadow: none; border: none; }
+      header, .btn-theme-toggle, #btnLogout { display: none !important; }
+    }
+  </style>
 </head>
 <body class="halaman-kontingen bg-slate-50 min-h-screen flex flex-col font-sans">
 
-  <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
+  <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50 no-print">
     <div class="max-w-4xl mx-auto flex justify-between items-center">
       <div class="flex items-center gap-2 md:gap-3">
         <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 md:h-10 w-auto object-contain animate-heartbeat">
@@ -30,18 +38,17 @@
   </header>
 
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 pb-20">
-    <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm animate-fade-in"></div>
+    <div id="statusBanner" class="hidden mb-6 p-4 rounded-xl border text-center font-bold shadow-sm animate-fade-in no-print"></div>
 
-    <div id="formSection" class="space-y-6 animate-fade-in">
+    <!-- FORM SECTION (Hanya tampil jika status draft) -->
+    <div id="formSection" class="space-y-6 animate-fade-in no-print">
       
-      <!-- IDENTITAS RINGKAS (Hanya Teks) -->
       <div class="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200">
         <h2 class="text-xs md:text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">1. Identitas Sekolah</h2>
         <p id="displayKodeKontingen" class="font-mono font-extrabold text-red-700 text-2xl md:text-3xl leading-none mb-1">Memuat...</p>
         <p id="displayNamaKontingen" class="font-medium text-slate-700 text-sm md:text-base">Memuat...</p>
       </div>
 
-      <!-- DAFTAR PESERTA -->
       <div class="form-card">
         <div class="flex justify-between items-center mb-4 border-b pb-2">
           <h2 class="text-lg md:text-xl font-bold text-slate-800">2. Daftar Peserta</h2>
@@ -68,8 +75,77 @@
         <button type="button" id="btnSimpanDraft" class="btn-secondary w-full md:w-auto">Simpan Draft</button>
         <button type="button" id="btnSubmit" class="btn-primary w-full md:w-auto text-lg py-3 px-8 shadow-lg">Submit & Kunci Data</button>
       </div>
-
     </div>
+
+    <!-- PRINT SECTION (Tampil jika sudah submit/verified) -->
+    <div id="printSection" class="hidden space-y-6">
+      <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 print-area">
+        
+        <!-- Header Cetak -->
+        <div class="text-center mb-8 border-b-2 border-slate-800 pb-4">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-16 mx-auto mb-2">
+          <h1 class="text-xl font-bold text-slate-800">PALANG MERAH INDONESIA</h1>
+          <h2 class="text-lg font-semibold text-slate-700">KABUPATEN PURBALINGGA</h2>
+          <p class="text-sm text-slate-500 mt-1">Formulir Pendaftaran Kontingen Jumbara PMR</p>
+        </div>
+
+        <!-- Identitas -->
+        <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
+          <div>
+            <p class="text-slate-500">Kode Kontingen</p>
+            <p class="font-mono font-bold text-lg text-red-700" id="printKode">-</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Nama Sekolah / Kontingen</p>
+            <p class="font-bold text-lg text-slate-800" id="printNama">-</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Tingkat Perlombaan</p>
+            <p class="font-bold text-slate-800" id="printTingkat">-</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Tanggal Cetak</p>
+            <p class="font-bold text-slate-800" id="printTanggal">-</p>
+          </div>
+        </div>
+
+        <!-- Tabel Peserta Cetak -->
+        <table class="w-full text-left border-collapse mb-8">
+          <thead>
+            <tr class="bg-slate-100 border-y border-slate-300">
+              <th class="py-2 px-3 text-sm font-bold text-slate-700">No</th>
+              <th class="py-2 px-3 text-sm font-bold text-slate-700">Nama Lengkap</th>
+              <th class="py-2 px-3 text-sm font-bold text-slate-700">Tgl Lahir</th>
+              <th class="py-2 px-3 text-sm font-bold text-slate-700">Peran</th>
+            </tr>
+          </thead>
+          <tbody id="printPesertaBody"></tbody>
+        </table>
+
+        <!-- Tanda Tangan -->
+        <div class="flex justify-between mt-16 text-center text-sm">
+          <div>
+            <p>Mengetahui,</p>
+            <p class="mb-20">Panitia Jumbara</p>
+            <p class="font-bold border-t border-slate-400 pt-1">(___________________)</p>
+          </div>
+          <div>
+            <p>Purbalingga, <span id="printTanggalTtd"></span></p>
+            <p class="mb-20">Kontingen</p>
+            <p class="font-bold border-t border-slate-400 pt-1">(___________________)</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tombol Cetak (Hanya muncul di layar) -->
+      <div class="flex justify-center gap-4 no-print">
+        <button onclick="window.print()" class="btn-primary text-lg px-8 py-3 shadow-lg">
+          🖨️ Cetak / Simpan PDF
+        </button>
+      </div>
+    </div>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -82,6 +158,7 @@
     let currentTimId = null;
     let currentKodeKontingen = null;
     let currentTingkatId = null;
+    let currentNamaTingkat = null;
     let listPeran = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -92,7 +169,6 @@
 
       const namaSekolah = auth.user.user_metadata?.nama || 'Nama Sekolah Belum Diatur';
       document.getElementById('namaKontingenHeader').textContent = namaSekolah;
-      document.getElementById('displayNamaKontingen').textContent = namaSekolah;
 
       const { data: events } = await window.supabaseClient.from('event').select('id').order('tahun', { ascending: false }).limit(1);
       if (!events || events.length === 0) { alert('Event belum dibuka.'); return logoutUser(); }
@@ -102,7 +178,7 @@
       const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
       listPeran = peranData || [];
 
-      // Baca data (dibuat oleh Trigger Database)
+      // Baca data
       const { data: kontingen } = await window.supabaseClient
         .from('kontingen_event')
         .select('*')
@@ -120,12 +196,9 @@
           currentKodeKontingen = tim.kode_kontingen;
           
           const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', currentTingkatId).single();
-          const namaTingkat = tk ? tk.nama : 'Tingkat';
-          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${namaTingkat})`;
-        }
-
-        if (kontingen.status !== 'draft') {
-          lockForm(kontingen.status);
+          currentNamaTingkat = tk ? tk.nama : 'Tingkat';
+          document.getElementById('displayKodeKontingen').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
+          document.getElementById('displayNamaKontingen').textContent = namaSekolah;
         }
 
         if (currentTimId) {
@@ -135,26 +208,62 @@
             .eq('tim_id', currentTimId);
           
           if (peserta && peserta.length > 0) {
-            peserta.forEach(p => {
-              addPesertaRow({
-                nama: p.peserta_master.nama,
-                tgl_lahir: p.peserta_master.tgl_lahir,
-                peran: p.peran_utama
-              });
+            peserta.forEach((p, index) => {
+              if (kontingen.status !== 'draft') {
+                // Isi Tabel Cetak
+                addPrintRow(index + 1, p.peserta_master.nama, p.peserta_master.tgl_lahir, p.peran_utama);
+              } else {
+                // Isi Form Input
+                addPesertaRow({
+                  nama: p.peserta_master.nama,
+                  tgl_lahir: p.peserta_master.tgl_lahir,
+                  peran: p.peran_utama
+                });
+              }
             });
+          }
+        }
+
+        // LOGIKA TAMPILAN (KUNCI / CETAK)
+        if (kontingen.status !== 'draft') {
+          document.getElementById('formSection').classList.add('hidden');
+          document.getElementById('printSection').classList.remove('hidden');
+          
+          // Isi Data Cetak
+          document.getElementById('printKode').textContent = `${currentKodeKontingen} (${currentNamaTingkat})`;
+          document.getElementById('printNama').textContent = namaSekolah;
+          document.getElementById('printTingkat').textContent = currentNamaTingkat;
+          document.getElementById('printTanggal').textContent = new Date().toLocaleDateString('id-ID');
+          document.getElementById('printTanggalTtd').textContent = new Date().toLocaleDateString('id-ID');
+
+          // Tampilkan Banner Status di atas Form (Sembunyikan saat print)
+          const banner = document.getElementById('statusBanner');
+          banner.classList.remove('hidden');
+          if (kontingen.status === 'submitted') {
+            banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800 no-print';
+            banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
+          } else if (kontingen.status === 'verified') {
+            banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800 no-print';
+            banner.innerHTML = '✅ Pendaftaran diverifikasi. Silakan cetak formulir ini.';
           }
         }
       } else {
         document.getElementById('displayKodeKontingen').textContent = 'Data belum siap. Hubungi Panitia.';
       }
 
-      if (document.getElementById('pesertaTableBody').children.length === 0) {
+      if (document.getElementById('pesertaTableBody').children.length === 0 && (!kontingen || kontingen.status === 'draft')) {
         addPesertaRow();
       }
 
-      document.getElementById('btnTambahPeserta').addEventListener('click', () => addPesertaRow());
-      document.getElementById('btnSimpanDraft').addEventListener('click', () => saveData('draft'));
-      document.getElementById('btnSubmit').addEventListener('click', () => {
+      // Event Listeners Form
+      const btnTambah = document.getElementById('btnTambahPeserta');
+      if (btnTambah) btnTambah.addEventListener('click', () => addPesertaRow());
+      
+      const btnSimpan = document.getElementById('btnSimpanDraft');
+      if (btnSimpan) btnSimpan.addEventListener('click', () => saveData('draft'));
+      
+      const btnSubmit = document.getElementById('btnSubmit');
+      if (btnSubmit) btnSubmit.addEventListener('click', () => {
         if (confirm('PERHATIAN: Setelah disubmit, data tidak dapat diubah lagi. Lanjutkan?')) {
           saveData('submitted');
         }
@@ -186,27 +295,20 @@
       tbody.appendChild(tr);
     }
 
-    function lockForm(status) {
-      const banner = document.getElementById('statusBanner');
-      banner.classList.remove('hidden');
+    function addPrintRow(no, nama, tgl, peran) {
+      const tbody = document.getElementById('printPesertaBody');
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-slate-200';
       
-      if (status === 'submitted') {
-        banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-yellow-50 border-yellow-200 text-yellow-800';
-        banner.innerHTML = '⏳ Data sudah disubmit. Menunggu verifikasi Panitia.';
-      } else if (status === 'verified') {
-        banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-green-50 border-green-200 text-green-800';
-        banner.innerHTML = '✅ Selamat! Pendaftaran tim Anda telah diverifikasi.';
-      } else if (status === 'rejected') {
-        banner.className = 'mb-6 p-4 rounded-xl border text-center font-bold bg-red-50 border-red-200 text-red-800';
-        banner.innerHTML = '❌ Pendaftaran ditolak. Hubungi panitia.';
-      }
-
-      document.querySelectorAll('input, select, button').forEach(el => {
-        if (el.id !== 'btnLogout' && !el.classList.contains('btn-theme-toggle')) el.disabled = true;
-      });
-      document.getElementById('btnTambahPeserta').classList.add('hidden');
-      document.getElementById('btnSimpanDraft').classList.add('hidden');
-      document.getElementById('btnSubmit').classList.add('hidden');
+      const formattedTgl = tgl ? new Date(tgl).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
+      
+      tr.innerHTML = `
+        <td class="py-2 px-3 text-slate-600 text-sm">${no}</td>
+        <td class="py-2 px-3 font-semibold text-slate-800 text-sm">${nama}</td>
+        <td class="py-2 px-3 text-slate-600 text-sm">${formattedTgl}</td>
+        <td class="py-2 px-3 text-slate-600 text-sm">${peran}</td>
+      `;
+      tbody.appendChild(tr);
     }
 
     async function saveData(actionStatus) {
@@ -235,12 +337,10 @@
           }
         }
 
-        // Update status
         const { error: errK } = await window.supabaseClient.from('kontingen_event')
           .update({ status: actionStatus }).eq('id', currentKontingenId);
         if (errK) throw errK;
 
-        // Panggil RPC
         const { error: errRpc } = await window.supabaseClient.rpc('simpan_peserta_kontingen', {
           p_tim_id: currentTimId,
           p_tingkat_id: currentTingkatId,
