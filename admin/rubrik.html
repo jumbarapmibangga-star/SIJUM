@@ -69,6 +69,10 @@
       <p class="text-sm md:text-base text-slate-500">Atur soal dan bobot komponen untuk pos ini.</p>
     </div>
 
+    <div id="lockedBanner" class="hidden mb-4 bg-yellow-50 border border-yellow-200 p-3 rounded-xl text-center font-bold text-yellow-800 text-sm">
+      🔒 Konfigurasi Rubrik Terkunci. Hubungi Super Admin untuk membuka.
+    </div>
+
     <!-- Panel Komponen (Hanya muncul jika Weighted) -->
     <div id="komponenPanel" class="hidden form-card mb-6 animate-fade-in">
       <h3 class="text-lg font-semibold text-slate-800 mb-4">Pengaturan Komponen (Metode Weighted)</h3>
@@ -145,6 +149,7 @@
   <script>
     let currentPosId = null;
     let currentMetode = 'sum';
+    let isLocked = false;
 
     document.addEventListener('DOMContentLoaded', async () => {
       const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
@@ -178,6 +183,20 @@
       currentMetode = pos.metode_hitung;
       document.getElementById('posTitle').textContent = `${pos.kode_pos} — ${pos.nama_pos}`;
 
+      // Cek apakah konfigurasi pos terkunci
+      const { data: eventData } = await window.supabaseClient
+        .from('event')
+        .select('urutan_pos_locked')
+        .eq('id', pos.event_id)
+        .single();
+      
+      if (eventData && eventData.urutan_pos_locked) {
+        isLocked = true;
+        document.getElementById('lockedBanner').classList.remove('hidden');
+        document.getElementById('btnTambahRubrik').classList.add('hidden');
+        document.getElementById('komponenForm').classList.add('hidden');
+      }
+
       if (currentMetode === 'weighted') {
         document.getElementById('komponenPanel').classList.remove('hidden');
         document.getElementById('komponenSelectWrapper').classList.remove('hidden');
@@ -189,6 +208,7 @@
       // Submit Komponen (Weighted)
       document.getElementById('komponenForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (isLocked) { alert('Konfigurasi terkunci.'); return; }
         const nama = document.getElementById('namaKomponen').value;
         const bobot = parseFloat(document.getElementById('bobotKomponen').value);
 
@@ -204,6 +224,7 @@
 
       // Buka Modal Tambah Soal
       document.getElementById('btnTambahRubrik').addEventListener('click', () => {
+        if (isLocked) { alert('Konfigurasi terkunci.'); return; }
         document.getElementById('modalTitle').textContent = 'Tambah Soal';
         document.getElementById('rubrikId').value = '';
         document.getElementById('namaItem').value = '';
@@ -219,6 +240,7 @@
       // Submit Rubrik
       document.getElementById('rubrikForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (isLocked) { alert('Konfigurasi terkunci.'); return; }
         const id = document.getElementById('rubrikId').value;
         const nama = document.getElementById('namaItem').value;
         const skor = parseFloat(document.getElementById('skorMaksimal').value);
@@ -266,15 +288,14 @@
       } else {
         let html = '';
         rubrikList.forEach((r, i) => {
+          const hapusButton = isLocked ? '' : `<button onclick="hapusRubrik('${r.id}')" class="text-red-600 hover:underline text-sm font-semibold">Hapus</button>`;
           html += `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="text-slate-600">${i + 1}</td>
               <td class="font-medium text-slate-800">${r.nama_item}</td>
               <td class="text-slate-600">${r.skor_maksimal}</td>
               <td class="text-slate-600">${r.komponen || '-'}</td>
-              <td class="text-right">
-                <button onclick="hapusRubrik('${r.id}')" class="text-red-600 hover:underline text-sm font-semibold">Hapus</button>
-              </td>
+              <td class="text-right">${hapusButton}</td>
             </tr>
           `;
         });
@@ -283,6 +304,7 @@
     }
 
     window.hapusRubrik = async (id) => {
+      if (isLocked) { alert('Konfigurasi terkunci.'); return; }
       if (confirm('Yakin ingin menghapus soal ini?')) {
         await window.supabaseClient.from('rubrik').delete().eq('id', id);
         loadRubrik();
