@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Edit Peserta — Jumbara PMI</title>
+  <base href="../">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/custom.css">
+</head>
+<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+
+  <!-- HEADER MOBILE -->
+  <div class="md:hidden relative z-50">
+    <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Jumbara PMI</h1>
+            <p id="userRoleDisplayMobile" class="text-[10px] text-slate-500 leading-none">Panitia</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
+      </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
+    </div>
+  </div>
+
+  <!-- SIDEBAR DESKTOP -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
+    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Jumbara PMI</h1>
+          <p id="userRoleDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        <span>Mode Gelap</span>
+      </button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8">
+    <div class="mb-6">
+      <a href="admin/verifikasi.html" class="text-sm text-red-600 hover:underline font-semibold mb-1 inline-block">&larr; Kembali ke Daftar Verifikasi</a>
+      <h2 class="text-xl md:text-2xl font-bold text-slate-800">Edit Data Peserta</h2>
+      <p class="text-sm md:text-base text-slate-500" id="detailHeader">Memuat data...</p>
+    </div>
+
+    <!-- Identitas -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="form-card">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Nama Kontingen / Sekolah</p>
+        <p class="text-lg font-bold text-slate-800" id="detailNamaSekolah">-</p>
+      </div>
+      <div class="form-card">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kode & Tingkat</p>
+        <p class="text-lg font-bold text-red-600 font-mono" id="detailKode">-</p>
+      </div>
+    </div>
+
+    <!-- Form Edit Peserta -->
+    <div class="form-card mb-8">
+      <h3 class="text-sm font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3">Daftar Peserta</h3>
+      
+      <div class="overflow-x-auto">
+        <table class="table-custom min-w-full text-sm" id="tabelEditPeserta">
+          <thead>
+            <tr>
+              <th>Nama Lengkap</th>
+              <th>Tgl Lahir</th>
+              <th>Peran</th>
+              <th class="text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="editPesertaBody">
+            <tr><td colspan="4" class="p-8 text-center text-slate-500">Memuat peserta...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 mt-4 border-t border-slate-200">
+        <button type="button" id="btnSimpanPerubahan" class="btn-primary">Simpan Perubahan</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/auth.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script>
+    let currentKontingenId = null;
+    let currentTimId = null;
+    let currentEventId = null;
+    let listPeran = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+      if (!auth) return;
+
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      const roleText = auth.role.replace('_', ' ').toUpperCase();
+      document.getElementById('userRoleDisplay').textContent = roleText;
+      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile = document.getElementById('navMenuMobile');
+      
+      let menuHtml = `
+        <a href="admin/dashboard.html" class="sidebar-link">Dashboard</a>
+        <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
+        <a href="admin/verifikasi.html" class="sidebar-link active">Verifikasi Kontingen</a>
+        <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+      `;
+      menuDesktop.innerHTML = menuHtml;
+      menuMobile.innerHTML = menuHtml;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      currentKontingenId = urlParams.get('id');
+
+      if (!currentKontingenId) {
+        alert('ID Kontingen tidak valid.');
+        window.location.href = 'admin/verifikasi.html';
+        return;
+      }
+
+      // Ambil data peran
+      const { data: peranData } = await window.supabaseClient.from('peran').select('*').order('nama');
+      listPeran = peranData || [];
+
+      loadData();
+    });
+
+    async function loadData() {
+      const { data: kontingen, error: errK } = await window.supabaseClient
+        .from('kontingen_event')
+        .select(`*, tingkat(nama), tim(*)`)
+        .eq('id', currentKontingenId)
+        .single();
+
+      if (errK || !kontingen) {
+        alert('Data tidak ditemukan.');
+        return;
+      }
+
+      const tim = kontingen.tim && kontingen.tim.length > 0 ? kontingen.tim[0] : null;
+      currentTimId = tim ? tim.id : null;
+      currentEventId = kontingen.event_id;
+
+      document.getElementById('detailHeader').textContent = `Status: ${kontingen.status.toUpperCase()}`;
+      document.getElementById('detailNamaSekolah').textContent = kontingen.nama_kontingen;
+      document.getElementById('detailKode').textContent = `${tim ? tim.kode_kontingen : '-'} (${kontingen.tingkat.nama})`;
+
+      if (currentTimId) {
+        const { data: peserta } = await window.supabaseClient
+          .from('peserta_event')
+          .select(`id, peran_utama, peserta_master_id, peserta_master (nama, tgl_lahir)`)
+          .eq('tim_id', currentTimId);
+
+        const tbody = document.getElementById('editPesertaBody');
+        if (peserta && peserta.length > 0) {
+          let html = '';
+          peserta.forEach((p, index) => {
+            const master = Array.isArray(p.peserta_master) ? p.peserta_master[0] : p.peserta_master;
+            if (!master) return;
+
+            let peranOptions = '';
+            listPeran.forEach(pr => {
+              const isSelected = p.peran_utama === pr.nama ? 'selected' : '';
+              peranOptions += `<option value="${pr.nama}" ${isSelected}>${pr.nama}</option>`;
+            });
+
+            html += `
+              <tr data-peserta-event-id="${p.id}" data-peserta-master-id="${p.peserta_master_id}">
+                <td><input type="text" class="input-field text-sm edit-nama" value="${master.nama}" required></td>
+                <td><input type="date" class="input-field text-sm edit-tgl" value="${master.tgl_lahir}" required></td>
+                <td>
+                  <select class="input-field text-sm edit-peran">
+                    ${peranOptions}
+                  </select>
+                </td>
+                <td class="text-right">
+                  <button type="button" class="text-red-600 hover:underline text-sm font-semibold" onclick="hapusPeserta(this, '${p.id}')">Hapus</button>
+                </td>
+              </tr>
+            `;
+          });
+          tbody.innerHTML = html;
+        } else {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-slate-500">Belum ada peserta.</td></tr>`;
+        }
+      }
+    }
+
+    window.hapusPeserta = async (btn, pesertaEventId) => {
+      if (!confirm('Yakin ingin menghapus peserta ini?')) return;
+      
+      const { error } = await window.supabaseClient.from('peserta_event').delete().eq('id', pesertaEventId);
+      if (error) {
+        alert('Gagal: ' + error.message);
+      } else {
+        alert('Peserta dihapus.');
+        btn.closest('tr').remove();
+      }
+    };
+
+    document.getElementById('btnSimpanPerubahan').addEventListener('click', async () => {
+      const btn = document.getElementById('btnSimpanPerubahan');
+      btn.innerHTML = 'Menyimpan...'; btn.disabled = true;
+
+      try {
+        const rows = document.querySelectorAll('#editPesertaBody tr');
+        for (const row of rows) {
+          if (!row.dataset.pesertaMasterId) continue; // Skip baris kosong
+
+          const pesertaEventId = row.dataset.pesertaEventId;
+          const pesertaMasterId = row.dataset.pesertaMasterId;
+          const nama = row.querySelector('.edit-nama').value;
+          const tgl = row.querySelector('.edit-tgl').value;
+          const peran = row.querySelector('.edit-peran').value;
+
+          // Update peserta_master
+          const { error: errMaster } = await window.supabaseClient
+            .from('peserta_master')
+            .update({ nama, tgl_lahir: tgl })
+            .eq('id', pesertaMasterId);
+          if (errMaster) throw errMaster;
+
+          // Update peserta_event (peran)
+          const { error: errEvent } = await window.supabaseClient
+            .from('peserta_event')
+            .update({ peran_utama: peran })
+            .eq('id', pesertaEventId);
+          if (errEvent) throw errEvent;
+        }
+
+        alert('Perubahan berhasil disimpan!');
+        window.location.reload();
+
+      } catch (err) {
+        alert('Error: ' + err.message);
+        btn.innerHTML = 'Simpan Perubahan'; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
