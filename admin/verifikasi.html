@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Verifikasi Kontingen — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (SUB-FOLDER) -->
   <base href="../">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -95,7 +93,6 @@
     </div>
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script src="assets/js/auth.js"></script>
@@ -124,6 +121,9 @@
         <a href="admin/pos.html" class="sidebar-link">Kelola Pos & Rubrik</a>
         <a href="admin/verifikasi.html" class="sidebar-link active">Verifikasi Kontingen</a>
         <a href="admin/juri.html" class="sidebar-link">Penugasan Juri</a>
+        <a href="admin/kelola-berita.html" class="sidebar-link">📰 Kelola Berita</a>
+        <a href="dashboard-laporan.html" class="sidebar-link">📊 Laporan & Rekap</a>
+        <a href="dashboard-tracker.html" class="sidebar-link">📡 Tracker Penilaian</a>
       `;
       if (['koordinator', 'super_admin'].includes(auth.role)) {
         menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Kontrol Khusus</div>
@@ -131,7 +131,8 @@
       }
       if (auth.role === 'super_admin') {
         menuHtml += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">Sistem</div>
-        <a href="admin/users.html" class="sidebar-link">Kelola User</a>`;
+        <a href="admin/users.html" class="sidebar-link">Kelola User</a>
+        <a href="admin/audit.html" class="sidebar-link">Audit Log</a>`;
       }
       menuDesktop.innerHTML = menuHtml;
       menuMobile.innerHTML = menuHtml;
@@ -165,6 +166,7 @@
         list.forEach((k, index) => {
           const kode = k.tim && k.tim.length > 0 ? k.tim[0].kode_kontingen : '-';
           
+          // Warna Badge Status (Bisa dipindah ke DB jika mau, tapi ini hanya UI)
           let statusBadge = '';
           if (k.status === 'verified') statusBadge = `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Terverifikasi</span>`;
           else if (k.status === 'rejected') statusBadge = `<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">Ditolak</span>`;
@@ -172,15 +174,18 @@
 
           let tombolTable = '';
           let tombolCard = '';
+          
+          // TOMBOL AKSI DIARAHKAN KE HALAMAN DETAIL
           if (k.status === 'submitted') {
-            tombolTable = `<button onclick="verifikasiKontingen('${k.id}', 'verified')" class="text-green-600 hover:underline font-semibold mr-3">Setujui</button>
-                           <button onclick="verifikasiKontingen('${k.id}', 'rejected')" class="text-red-600 hover:underline font-semibold">Tolak</button>`;
+            tombolTable = `<a href="admin/verifikasi-detail.html?id=${k.id}" class="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-red-700 transition shadow-sm">Lihat & Verifikasi</a>`;
             tombolCard = `<div class="flex gap-2 w-full mt-3">
-                            <button onclick="verifikasiKontingen('${k.id}', 'verified')" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold text-sm">Setujui</button>
-                            <button onclick="verifikasiKontingen('${k.id}', 'rejected')" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold text-sm">Tolak</button>
+                            <a href="admin/verifikasi-detail.html?id=${k.id}" class="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold text-sm text-center shadow-sm">Lihat & Verifikasi</a>
                           </div>`;
           } else {
-            tombolTable = `<span class="text-slate-400 italic text-sm">Selesai</span>`;
+            tombolTable = `<a href="admin/verifikasi-detail.html?id=${k.id}" class="text-slate-500 hover:text-red-600 font-semibold text-sm">Lihat Detail</a>`;
+            tombolCard = `<div class="flex gap-2 w-full mt-3">
+                            <a href="admin/verifikasi-detail.html?id=${k.id}" class="flex-1 bg-slate-100 text-slate-700 py-2 rounded-lg font-bold text-sm text-center">Lihat Detail</a>
+                          </div>`;
           }
 
           htmlTable += `
@@ -212,21 +217,6 @@
         cardContainer.innerHTML = htmlCard;
       }
     }
-
-    window.verifikasiKontingen = async (kontingenId, statusBaru) => {
-      if (!confirm(`Yakin ingin mengubah status menjadi ${statusBaru.toUpperCase()}?`)) return;
-      
-      const { error } = await window.supabaseClient
-        .from('kontingen_event')
-        .update({ 
-          status: statusBaru, 
-          verified_at: new Date().toISOString() 
-        })
-        .eq('id', kontingenId);
-
-      if (error) alert('Gagal: ' + error.message);
-      else { alert('Status diperbarui!'); loadVerifikasi(); }
-    };
   </script>
 </body>
 </html>
