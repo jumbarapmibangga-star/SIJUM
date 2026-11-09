@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Verifikasi Struk — Jumbara PMI</title>
   
-  <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
-  <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
@@ -32,7 +30,6 @@
     <!-- Kartu Hasil Verifikasi -->
     <div id="verifikasiCard" class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in text-center hidden">
       
-      <!-- Ikon Sukses -->
       <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
       </div>
@@ -83,12 +80,10 @@
 
   </main>
 
-  <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      // Ambil ID dari URL (contoh: verifikasi.html?id=xxx)
       const urlParams = new URLSearchParams(window.location.search);
       const penilaianId = urlParams.get('id');
 
@@ -103,7 +98,17 @@
       }
 
       try {
-        // Ambil data penilaian_pos beserta relasinya
+        // AMBIL STATUS FINAL DARI DATABASE (BEBAS HARDCODE)
+        const { data: statusData } = await window.supabaseClient
+          .from('status_kontingen')
+          .select('nama')
+          .eq('bisa_dicetak', true);
+        
+        let statusFinalList = (statusData || []).map(s => s.nama);
+        if (statusFinalList.length === 0) {
+          statusFinalList = ['final', 'direvisi']; // fallback
+        }
+
         const { data, error } = await window.supabaseClient
           .from('penilaian_pos')
           .select(`
@@ -112,12 +117,11 @@
             pos (nama_pos, kode_pos)
           `)
           .eq('id', penilaianId)
-          .in('status', ['final', 'direvisi'])
+          .in('status', statusFinalList)
           .single();
 
         if (error || !data) throw new Error('Data tidak ditemukan');
 
-        // Tampilkan Data
         const event = data.tim.event;
         const tim = data.tim;
         const pos = data.pos;
