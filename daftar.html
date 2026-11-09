@@ -12,7 +12,7 @@
 <body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
   <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card">
 
-    <!-- FORM PENDAFTARAN (Tampil jika buka) -->
+    <!-- FORM PENDAFTARAN -->
     <div id="formContainer">
       <div class="text-center mb-8">
         <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-14 w-auto mx-auto mb-3">
@@ -23,14 +23,25 @@
       <form id="registerForm" class="space-y-5">
         <div>
           <label class="input-label">Tingkat Perlombaan</label>
-          <select id="tingkatId" required class="input-field">
+          <select id="tingkatId" required class="input-field" onchange="onTingkatChange()">
             <option value="">-- Pilih Tingkat --</option>
           </select>
         </div>
-        <div>
-          <label class="input-label">Nama Sekolah</label>
-          <input type="text" id="namaSekolah" required class="input-field" placeholder="Ketik nama sekolah...">
+
+        <div id="kecamatanWrapper" class="hidden">
+          <label class="input-label">Kecamatan</label>
+          <select id="kecamatanId" required class="input-field" onchange="onKecamatanChange()">
+            <option value="">Memuat kecamatan...</option>
+          </select>
         </div>
+
+        <div id="sekolahWrapper" class="hidden">
+          <label class="input-label">Nama Sekolah</label>
+          <select id="sekolahId" required class="input-field">
+            <option value="">Memuat sekolah...</option>
+          </select>
+        </div>
+
         <div>
           <label class="input-label">Username</label>
           <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field">
@@ -48,7 +59,7 @@
       </div>
     </div>
 
-    <!-- PESAN PENDAFTARAN TUTUP (Tampil jika tutup) -->
+    <!-- PESAN PENDAFTARAN TUTUP -->
     <div id="closedContainer" class="hidden text-center py-8">
       <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -63,6 +74,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-client.js"></script>
   <script>
+    let listTingkat = [];
+    let currentJenjang = '';
     let statusDraft = null;
     let pendaftaranBuka = true;
 
@@ -86,12 +99,11 @@
 
       // 2. Ambil daftar tingkat
       const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
+      listTingkat = tingkatData || [];
       const selectTingkat = document.getElementById('tingkatId');
-      if (tingkatData) {
-        tingkatData.forEach(t => {
-          selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
-        });
-      }
+      listTingkat.forEach(t => {
+        selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+      });
 
       // 3. Ambil status draft dari database (bebas hardcode)
       const { data: statusData } = await window.supabaseClient
@@ -108,9 +120,81 @@
       }
     });
 
+    async function onTingkatChange() {
+      const tingkatId = document.getElementById('tingkatId').value;
+      const kecamatanWrapper = document.getElementById('kecamatanWrapper');
+      const sekolahWrapper = document.getElementById('sekolahWrapper');
+      const kecamatanSelect = document.getElementById('kecamatanId');
+
+      sekolahWrapper.classList.add('hidden');
+      document.getElementById('sekolahId').innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+
+      if (!tingkatId) {
+        kecamatanWrapper.classList.add('hidden');
+        return;
+      }
+
+      const tingkatObj = listTingkat.find(t => t.id === tingkatId);
+      currentJenjang = tingkatObj ? tingkatObj.nama : '';
+
+      kecamatanWrapper.classList.remove('hidden');
+      kecamatanSelect.innerHTML = '<option value="">Memuat kecamatan...</option>';
+
+      const { data: sekolahData, error } = await window.supabaseClient
+        .from('sekolah')
+        .select('kecamatan')
+        .eq('jenjang', currentJenjang)
+        .not('kecamatan', 'is', null);
+
+      if (error) {
+        console.error(error);
+        kecamatanSelect.innerHTML = '<option value="">Gagal memuat kecamatan</option>';
+        return;
+      }
+
+      const uniqueKecamatan = [...new Set(sekolahData.map(s => s.kecamatan))].sort();
+      
+      kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+      uniqueKecamatan.forEach(k => {
+        kecamatanSelect.innerHTML += `<option value="${k}">${k}</option>`;
+      });
+    }
+
+    async function onKecamatanChange() {
+      const kecamatan = document.getElementById('kecamatanId').value;
+      const sekolahWrapper = document.getElementById('sekolahWrapper');
+      const sekolahSelect = document.getElementById('sekolahId');
+
+      if (!kecamatan) {
+        sekolahWrapper.classList.add('hidden');
+        return;
+      }
+
+      sekolahWrapper.classList.remove('hidden');
+      sekolahSelect.innerHTML = '<option value="">Memuat sekolah...</option>';
+
+      const { data: sekolahData, error } = await window.supabaseClient
+        .from('sekolah')
+        .select('nama')
+        .eq('jenjang', currentJenjang)
+        .eq('kecamatan', kecamatan)
+        .order('nama');
+
+      if (error) {
+        console.error(error);
+        sekolahSelect.innerHTML = '<option value="">Gagal memuat sekolah</option>';
+        return;
+      }
+
+      sekolahSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+      sekolahData.forEach(s => {
+        sekolahSelect.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+      });
+    }
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       if (!pendaftaranBuka) {
         alert('Pendaftaran sudah ditutup.');
         return;
@@ -120,9 +204,15 @@
       const errDiv = document.getElementById('errorMsg');
       const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
-      const namaSekolah = document.getElementById('namaSekolah').value;
+      const namaSekolah = document.getElementById('sekolahId').value;
       const tingkatId = document.getElementById('tingkatId').value;
       const email = `${username}@jumbara.id`;
+
+      if (!namaSekolah) {
+        errDiv.textContent = 'Silakan pilih sekolah terlebih dahulu.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
 
       if (!statusDraft) {
         alert('Sistem sedang sibuk. Silakan coba lagi nanti.');
