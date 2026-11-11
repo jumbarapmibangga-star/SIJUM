@@ -500,3 +500,49 @@ html.dark .input-field:focus {
   border-color: var(--pmi-red) !important;
   box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3) !important;
 }
+
+/* =========================================================
+   ATURAN MUTLAK: PUTIH BERSIH & HEADER MERAH
+   (Mengalahkan class Tailwind di HTML)
+   ========================================================= */
+
+/* 1. Paksa Body Putih Bersih di Mode Terang */
+html:not(.dark) body,
+body.bg-slate-50,
+body.bg-white {
+  background-color: #ffffff !important;
+}
+
+/* 2. Paksa Body Hitam di Mode Gelap */
+html.dark body,
+html.dark body.bg-slate-900 {
+  background-color: #0f172a !important;
+}
+
+/* 3. Paksa Input Putih & Teks Gelap di Mode Terang */
+html:not(.dark) .input-field {
+  background-color: #ffffff !important;
+  color: #1e293b !important; /* Teks gelap agar terbaca */
+  border-color: #cbd5e1 !important;
+}
+
+/* 4. Paksa Input Gelap & Teks Putih di Mode Gelap */
+html.dark .input-field {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+  border-color: #475569 !important;
+}
+
+/* 5. PAKSA HEADER SELALU MERAH (Sesuai Aturan Emas No.5) */
+header,
+html.dark header,
+html.dark .md\:hidden > div,
+html.dark aside > div:first-child {
+  background-color: #B71C1C !important; /* Merah Gelap PMI */
+  color: #ffffff !important;
+}
+
+/* 6. Pastikan Teks di Header Selalu Putih */
+header h1, header p, header a:not(.btn-theme-toggle) {
+  color: #ffffff !important;
+}
