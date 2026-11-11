@@ -5,261 +5,377 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Daftar Akun Kontingen — Jumbara PMI</title>
   <base href="./">
+  
+  <!-- Anti-FOUC: Cegah layar berkedip saat mode gelap -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark' || 
+       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=11.1">
+  <style>
+    .helper { font-size: .75rem; line-height: 1rem; color: #64748b; margin-top: .25rem; }
+    .helper.error { color: #dc2626; }
+    .helper.ok { color: #16a34a; }
+    input.invalid, select.invalid { border-color: #dc2626 !important; box-shadow: 0 0 0 3px rgba(220,38,38,.15) !important; }
+    input.valid { border-color: #16a34a !important; }
+  </style>
 </head>
-<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
-  <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card">
+<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+  <div class="bg-white dark:bg-slate-800 w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 form-card">
+
+    <!-- LOADING STATE -->
+    <div id="loadingContainer" class="text-center py-8">
+      <div class="w-12 h-12 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-slate-500 dark:text-slate-400">Memuat data pendaftaran...</p>
+    </div>
 
     <!-- FORM PENDAFTARAN -->
-    <div id="formContainer">
+    <div id="formContainer" class="hidden">
       <div class="text-center mb-8">
         <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-14 w-auto mx-auto mb-3">
-        <h1 class="text-2xl font-bold text-red-700">Daftar Akun</h1>
-        <p class="text-sm text-slate-500">Khusus Kontingen / Sekolah</p>
+        <h1 class="text-2xl font-bold text-red-700 dark:text-red-400">Daftar Akun</h1>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Khusus Kontingen / Sekolah</p>
       </div>
 
-      <form id="registerForm" class="space-y-5">
+      <form id="registerForm" class="space-y-5" novalidate>
         <div>
-          <label class="input-label">Tingkat Perlombaan</label>
-          <select id="tingkatId" required class="input-field" onchange="onTingkatChange()">
-            <option value="">-- Pilih Tingkat --</option>
+          <label class="input-label dark:text-slate-300">Tingkat Perlombaan</label>
+          <select id="tingkatId" required class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <option value="">Memuat tingkat...</option>
           </select>
         </div>
 
         <div id="kecamatanWrapper" class="hidden">
-          <label class="input-label">Kecamatan</label>
-          <select id="kecamatanId" required class="input-field" onchange="onKecamatanChange()">
-            <option value="">Memuat kecamatan...</option>
+          <label class="input-label dark:text-slate-300">Kecamatan</label>
+          <select id="kecamatanId" required class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <option value="">-- Pilih Kecamatan --</option>
           </select>
+          <p class="helper" id="helperKecamatan"></p>
         </div>
 
         <div id="sekolahWrapper" class="hidden">
-          <label class="input-label">Nama Sekolah</label>
-          <select id="sekolahId" required class="input-field">
-            <option value="">Memuat sekolah...</option>
+          <label class="input-label dark:text-slate-300">Nama Sekolah</label>
+          <select id="sekolahId" required class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+            <option value="">-- Pilih Sekolah --</option>
           </select>
+          <p class="helper" id="helperSekolah"></p>
         </div>
 
         <div>
-          <label class="input-label">Username</label>
-          <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field">
+          <label class="input-label dark:text-slate-300">Username</label>
+          <input type="text" id="username" required placeholder="Contoh: sdn1purbalingga" class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white" autocomplete="username" autocapitalize="none" spellcheck="false">
+          <p class="helper" id="helperUsername">Hanya huruf kecil & angka, 3–30 karakter, tanpa spasi.</p>
         </div>
+
         <div>
-          <label class="input-label">Password</label>
-          <input type="password" id="password" required placeholder="Minimal 6 karakter" class="input-field">
+          <label class="input-label dark:text-slate-300">Password</label>
+          <input type="password" id="password" required placeholder="Minimal 6 karakter" class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white" autocomplete="new-password">
+          <p class="helper" id="helperPassword">Minimal 6 karakter.</p>
         </div>
-        <div id="errorMsg" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200"></div>
-        <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5">Daftar Sekarang</button>
+
+        <div>
+          <label class="input-label dark:text-slate-300">Ulangi Password</label>
+          <input type="password" id="password2" required placeholder="Ketik ulang password" class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white" autocomplete="new-password">
+          <p class="helper" id="helperPassword2"></p>
+        </div>
+
+        <div id="errorMsg" role="alert" aria-live="polite" class="hidden text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 p-3 rounded-lg border border-red-200 dark:border-red-800"></div>
+        
+        <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+          Daftar Sekarang
+        </button>
       </form>
 
-      <div class="mt-6 text-center border-t pt-6">
-        <a href="login.html" class="text-sm text-slate-500 hover:text-red-600">Sudah punya akun? Login di sini</a>
+      <div class="mt-6 text-center border-t border-slate-200 dark:border-slate-700 pt-6">
+        <a href="login.html" class="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors">Sudah punya akun? Login di sini</a>
       </div>
     </div>
 
     <!-- PESAN PENDAFTARAN TUTUP -->
     <div id="closedContainer" class="hidden text-center py-8">
-      <div class="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div class="w-20 h-20 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
       </div>
-      <h2 class="text-2xl font-bold text-slate-800 mb-2">Pendaftaran Ditutup</h2>
-      <p class="text-slate-500 mb-6">Mohon maaf, pendaftaran Kontingen untuk Jumbara tahun ini sudah ditutup.</p>
+      <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-2">Pendaftaran Ditutup</h2>
+      <p class="text-slate-500 dark:text-slate-400 mb-6">Mohon maaf, pendaftaran Kontingen untuk Jumbara tahun ini sudah ditutup.</p>
       <a href="index.html" class="btn-secondary w-full block py-2">Kembali ke Beranda</a>
     </div>
 
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/supabase-client.js?v=11.1"></script>
   <script>
+    const sb = window.supabaseClient;
+    const $ = (id) => document.getElementById(id);
+    const USERNAME_RE = /^[a-z0-9]{3,30}$/;
+
     let listTingkat = [];
     let currentJenjang = '';
     let statusDraft = null;
     let pendaftaranBuka = true;
+    let requestToken = 0;
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      // 1. Cek Status Pendaftaran Event
-      const { data: events } = await window.supabaseClient
-        .from('event')
-        .select('id, pendaftaran_status')
-        .order('tahun', { ascending: false })
-        .limit(1);
+    const showError = (msg) => {
+      const el = $('errorMsg');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    };
+    const hideError = () => $('errorMsg').classList.add('hidden');
+    const setHelper = (id, msg, state='') => {
+      const el = $(id); if (!el) return;
+      el.textContent = msg;
+      el.classList.remove('error','ok');
+      if (state) el.classList.add(state);
+    };
+    const markInput = (el, ok) => {
+      el.classList.remove('invalid','valid');
+      el.classList.add(ok ? 'valid' : 'invalid');
+    };
+    const clearMark = (el) => el.classList.remove('invalid','valid');
+    
+    // Menerjemahkan error Supabase ke Bahasa Indonesia
+    const translateAuthError = (err) => {
+      if (!err) return 'Terjadi kesalahan. Silakan coba lagi.';
+      const msg = String(err.message || '');
+      const map = {
+        'User already registered': 'Username sudah dipakai. Silakan pilih yang lain.',
+        'Password should be at least 6 characters': 'Password minimal 6 karakter.',
+        'Invalid email': 'Username tidak valid untuk format email.',
+      };
+      if (map[msg]) return map[msg];
+      return msg || 'Gagal mendaftar. Silakan coba lagi.';
+    };
 
-      if (events && events.length > 0) {
-        pendaftaranBuka = events[0].pendaftaran_status === 'buka';
-      }
-
-      if (!pendaftaranBuka) {
-        document.getElementById('formContainer').classList.add('hidden');
-        document.getElementById('closedContainer').classList.remove('hidden');
-        return;
-      }
-
-      // 2. Ambil daftar tingkat
-      const { data: tingkatData } = await window.supabaseClient.from('tingkat').select('*');
-      listTingkat = tingkatData || [];
-      const selectTingkat = document.getElementById('tingkatId');
-      listTingkat.forEach(t => {
-        selectTingkat.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
-      });
-
-      // 3. Ambil status draft dari database (bebas hardcode)
-      const { data: statusData } = await window.supabaseClient
-        .from('status_kontingen')
-        .select('nama')
-        .eq('bisa_diedit', true)
-        .limit(1)
-        .maybeSingle();
-
-      if (statusData) {
-        statusDraft = statusData.nama;
-      } else {
-        console.error('Status draft tidak ditemukan di database!');
-      }
-    });
-
-    async function onTingkatChange() {
-      const tingkatId = document.getElementById('tingkatId').value;
-      const kecamatanWrapper = document.getElementById('kecamatanWrapper');
-      const sekolahWrapper = document.getElementById('sekolahWrapper');
-      const kecamatanSelect = document.getElementById('kecamatanId');
-
-      sekolahWrapper.classList.add('hidden');
-      document.getElementById('sekolahId').innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-
-      if (!tingkatId) {
-        kecamatanWrapper.classList.add('hidden');
-        return;
-      }
-
-      const tingkatObj = listTingkat.find(t => t.id === tingkatId);
-      currentJenjang = tingkatObj ? tingkatObj.nama : '';
-
-      kecamatanWrapper.classList.remove('hidden');
-      kecamatanSelect.innerHTML = '<option value="">Memuat kecamatan...</option>';
-
-      const { data: sekolahData, error } = await window.supabaseClient
-        .from('sekolah')
-        .select('kecamatan')
-        .eq('jenjang', currentJenjang)
-        .not('kecamatan', 'is', null);
-
-      if (error) {
-        console.error(error);
-        kecamatanSelect.innerHTML = '<option value="">Gagal memuat kecamatan</option>';
-        return;
-      }
-
-      const uniqueKecamatan = [...new Set(sekolahData.map(s => s.kecamatan))].sort();
-      
-      kecamatanSelect.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-      uniqueKecamatan.forEach(k => {
-        kecamatanSelect.innerHTML += `<option value="${k}">${k}</option>`;
-      });
-    }
-
-    async function onKecamatanChange() {
-      const kecamatan = document.getElementById('kecamatanId').value;
-      const sekolahWrapper = document.getElementById('sekolahWrapper');
-      const sekolahSelect = document.getElementById('sekolahId');
-
-      if (!kecamatan) {
-        sekolahWrapper.classList.add('hidden');
-        return;
-      }
-
-      sekolahWrapper.classList.remove('hidden');
-      sekolahSelect.innerHTML = '<option value="">Memuat sekolah...</option>';
-
-      const { data: sekolahData, error } = await window.supabaseClient
-        .from('sekolah')
-        .select('nama')
-        .eq('jenjang', currentJenjang)
-        .eq('kecamatan', kecamatan)
-        .order('nama');
-
-      if (error) {
-        console.error(error);
-        sekolahSelect.innerHTML = '<option value="">Gagal memuat sekolah</option>';
-        return;
-      }
-
-      sekolahSelect.innerHTML = '<option value="">-- Pilih Sekolah --</option>';
-      sekolahData.forEach(s => {
-        sekolahSelect.innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
-      });
-    }
-
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      if (!pendaftaranBuka) {
-        alert('Pendaftaran sudah ditutup.');
-        return;
-      }
-
-      const btn = document.getElementById('btnSubmit');
-      const errDiv = document.getElementById('errorMsg');
-      const username = document.getElementById('username').value.trim().toLowerCase();
-      const password = document.getElementById('password').value;
-      const namaSekolah = document.getElementById('sekolahId').value;
-      const tingkatId = document.getElementById('tingkatId').value;
-      const email = `${username}@jumbara.id`;
-
-      if (!namaSekolah) {
-        errDiv.textContent = 'Silakan pilih sekolah terlebih dahulu.';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
-      if (!statusDraft) {
-        alert('Sistem sedang sibuk. Silakan coba lagi nanti.');
-        return;
-      }
-
-      btn.innerHTML = 'Memproses...'; btn.disabled = true; errDiv.classList.add('hidden');
-
+    // 1. INIT DATA
+    async function init() {
       try {
-        const { data, error } = await window.supabaseClient.auth.signUp({
-          email: email,
-          password: password,
-          options: { data: { nama: namaSekolah, tingkat_id: tingkatId } }
-        });
-        if (error) throw error;
+        const { data: events, error: evErr } = await sb.from('event').select('id, pendaftaran_status').order('tahun', { ascending: false }).limit(1);
+        if (evErr) throw evErr;
 
-        await window.supabaseClient.rpc('set_user_role', { user_email: email, user_role: 'kontingen' });
+        pendaftaranBuka = events?.[0]?.pendaftaran_status === 'buka';
 
-        if (data.user) {
-          const { data: events } = await window.supabaseClient.from('event').select('id').order('tahun', { ascending: false }).limit(1);
-          if (events && events.length > 0) {
-            const eventId = events[0].id;
-            const { data: kodeOtomatis } = await window.supabaseClient.rpc('generate_kode_kontingen', { p_tingkat_id: tingkatId });
-            
-            if (kodeOtomatis) {
-              const { data: newKontingen } = await window.supabaseClient.from('kontingen_event').insert([{
-                event_id: eventId, akun_id: data.user.id, nama_kontingen: namaSekolah, tingkat_id: tingkatId, status: statusDraft
-              }]).select().single();
-
-              if (newKontingen) {
-                await window.supabaseClient.from('tim').insert([{
-                  event_id: eventId, kontingen_event_id: newKontingen.id, nama_tim: namaSekolah, tingkat_id: tingkatId, kode_kontingen: kodeOtomatis
-                }]);
-              }
-            }
-          }
+        if (!pendaftaranBuka) {
+          $('loadingContainer').classList.add('hidden');
+          $('closedContainer').classList.remove('hidden');
+          return;
         }
 
-        alert('Pendaftaran akun berhasil! Silakan login.');
-        window.location.href = 'login.html';
+        const { data: tingkatData, error: tErr } = await sb.from('tingkat').select('*');
+        if (tErr) throw tErr;
+        listTingkat = tingkatData || [];
+        
+        const sel = $('tingkatId');
+        sel.innerHTML = '<option value="">-- Pilih Tingkat --</option>';
+        listTingkat.forEach(t => {
+          sel.innerHTML += `<option value="${t.id}">${t.nama}</option>`;
+        });
 
-      } catch (error) {
-        errDiv.textContent = error.message;
-        errDiv.classList.remove('hidden');
-        btn.innerHTML = 'Daftar Sekarang'; btn.disabled = false;
+        const { data: statusData } = await sb.from('status_kontingen').select('nama').eq('bisa_diedit', true).limit(1).maybeSingle();
+        statusDraft = statusData?.nama || null;
+
+        $('loadingContainer').classList.add('hidden');
+        $('formContainer').classList.remove('hidden');
+      } catch (err) {
+        console.error('Init error:', err);
+        $('loadingContainer').innerHTML = `<p class="text-red-500 text-center">Gagal memuat data dari server.<br><button onclick="location.reload()" class="mt-2 text-sm underline">Muat Ulang</button></p>`;
+      }
+    }
+
+    // 2. DROPDOWN BERTINGKAT
+    $('tingkatId').addEventListener('change', async () => {
+      const tingkatId = $('tingkatId').value;
+      const kecWrapper = $('kecamatanWrapper');
+      const sekWrapper = $('sekolahWrapper');
+
+      $('sekolahId').innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+      sekWrapper.classList.add('hidden');
+      setHelper('helperSekolah', '');
+
+      if (!tingkatId) {
+        kecWrapper.classList.add('hidden');
+        setHelper('helperKecamatan', '');
+        return;
+      }
+
+      // FIX BUG: Bandingkan sebagai string
+      const obj = listTingkat.find(t => String(t.id) === String(tingkatId));
+      currentJenjang = obj ? obj.nama : '';
+
+      kecWrapper.classList.remove('hidden');
+      $('kecamatanId').innerHTML = '<option value="">Memuat kecamatan...</option>';
+
+      const token = ++requestToken;
+      try {
+        const { data, error } = await sb.from('sekolah').select('kecamatan').eq('jenjang', currentJenjang).not('kecamatan', 'is', null);
+        if (token !== requestToken) return;
+        if (error) throw error;
+
+        const unique = [...new Set((data || []).map(s => s.kecamatan))].sort();
+        $('kecamatanId').innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+        
+        if (!unique.length) {
+          $('kecamatanId').innerHTML = '<option value="">(Belum ada kecamatan)</option>';
+          setHelper('helperKecamatan', 'Belum ada data sekolah pada jenjang ini.', 'error');
+          return;
+        }
+        unique.forEach(k => {
+          $('kecamatanId').innerHTML += `<option value="${k}">${k}</option>`;
+        });
+        setHelper('helperKecamatan', '');
+      } catch (e) {
+        if (token !== requestToken) return;
+        $('kecamatanId').innerHTML = '<option value="">Gagal memuat kecamatan</option>';
       }
     });
+
+    $('kecamatanId').addEventListener('change', async () => {
+      const kec = $('kecamatanId').value;
+      const sekWrapper = $('sekolahWrapper');
+
+      if (!kec) {
+        sekWrapper.classList.add('hidden');
+        setHelper('helperSekolah', '');
+        return;
+      }
+
+      sekWrapper.classList.remove('hidden');
+      $('sekolahId').innerHTML = '<option value="">Memuat sekolah...</option>';
+
+      const token = ++requestToken;
+      try {
+        const { data, error } = await sb.from('sekolah').select('nama').eq('jenjang', currentJenjang).eq('kecamatan', kec).order('nama');
+        if (token !== requestToken) return;
+        if (error) throw error;
+
+        $('sekolahId').innerHTML = '<option value="">-- Pilih Sekolah --</option>';
+        if (!data || !data.length) {
+          $('sekolahId').innerHTML = '<option value="">(Tidak ada sekolah)</option>';
+          setHelper('helperSekolah', 'Tidak ada sekolah di kecamatan ini.', 'error');
+          return;
+        }
+        data.forEach(s => {
+          $('sekolahId').innerHTML += `<option value="${s.nama}">${s.nama}</option>`;
+        });
+        setHelper('helperSekolah', '');
+      } catch (e) {
+        if (token !== requestToken) return;
+        $('sekolahId').innerHTML = '<option value="">Gagal memuat sekolah</option>';
+      }
+    });
+
+    // 3. VALIDASI LIVE
+    $('username').addEventListener('input', (e) => {
+      const val = e.target.value.trim().toLowerCase().replace(/\s+/g, ''); // Buang spasi
+      e.target.value = val;
+      if (!val) { clearMark(e.target); setHelper('helperUsername', 'Hanya huruf kecil & angka, 3–30 karakter.'); return; }
+      
+      if (!USERNAME_RE.test(val)) {
+        markInput(e.target, false);
+        setHelper('helperUsername', 'Hanya huruf kecil & angka, 3–30 karakter.', 'error');
+      } else {
+        markInput(e.target, true);
+        setHelper('helperUsername', 'Username valid.', 'ok');
+      }
+    });
+
+    $('password').addEventListener('input', (e) => {
+      const val = e.target.value;
+      if (!val) { clearMark(e.target); setHelper('helperPassword', 'Minimal 6 karakter.'); }
+      else if (val.length < 6) { markInput(e.target, false); setHelper('helperPassword', 'Minimal 6 karakter.', 'error'); }
+      else { markInput(e.target, true); setHelper('helperPassword', 'Password valid.', 'ok'); }
+      $('password2').dispatchEvent(new Event('input'));
+    });
+
+    $('password2').addEventListener('input', (e) => {
+      const p1 = $('password').value, p2 = e.target.value;
+      if (!p2) { clearMark(e.target); setHelper('helperPassword2', ''); }
+      else if (p1 !== p2) { markInput(e.target, false); setHelper('helperPassword2', 'Password tidak sama.', 'error'); }
+      else { markInput(e.target, true); setHelper('helperPassword2', 'Password cocok.', 'ok'); }
+    });
+
+    // 4. SUBMIT
+    $('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+
+      if (!pendaftaranBuka) return showError('Pendaftaran sudah ditutup.');
+      
+      const username = $('username').value.trim().toLowerCase();
+      const password = $('password').value;
+      const password2 = $('password2').value;
+      const namaSekolah = $('sekolahId').value;
+      const tingkatId = $('tingkatId').value;
+      const email = `${username}@jumbara.id`;
+
+      // Validasi Klien
+      if (!tingkatId) return showError('Pilih tingkat perlombaan.');
+      if (!$('kecamatanId').value) return showError('Pilih kecamatan.');
+      if (!namaSekolah) return showError('Pilih sekolah.');
+      if (!USERNAME_RE.test(username)) return showError('Username tidak valid (tanpa spasi, min 3 huruf).');
+      if (password.length < 6) return showError('Password minimal 6 karakter.');
+      if (password !== password2) return showError('Konfirmasi password tidak sama.');
+      if (!statusDraft) return showError('Sistem sedang sibuk. Coba beberapa saat lagi.');
+
+      const btn = $('btnSubmit');
+      btn.innerHTML = 'Memproses...';
+      btn.disabled = true;
+      $('registerForm').querySelectorAll('input,select,button').forEach(el => el.disabled = true);
+
+      try {
+        // A. Sign Up
+        const { data: signData, error: signErr } = await sb.auth.signUp({
+          email, password,
+          options: { data: { nama: namaSekolah, tingkat_id: tingkatId } }
+        });
+        if (signErr) throw signErr;
+        if (!signData?.user) throw new Error('Gagal membuat akun.');
+
+        // B. Set Role
+        const { error: roleErr } = await sb.rpc('set_user_role', { user_email: email, user_role: 'kontingen' });
+        if (roleErr) throw new Error('Akun dibuat, tapi gagal set role. Hubungi panitia.');
+
+        // C. Ambil Event
+        const { data: events } = await sb.from('event').select('id').order('tahun', { ascending: false }).limit(1);
+        if (!events || !events.length) throw new Error('Tidak ada event aktif.');
+        const eventId = events[0].id;
+
+        // D. Generate Kode
+        const { data: kodeOtomatis, error: kodeErr } = await sb.rpc('generate_kode_kontingen', { p_tingkat_id: tingkatId });
+        if (kodeErr || !kodeOtomatis) throw new Error('Gagal membuat kode kontingen.');
+
+        // E. Insert Kontingen
+        const { data: newKontingen, error: kErr } = await sb.from('kontingen_event').insert([{
+          event_id: eventId, akun_id: signData.user.id, nama_kontingen: namaSekolah, tingkat_id: tingkatId, status: statusDraft
+        }]).select().single();
+        if (kErr) throw new Error('Gagal membuat data kontingen.');
+
+        // F. Insert Tim
+        const { error: timErr } = await sb.from('tim').insert([{
+          event_id: eventId, kontingen_event_id: newKontingen.id, nama_tim: namaSekolah, tingkat_id: tingkatId, kode_kontingen: kodeOtomatis
+        }]);
+        if (timErr) throw new Error('Gagal membuat data tim.');
+
+        // SUKSES
+        btn.innerHTML = 'Berhasil! Mengarahkan...';
+        setTimeout(() => { window.location.href = 'login.html'; }, 800);
+
+      } catch (err) {
+        console.error(err);
+        showError(translateAuthError(err));
+        btn.innerHTML = 'Daftar Sekarang';
+        $('registerForm').querySelectorAll('input,select,button').forEach(el => el.disabled = false);
+      }
+    });
+
+    // Jalankan Init
+    init();
   </script>
 </body>
 </html>
