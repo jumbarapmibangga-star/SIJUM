@@ -31,37 +31,48 @@
   <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
     <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
-        <div>
-          <h1 class="text-sm font-bold text-red-700 leading-tight">Juri PMI</h1>
-          <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none mt-0.5">Memuat...</p>
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Penilaian</h1>
+            <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none mt-0.5">Memuat...</p>
+          </div>
         </div>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-2">
         <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
-        <a href="juri/pos.html" class="text-xs font-bold bg-red-50 text-red-700 px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Kembali</a>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
       </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
     </div>
   </div>
 
   <!-- SIDEBAR DESKTOP -->
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-      <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
-      <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
+          <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
     </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-      <a href="juri/pos.html" class="sidebar-link active">&larr; Kembali ke Daftar Pos</a>
-    </nav>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
     <div class="p-4 border-t border-slate-200 flex justify-between items-center">
-      <button id="btnThemeToggle" class="btn-theme-toggle" onclick="toggleTheme()">
+      <button class="btn-theme-toggle" onclick="toggleTheme()">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         <span>Mode Gelap</span>
       </button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
     </div>
   </aside>
 
@@ -123,6 +134,20 @@
       const auth = await protectPage(['juri']);
       if (!auth) return;
 
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+
+      // Hamburger mobile
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      // Render menu (desktop + mobile)
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile  = document.getElementById('navMenuMobile');
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'penilaian');
+      menuMobile.innerHTML  = await renderMenu(auth.role, 'penilaian');
+
       const urlParams = new URLSearchParams(window.location.search);
       currentPosId = urlParams.get('pos_id');
       if (!currentPosId) { window.location.href = 'juri/pos.html'; return; }
@@ -148,32 +173,13 @@
       currentEventData = eventData;
 
       loadTim();
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
     });
 
     async function loadTim() {
-      // 1. Ambil semua tim untuk event ini
-      const { data: allTim } = await window.supabaseClient
-        .from('tim')
-        .select('*, tingkat(nama)')
-        .eq('event_id', currentEventId)
-        .order('kode_kontingen');
+      const { data: allTim } = await window.supabaseClient.from('tim').select('*, tingkat(nama)').eq('event_id', currentEventId).order('kode_kontingen');
+      const { data: semuaPenilaian } = await window.supabaseClient.from('penilaian_juri').select('penilaian_pos_id, status, penilaian_pos(tim_id, pos_id)').eq('juri_id', currentJuriId);
       
-      // 2. Ambil SEMUA penilaian Juri (dengan relasi penilaian_pos)
-      const { data: semuaPenilaian } = await window.supabaseClient
-        .from('penilaian_juri')
-        .select('penilaian_pos_id, status, penilaian_pos(tim_id, pos_id)')
-        .eq('juri_id', currentJuriId);
-      
-      // 3. Filter manual: hanya penilaian untuk POS INI yang dianggap "sudah dinilai"
-      const timSudahDinilaiIds = (semuaPenilaian || [])
-        .filter(sd => 
-          sd.status === 'locked' && 
-          sd.penilaian_pos && 
-          sd.penilaian_pos.tim_id &&
-          sd.penilaian_pos.pos_id === currentPosId
-        )
-        .map(sd => sd.penilaian_pos.tim_id);
+      const timSudahDinilaiIds = (semuaPenilaian || []).filter(sd => sd.status === 'locked' && sd.penilaian_pos && sd.penilaian_pos.tim_id && sd.penilaian_pos.pos_id === currentPosId).map(sd => sd.penilaian_pos.tim_id);
 
       const timBelumDinilai = allTim.filter(t => !timSudahDinilaiIds.includes(t.id));
       const container = document.getElementById('timListContainer');
@@ -199,7 +205,6 @@
 
     window.bukaFormPenilaian = async (timId, namaTim, kodeTim, tingkatId) => {
       currentTim = { id: timId, nama: namaTim, kode: kodeTim };
-      
       const { data: tk } = await window.supabaseClient.from('tingkat').select('nama').eq('id', tingkatId).single();
       currentTingkatData = tk;
 
@@ -215,14 +220,12 @@
           </div>
           <button onclick="kembaliKeDaftarTim()" class="text-slate-500 hover:text-red-600 text-sm font-bold bg-slate-100 px-4 py-2 rounded-lg">&larr; Batal</button>
         </div>
-
         <div class="mb-4">
           <button type="button" onclick="connectPrinter()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-lg flex justify-center items-center gap-2 shadow-md">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
             <span id="printerStatusText">Hubungkan Printer Bluetooth</span>
           </button>
         </div>
-
         <div class="bg-red-50 border border-red-200 p-4 rounded-lg mb-6">
           <h4 class="font-bold text-red-800 mb-2">Scan Kehadiran Peserta</h4>
           <p class="text-xs text-red-600 mb-3">Wajib scan minimal 1 peserta.</p>
@@ -250,13 +253,9 @@
         let presetButtons = '';
         const max = parseFloat(r.skor_maksimal);
         if (max <= 10) {
-          for(let i=1; i<=max; i++) {
-            presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
-          }
+          for(let i=1; i<=max; i++) presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
         } else {
-          for(let i=10; i<=max; i+=10) {
-            presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
-          }
+          for(let i=10; i<=max; i+=10) presetButtons += `<button type="button" onclick="setNilai('${r.id}', ${i})" class="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded text-sm hover:bg-red-600 hover:text-white transition">${i}</button>`;
         }
         formHtml += `
           <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
@@ -332,13 +331,9 @@
           }
 
           dataCetak = { 
-            penilaianPosId: penPos.id,
-            namaEvent: currentEventData.nama,
-            tahun: currentEventData.tahun,
+            penilaianPosId: penPos.id, namaEvent: currentEventData.nama, tahun: currentEventData.tahun,
             tingkat: currentTingkatData ? currentTingkatData.nama : '-',
-            namaTim: namaTim, 
-            kodeTim: kodeTim, 
-            totalNilai: totalNilai 
+            namaTim: namaTim, kodeTim: kodeTim, totalNilai: totalNilai 
           };
           document.getElementById('modalCetak').classList.remove('hidden');
 
@@ -372,9 +367,7 @@
       const scannerArea = document.getElementById('scannerArea');
       scannerArea.classList.remove('hidden');
       if (!html5QrCode) { html5QrCode = new Html5Qrcode("scannerArea"); }
-      html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+      html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText) => { prosesScan(decodedText); html5QrCode.stop(); scannerArea.classList.add('hidden'); },
         (errorMessage) => { }
       ).catch(err => alert('Gagal buka kamera: ' + err));
@@ -390,8 +383,7 @@
       const listHadir = document.getElementById('listHadir');
       const badge = document.createElement('div');
       badge.className = 'badge-hadir bg-green-100 text-green-800 border border-green-300 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm';
-      badge.dataset.pesertaId = pe.id;
-      badge.dataset.kode = kodePeserta;
+      badge.dataset.pesertaId = pe.id; badge.dataset.kode = kodePeserta;
       badge.innerHTML = `${pm.nama} <button type="button" onclick="this.parentElement.remove()" class="text-red-500 font-bold ml-1 text-lg leading-none">&times;</button>`;
       listHadir.appendChild(badge);
     }
@@ -409,7 +401,6 @@
       window.kembaliKeDaftarTim = () => { clearInterval(interval); originalKembali(); };
     }
 
-    // --- FUNGSI CETAK ---
     window.tutupModalDanReload = () => { document.getElementById('modalCetak').classList.add('hidden'); window.location.reload(); };
 
     window.cetakViaBluetooth = async () => {
@@ -471,12 +462,10 @@ Waktu: ${new Date().toLocaleTimeString('id-ID')}
       
       try {
         await bluetoothCharacteristic.writeValue(dataBytes);
-        
         const qrData = encoder.encode(urlVerifikasi);
         const qrLength = qrData.length + 3;
         const pL = qrLength & 0xFF;
         const pH = (qrLength >> 8) & 0xFF;
-        
         const qrCmd = new Uint8Array([
           0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x43, 0x06,
           0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x45, 0x31,
@@ -484,9 +473,7 @@ Waktu: ${new Date().toLocaleTimeString('id-ID')}
           0x1D, 0x28, 0x6B, 0x03, 0x00, 0x31, 0x51, 0x30,
           0x0A, 0x0A, 0x0A
         ]);
-        
         await bluetoothCharacteristic.writeValue(qrCmd);
-        
         alert('Struk dan QR sedang dicetak...');
       } catch (error) { 
         alert('Gagal mencetak: ' + error.message); 
@@ -495,7 +482,6 @@ Waktu: ${new Date().toLocaleTimeString('id-ID')}
 
     window.cetakStrukBrowser = (data) => {
       const urlVerifikasi = `https://pmi-bangga.github.io/SIJUM/verifikasi.html?id=${data.penilaianPosId}`;
-      
       const qr = qrcode(0, 'M');
       qr.addData(urlVerifikasi);
       qr.make();
