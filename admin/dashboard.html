@@ -4,12 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Dashboard Panitia — Jumbara PMI</title>
-  
   <base href="../">
-  
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="assets/css/custom.css">
+  <style>
+    .stat-card { transition: transform .15s ease, box-shadow .15s ease; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0,0,0,.12); }
+    .skeleton { background: linear-gradient(90deg,#f1f5f9 25%,#e2e8f0 50%,#f1f5f9 75%); background-size: 200% 100%; animation: shimmer 1.2s infinite; border-radius: .5rem; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .progress-bar { height: .5rem; border-radius: 9999px; background: #e2e8f0; overflow: hidden; }
+    .progress-bar > div { height: 100%; border-radius: 9999px; transition: width .4s ease; }
+  </style>
 </head>
 <body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
 
@@ -62,11 +68,13 @@
   </aside>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-1 p-4 md:p-8">
-    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 animate-fade-in">
+  <main class="flex-1 p-4 md:p-8 space-y-6">
+
+    <!-- HEADER / WELCOME -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-red-600 animate-fade-in">
       <div>
         <h2 class="text-xl md:text-2xl font-bold text-slate-800">Selamat Datang!</h2>
-        <p class="text-sm md:text-base text-slate-500 mt-1">Sistem Informasi Jumbara PMI Kabupaten Purbalingga.</p>
+        <p class="text-sm md:text-base text-slate-500 mt-1">Ringkasan sistem informasi Jumbara PMI Kab. Purbalingga.</p>
       </div>
       <div class="mt-4 md:mt-0 text-left md:text-right">
         <p class="text-xs md:text-sm text-slate-400">Tanggal Hari Ini</p>
@@ -74,20 +82,161 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-      <div class="form-card relative overflow-hidden animate-fade-in delay-1">
-        <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Event Aktif</h3>
-        <p id="eventTahun" class="text-3xl md:text-4xl font-extrabold text-red-600 mt-2">-</p>
+    <!-- ============ SECTION 1: EVENT & PENDAFTARAN ============ -->
+    <section>
+      <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Event &amp; Pendaftaran</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Event Aktif</p>
+          <p id="statEventTahun" class="text-3xl font-extrabold text-red-600 mt-2">—</p>
+          <p id="statEventStatus" class="text-xs mt-1 text-slate-400">memuat...</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Tim Terdaftar</p>
+          <p id="statTotalTim" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+          <div class="progress-bar mt-3"><div id="barTimVerified" style="width:0%;background:#16a34a"></div></div>
+          <p class="text-xs mt-1 text-slate-500"><span id="statTimVerified">—</span> terverifikasi</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Menunggu Verifikasi</p>
+          <p id="statTimPending" class="text-3xl font-extrabold text-amber-600 mt-2">—</p>
+          <p class="text-xs mt-1 text-slate-500">tim pending</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ditolak</p>
+          <p id="statTimRejected" class="text-3xl font-extrabold text-red-600 mt-2">—</p>
+          <p class="text-xs mt-1 text-slate-500">tim ditolak</p>
+        </div>
+
       </div>
-      <div class="form-card relative overflow-hidden animate-fade-in delay-2">
-        <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Status Pendaftaran</h3>
-        <p id="statusPendaftaran" class="text-xl md:text-2xl font-bold text-slate-800 mt-3">-</p>
+    </section>
+
+    <!-- ============ SECTION 2: SEKOLAH & KONTINGEN ============ -->
+    <section>
+      <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Sekolah &amp; Kontingen</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div class="stat-card form-card md:col-span-1">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Sekolah</p>
+          <p id="statTotalSekolah" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+          <p class="text-xs mt-1 text-slate-500">terdata di sistem</p>
+        </div>
+
+        <div class="stat-card form-card md:col-span-2">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Sebaran Sekolah per Jenjang</p>
+          <div id="statSekolahJenjang" class="space-y-2">
+            <div class="skeleton h-6 w-full"></div>
+            <div class="skeleton h-6 w-full"></div>
+          </div>
+        </div>
+
       </div>
-      <div class="form-card relative overflow-hidden animate-fade-in delay-3">
-        <h3 class="text-xs md:text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Tim Terdaftar</h3>
-        <p id="totalTim" class="text-3xl md:text-4xl font-extrabold text-slate-800 mt-2">-</p>
+    </section>
+
+    <!-- ============ SECTION 3: POS, RUBRIK, JURI ============ -->
+    <section>
+      <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Perlombaan</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pos</p>
+          <p id="statTotalPos" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Rubrik</p>
+          <p id="statTotalRubrik" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Juri</p>
+          <p id="statTotalJuri" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Penugasan Juri</p>
+          <p id="statTotalPenugasan" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+        </div>
+
       </div>
-    </div>
+    </section>
+
+    <!-- ============ SECTION 4: PROGRES PENILAIAN ============ -->
+    <section>
+      <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Progres Penilaian</h3>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Penilaian Masuk</p>
+          <p id="statTotalPenilaian" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+          <div class="progress-bar mt-3"><div id="barPenilaianFinal" style="width:0%;background:#16a34a"></div></div>
+          <p class="text-xs mt-1 text-slate-500"><span id="statPenilaianFinal">—</span> sudah final</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Draft (Belum Final)</p>
+          <p id="statPenilaianDraft" class="text-3xl font-extrabold text-amber-600 mt-2">—</p>
+          <p class="text-xs mt-1 text-slate-500">perlu diselesaikan juri</p>
+        </div>
+
+        <div class="stat-card form-card">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Nilai Rata-rata</p>
+          <p id="statRataNilai" class="text-3xl font-extrabold text-slate-800 mt-2">—</p>
+          <p class="text-xs mt-1 text-slate-500">dari penilaian final</p>
+        </div>
+
+      </div>
+
+      <!-- TOP 5 TIM -->
+      <div class="form-card mt-4">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-semibold text-slate-700">🏆 Peringkat Sementara (Top 5)</p>
+          <a href="admin/laporan.html" class="text-xs text-red-600 hover:underline">Lihat semua →</a>
+        </div>
+        <div id="statTopTim" class="space-y-2">
+          <div class="skeleton h-8 w-full"></div>
+          <div class="skeleton h-8 w-full"></div>
+          <div class="skeleton h-8 w-full"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SECTION 5: KONTEN & AKTIVITAS ============ -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div class="form-card">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">📰 Berita</p>
+        <div class="flex items-baseline gap-2">
+          <p id="statTotalBerita" class="text-3xl font-extrabold text-slate-800">—</p>
+          <span class="text-xs text-slate-500">total</span>
+        </div>
+        <p class="text-xs text-slate-500 mt-1">
+          <span id="statBeritaPublished" class="font-semibold text-green-600">—</span> published ·
+          <span id="statBeritaDraft" class="font-semibold text-amber-600">—</span> draft
+        </p>
+        <a href="admin/kelola-berita.html" class="inline-block mt-3 text-xs text-red-600 hover:underline">Kelola berita →</a>
+      </div>
+
+      <div class="form-card">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">🕒 Aktivitas Terbaru</p>
+        <div id="statAktivitas" class="space-y-2">
+          <div class="skeleton h-6 w-full"></div>
+          <div class="skeleton h-6 w-full"></div>
+          <div class="skeleton h-6 w-full"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-xs text-slate-400 pt-4">
+      <p>Jumbara PMI Kab. Purbalingga &copy; <span id="footerYear"></span></p>
+    </footer>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -95,39 +244,213 @@
   <script src="assets/js/auth.js"></script>
   <script src="assets/js/theme.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
-      if (!auth) return;
+  (async () => {
+    // ---------- GUARD ----------
+    const auth = await protectPage(['super_admin', 'koordinator', 'admin_event']);
+    if (!auth) return;
 
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
-      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+    // ---------- UTIL ----------
+    const sb = window.supabaseClient;
+    const $ = (id) => document.getElementById(id);
+    const setText = (id, val) => { const el = $(id); if (el) el.textContent = val ?? '—'; };
+    const setSkeleton = (id) => { const el = $(id); if (el) el.innerHTML = '<div class="skeleton h-8 w-full"></div>'; };
+    const fmt = (n) => (n ?? 0).toLocaleString('id-ID');
 
-      const btnMenu = document.getElementById('btnMobileMenu');
-      const dropdown = document.getElementById('mobileMenuDropdown');
-      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+    // ---------- HEADER ----------
+    document.getElementById('btnLogout').addEventListener('click', logoutUser);
+    document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
+    document.getElementById('btnMobileMenu').addEventListener('click', () =>
+      document.getElementById('mobileMenuDropdown').classList.toggle('hidden'));
 
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('tanggalHariIni').textContent = new Date().toLocaleDateString('id-ID', options);
-      
-      const roleText = auth.role.replace('_', ' ').toUpperCase();
-      document.getElementById('userRoleDisplay').textContent = roleText;
-      document.getElementById('userRoleDisplayMobile').textContent = roleText;
+    document.getElementById('tanggalHariIni').textContent =
+      new Date().toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
-      // RENDER MENU MENGGUNAKAN FUNGSI GLOBAL
-      const menuDesktop = document.getElementById('navMenu');
-      const menuMobile = document.getElementById('navMenuMobile');
-      menuDesktop.innerHTML = await renderMenu(auth.role, 'dashboard');
-      menuMobile.innerHTML = await renderMenu(auth.role, 'dashboard');
+    const roleText = auth.role.replace('_', ' ').toUpperCase();
+    setText('userRoleDisplay', roleText);
+    setText('userRoleDisplayMobile', roleText);
 
-      const { data: events } = await window.supabaseClient.from('event').select('*').order('tahun', { ascending: false }).limit(1);
-      if (events && events.length > 0) {
-        const event = events[0];
-        document.getElementById('eventTahun').textContent = event.tahun;
-        document.getElementById('statusPendaftaran').textContent = event.pendaftaran_status.toUpperCase();
-        const { count } = await window.supabaseClient.from('tim').select('*', { count: 'exact', head: true }).eq('event_id', event.id);
-        document.getElementById('totalTim').textContent = count || 0;
+    // ---------- MENU (terpusat) ----------
+    const MENU = [
+      { label:'Dashboard',          href:'admin/dashboard.html',   roles:['super_admin','koordinator','admin_event'], active:true },
+      { label:'Kelola Pos & Rubrik',href:'admin/pos.html',         roles:['super_admin','koordinator','admin_event'] },
+      { label:'Verifikasi Kontingen',href:'admin/verifikasi.html', roles:['super_admin','koordinator','admin_event'] },
+      { label:'Penugasan Juri',     href:'admin/juri.html',        roles:['super_admin','koordinator','admin_event'] },
+      { label:'Kelola Berita',      href:'admin/kelola-berita.html',roles:['super_admin','koordinator','admin_event'] },
+      { label:'Laporan & Rekap',    href:'admin/laporan.html',     roles:['super_admin','koordinator','admin_event'] },
+      { label:'Tracker Penilaian',  href:'admin/tracker.html',     roles:['super_admin','koordinator','admin_event'] },
+      { label:'Koreksi Nilai',      href:'admin/koreksi.html',     roles:['super_admin','koordinator'], group:'Kontrol Khusus' },
+      { label:'Kelola User',        href:'admin/users.html',       roles:['super_admin'], group:'Sistem' },
+      { label:'Audit Log',          href:'admin/audit.html',       roles:['super_admin'], group:'Sistem' },
+    ];
+    const buildMenu = (currentRole) => {
+      let html = '';
+      let lastGroup = null;
+      MENU.forEach(m => {
+        if (!m.roles.includes(currentRole)) return;
+        if (m.group && m.group !== lastGroup) {
+          html += `<div class="mt-4 mb-2 px-4 text-xs font-bold text-slate-400 uppercase tracking-wider">${m.group}</div>`;
+          lastGroup = m.group;
+        }
+        html += `<a href="${m.href}" class="sidebar-link ${m.active ? 'active' : ''}">${m.label}</a>`;
+      });
+      return html;
+    };
+    const menuHtml = buildMenu(auth.role);
+    $('navMenu').innerHTML = menuHtml;
+    $('navMenuMobile').innerHTML = menuHtml;
+
+    // ---------- LOAD ALL STATS ----------
+    try {
+      // 1) Event aktif
+      const { data: events } = await sb.from('event').select('*').order('tahun', { ascending:false }).limit(1);
+      const event = events?.[0];
+      if (event) {
+        setText('statEventTahun', event.tahun);
+        setText('statEventStatus', `Pendaftaran: ${String(event.pendaftaran_status || '-').toUpperCase()}`);
+      } else {
+        setText('statEventTahun', '-');
+        setText('statEventStatus', 'Belum ada event');
       }
-    });
+
+      // 2) Tim — total, verified, pending, rejected (event aktif)
+      if (event) {
+        const [{ count: totalTim }, { count: timVerified }, { count: timPending }, { count: timRejected }] =
+          await Promise.all([
+            sb.from('tim').select('*', { count:'exact', head:true }).eq('event_id', event.id),
+            sb.from('tim').select('*', { count:'exact', head:true }).eq('event_id', event.id).eq('status_verifikasi','verified'),
+            sb.from('tim').select('*', { count:'exact', head:true }).eq('event_id', event.id).eq('status_verifikasi','pending'),
+            sb.from('tim').select('*', { count:'exact', head:true }).eq('event_id', event.id).eq('status_verifikasi','rejected'),
+          ]);
+        setText('statTotalTim', fmt(totalTim));
+        setText('statTimVerified', fmt(timVerified));
+        setText('statTimPending', fmt(timPending));
+        setText('statTimRejected', fmt(timRejected));
+        const pct = totalTim ? Math.round((timVerified / totalTim) * 100) : 0;
+        $('barTimVerified').style.width = pct + '%';
+      }
+
+      // 3) Sekolah — total & per jenjang
+      const { data: sekolahData } = await sb.from('sekolah').select('jenjang');
+      setText('statTotalSekolah', fmt(sekolahData?.length || 0));
+      const jenjangMap = (sekolahData || []).reduce((acc, s) => {
+        const j = s.jenjang || '(lainnya)';
+        acc[j] = (acc[j] || 0) + 1;
+        return acc;
+      }, {});
+      const maxJenjang = Math.max(1, ...Object.values(jenjangMap));
+      const jenjangHtml = Object.entries(jenjangMap)
+        .sort((a,b) => b[1]-a[1])
+        .map(([j, n]) => `
+          <div class="flex items-center gap-2 text-xs">
+            <span class="w-20 truncate text-slate-600" title="${j}">${j}</span>
+            <div class="flex-1 progress-bar"><div style="width:${(n/maxJenjang)*100}%;background:#dc2626"></div></div>
+            <span class="w-8 text-right font-semibold text-slate-700">${n}</span>
+          </div>`).join('');
+      $('statSekolahJenjang').innerHTML = jenjangHtml || '<p class="text-xs text-slate-400">Belum ada data sekolah.</p>';
+
+      // 4) Pos, Rubrik, Juri, Penugasan
+      const [{ count: totalPos }, { count: totalRubrik }, { count: totalJuri }, { count: totalPenugasan }] =
+        await Promise.all([
+          sb.from('pos').select('*', { count:'exact', head:true }),
+          sb.from('rubrik').select('*', { count:'exact', head:true }),
+          sb.from('juri').select('*', { count:'exact', head:true }),
+          sb.from('penugasan_juri').select('*', { count:'exact', head:true }),
+        ]);
+      setText('statTotalPos', fmt(totalPos));
+      setText('statTotalRubrik', fmt(totalRubrik));
+      setText('statTotalJuri', fmt(totalJuri));
+      setText('statTotalPenugasan', fmt(totalPenugasan));
+
+      // 5) Penilaian — total, final, draft
+      const [{ count: totalPenilaian }, { count: penilaianFinal }, { count: penilaianDraft }] =
+        await Promise.all([
+          sb.from('penilaian').select('*', { count:'exact', head:true }),
+          sb.from('penilaian').select('*', { count:'exact', head:true }).eq('status','final'),
+          sb.from('penilaian').select('*', { count:'exact', head:true }).eq('status','draft'),
+        ]);
+      setText('statTotalPenilaian', fmt(totalPenilaian));
+      setText('statPenilaianFinal', fmt(penilaianFinal));
+      setText('statPenilaianDraft', fmt(penilaianDraft));
+      const pctFinal = totalPenilaian ? Math.round((penilaianFinal / totalPenilaian) * 100) : 0;
+      $('barPenilaianFinal').style.width = pctFinal + '%';
+
+      // 6) Rata-rata nilai final + Top 5 tim
+      const { data: nilaiFinal } = await sb.from('penilaian')
+        .select('nilai, tim_id, tim:tim_id(nama_tim, sekolah:sekolah_id(nama))')
+        .eq('status','final');
+      if (nilaiFinal && nilaiFinal.length) {
+        const avg = nilaiFinal.reduce((s, p) => s + (Number(p.nilai) || 0), 0) / nilaiFinal.length;
+        setText('statRataNilai', avg.toFixed(2));
+        const perTim = nilaiFinal.reduce((acc, p) => {
+          const id = p.tim_id;
+          if (!acc[id]) acc[id] = { nama: p.tim?.nama_tim || '(?)', sekolah: p.tim?.sekolah?.nama || '-', total:0, n:0 };
+          acc[id].total += Number(p.nilai) || 0;
+          acc[id].n += 1;
+          return acc;
+        }, {});
+        const top = Object.values(perTim)
+          .map(t => ({ ...t, avg: t.total / t.n }))
+          .sort((a,b) => b.avg - a.avg)
+          .slice(0, 5);
+        $('statTopTim').innerHTML = top.length
+          ? top.map((t, i) => {
+              const medal = ['🥇','🥈','🥉','4.','5.'][i] || `${i+1}.`;
+              return `<div class="flex items-center justify-between text-sm py-1.5 border-b border-slate-100 last:border-0">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="w-6 text-center">${medal}</span>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-800 truncate">${t.nama}</p>
+                    <p class="text-[10px] text-slate-500 truncate">${t.sekolah}</p>
+                  </div>
+                </div>
+                <span class="font-bold text-red-600">${t.avg.toFixed(2)}</span>
+              </div>`;
+            }).join('')
+          : '<p class="text-xs text-slate-400">Belum ada penilaian final.</p>';
+      } else {
+        setText('statRataNilai', '-');
+        $('statTopTim').innerHTML = '<p class="text-xs text-slate-400">Belum ada penilaian final.</p>';
+      }
+
+      // 7) Berita — total, published, draft
+      const [{ count: totalBerita }, { count: beritaPublished }, { count: beritaDraft }] =
+        await Promise.all([
+          sb.from('berita').select('*', { count:'exact', head:true }),
+          sb.from('berita').select('*', { count:'exact', head:true }).eq('status','published'),
+          sb.from('berita').select('*', { count:'exact', head:true }).eq('status','draft'),
+        ]);
+      setText('statTotalBerita', fmt(totalBerita));
+      setText('statBeritaPublished', fmt(beritaPublished));
+      setText('statBeritaDraft', fmt(beritaDraft));
+
+      // 8) Aktivitas terbaru dari audit_log
+      const { data: logs } = await sb.from('audit_log')
+        .select('user_email, aksi, created_at')
+        .order('created_at', { ascending:false })
+        .limit(5);
+      $('statAktivitas').innerHTML = (logs && logs.length)
+        ? logs.map(l => {
+            const d = new Date(l.created_at);
+            const tgl = d.toLocaleString('id-ID', { dateStyle:'short', timeStyle:'short' });
+            return `<div class="flex justify-between items-start gap-2 text-xs py-1 border-b border-slate-100 last:border-0">
+              <div class="min-w-0">
+                <p class="font-semibold text-slate-700 truncate">${l.user_email || '-'}</p>
+                <p class="text-slate-500 truncate">${l.aksi || '-'}</p>
+              </div>
+              <span class="text-[10px] text-slate-400 whitespace-nowrap">${tgl}</span>
+            </div>`;
+          }).join('')
+        : '<p class="text-xs text-slate-400">Belum ada aktivitas.</p>';
+
+    } catch (err) {
+      console.error('Dashboard load error:', err);
+      // Tampilkan indikator error ringan di semua card
+      ['statTotalTim','statTotalSekolah','statTotalPos','statTotalRubrik','statTotalJuri',
+       'statTotalPenugasan','statTotalPenilaian','statTotalBerita'].forEach(id => setText(id, '!'));
+    }
+
+    setText('footerYear', new Date().getFullYear());
+  })();
   </script>
 </body>
 </html>
