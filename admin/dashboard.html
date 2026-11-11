@@ -15,11 +15,35 @@
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     .progress-bar { height: .5rem; border-radius: 9999px; background: #e2e8f0; overflow: hidden; }
     .progress-bar > div { height: 100%; border-radius: 9999px; transition: width .4s ease; }
+
+    /* === Sidebar Fixed Layout === */
+    .admin-layout { height: 100vh; overflow: hidden; }
+    .admin-layout > aside {
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      flex-shrink: 0;
+    }
+    .admin-layout > main {
+      height: 100vh;
+      overflow-y: auto;
+    }
+    /* Mobile: biarkan normal scroll */
+    @media (max-width: 767px) {
+      .admin-layout { height: auto; overflow: visible; }
+      .admin-layout > main { height: auto; overflow-y: visible; }
+    }
+
+    /* Scrollbar halus untuk main */
+    main::-webkit-scrollbar { width: 8px; }
+    main::-webkit-scrollbar-track { background: transparent; }
+    main::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    main::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
   </style>
 </head>
-<body class="halaman-admin bg-slate-50 min-h-screen flex flex-col md:flex-row font-sans">
+<body class="halaman-admin admin-layout bg-slate-50 flex flex-col md:flex-row font-sans">
 
-  <!-- HEADER MOBILE -->
+  <!-- ================= HEADER MOBILE ================= -->
   <div class="md:hidden relative z-50">
     <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
       <div class="flex items-center gap-3">
@@ -46,9 +70,9 @@
     </div>
   </div>
 
-  <!-- SIDEBAR DESKTOP -->
-  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
-    <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
+  <!-- ================= SIDEBAR DESKTOP ================= -->
+  <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col shadow-sm z-10">
+    <div class="p-5 text-white shadow-md shrink-0" style="background-color: #B71C1C;">
       <div class="flex items-center space-x-3">
         <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
         <div>
@@ -58,7 +82,7 @@
       </div>
     </div>
     <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
-    <div class="p-4 border-t border-slate-200 flex justify-between items-center">
+    <div class="p-4 border-t border-slate-200 flex justify-between items-center shrink-0">
       <button class="btn-theme-toggle" onclick="toggleTheme()">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         <span>Mode Gelap</span>
@@ -67,7 +91,7 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
+  <!-- ================= MAIN CONTENT ================= -->
   <main class="flex-1 p-4 md:p-8 space-y-6">
 
     <!-- HEADER / WELCOME -->
@@ -233,7 +257,7 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="text-center text-xs text-slate-400 pt-4">
+    <footer class="text-center text-xs text-slate-400 pt-4 pb-2">
       <p>Jumbara PMI Kab. Purbalingga &copy; <span id="footerYear"></span></p>
     </footer>
 
@@ -253,38 +277,36 @@
     const sb = window.supabaseClient;
     const $ = (id) => document.getElementById(id);
     const setText = (id, val) => { const el = $(id); if (el) el.textContent = val ?? '—'; };
-    const setSkeleton = (id) => { const el = $(id); if (el) el.innerHTML = '<div class="skeleton h-8 w-full"></div>'; };
     const fmt = (n) => (n ?? 0).toLocaleString('id-ID');
 
     // ---------- HEADER ----------
-    document.getElementById('btnLogout').addEventListener('click', logoutUser);
-    document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
-    document.getElementById('btnMobileMenu').addEventListener('click', () =>
-      document.getElementById('mobileMenuDropdown').classList.toggle('hidden'));
+    $('btnLogout').addEventListener('click', logoutUser);
+    $('btnLogoutMobile').addEventListener('click', logoutUser);
+    $('btnMobileMenu').addEventListener('click', () =>
+      $('mobileMenuDropdown').classList.toggle('hidden'));
 
-    document.getElementById('tanggalHariIni').textContent =
+    $('tanggalHariIni').textContent =
       new Date().toLocaleDateString('id-ID', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 
     const roleText = auth.role.replace('_', ' ').toUpperCase();
     setText('userRoleDisplay', roleText);
     setText('userRoleDisplayMobile', roleText);
 
-    // ---------- MENU (terpusat) ----------
+    // ---------- MENU TERPUSAT ----------
     const MENU = [
-      { label:'Dashboard',          href:'admin/dashboard.html',   roles:['super_admin','koordinator','admin_event'], active:true },
-      { label:'Kelola Pos & Rubrik',href:'admin/pos.html',         roles:['super_admin','koordinator','admin_event'] },
-      { label:'Verifikasi Kontingen',href:'admin/verifikasi.html', roles:['super_admin','koordinator','admin_event'] },
-      { label:'Penugasan Juri',     href:'admin/juri.html',        roles:['super_admin','koordinator','admin_event'] },
-      { label:'Kelola Berita',      href:'admin/kelola-berita.html',roles:['super_admin','koordinator','admin_event'] },
-      { label:'Laporan & Rekap',    href:'admin/laporan.html',     roles:['super_admin','koordinator','admin_event'] },
-      { label:'Tracker Penilaian',  href:'admin/tracker.html',     roles:['super_admin','koordinator','admin_event'] },
-      { label:'Koreksi Nilai',      href:'admin/koreksi.html',     roles:['super_admin','koordinator'], group:'Kontrol Khusus' },
-      { label:'Kelola User',        href:'admin/users.html',       roles:['super_admin'], group:'Sistem' },
-      { label:'Audit Log',          href:'admin/audit.html',       roles:['super_admin'], group:'Sistem' },
+      { label:'Dashboard',           href:'admin/dashboard.html',    roles:['super_admin','koordinator','admin_event'], active:true },
+      { label:'Kelola Pos & Rubrik', href:'admin/pos.html',          roles:['super_admin','koordinator','admin_event'] },
+      { label:'Verifikasi Kontingen',href:'admin/verifikasi.html',   roles:['super_admin','koordinator','admin_event'] },
+      { label:'Penugasan Juri',      href:'admin/juri.html',         roles:['super_admin','koordinator','admin_event'] },
+      { label:'Kelola Berita',       href:'admin/kelola-berita.html',roles:['super_admin','koordinator','admin_event'] },
+      { label:'Laporan & Rekap',     href:'admin/laporan.html',      roles:['super_admin','koordinator','admin_event'] },
+      { label:'Tracker Penilaian',   href:'admin/tracker.html',      roles:['super_admin','koordinator','admin_event'] },
+      { label:'Koreksi Nilai',       href:'admin/koreksi.html',      roles:['super_admin','koordinator'], group:'Kontrol Khusus' },
+      { label:'Kelola User',         href:'admin/users.html',        roles:['super_admin'], group:'Sistem' },
+      { label:'Audit Log',           href:'admin/audit.html',        roles:['super_admin'], group:'Sistem' },
     ];
     const buildMenu = (currentRole) => {
-      let html = '';
-      let lastGroup = null;
+      let html = '', lastGroup = null;
       MENU.forEach(m => {
         if (!m.roles.includes(currentRole)) return;
         if (m.group && m.group !== lastGroup) {
@@ -342,7 +364,7 @@
         .sort((a,b) => b[1]-a[1])
         .map(([j, n]) => `
           <div class="flex items-center gap-2 text-xs">
-            <span class="w-20 truncate text-slate-600" title="${j}">${j}</span>
+            <span class="w-24 truncate text-slate-600" title="${j}">${j}</span>
             <div class="flex-1 progress-bar"><div style="width:${(n/maxJenjang)*100}%;background:#dc2626"></div></div>
             <span class="w-8 text-right font-semibold text-slate-700">${n}</span>
           </div>`).join('');
@@ -444,7 +466,6 @@
 
     } catch (err) {
       console.error('Dashboard load error:', err);
-      // Tampilkan indikator error ringan di semua card
       ['statTotalTim','statTotalSekolah','statTotalPos','statTotalRubrik','statTotalJuri',
        'statTotalPenugasan','statTotalPenilaian','statTotalBerita'].forEach(id => setText(id, '!'));
     }
