@@ -75,7 +75,7 @@
     html.dark .hero-deco-amber { background-color: #78350F; }
   </style>
 </head>
-<body class="halaman-root bg-slate-50 min-h-screen flex flex-col">
+<body class="halaman-root bg-slate-50 dark:bg-slate-900 min-h-screen flex flex-col transition-colors duration-300">
 
   <!-- ==================== HEADER ==================== -->
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
@@ -99,11 +99,11 @@
   </header>
 
   <!-- ==================== RUNNING TEXT ==================== -->
-  <div id="runningTextContainer" class="bg-yellow-50 border-b border-yellow-200 py-2 overflow-hidden hidden">
+  <div id="runningTextContainer" class="bg-yellow-50 dark:bg-yellow-900/30 border-b border-yellow-200 dark:border-yellow-700 py-2 overflow-hidden hidden">
     <div class="max-w-6xl mx-auto flex items-center gap-3 px-4">
       <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap animate-pulse">📢 INFO TERBARU</span>
       <div class="overflow-hidden flex-1">
-        <a href="publik/berita.html" id="linkBerita" class="animate-marquee text-sm text-slate-700 font-medium hover:text-red-600 transition-colors">
+        <a href="publik/berita.html" id="linkBerita" class="animate-marquee text-sm text-slate-700 dark:text-slate-300 font-medium hover:text-red-600 transition-colors">
           Memuat berita...
         </a>
       </div>
@@ -123,7 +123,7 @@
       
       <!-- KIRI: Teks -->
       <div class="text-center md:text-left">
-        <span class="hero-anim-1 inline-block bg-red-100 text-red-700 text-xs md:text-sm font-bold px-4 py-1.5 rounded-full mb-4 border border-red-200">
+        <span class="hero-anim-1 inline-block bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 text-xs md:text-sm font-bold px-4 py-1.5 rounded-full mb-4 border border-red-200 dark:border-red-800">
           ✨ Terintegrasi &amp; Paperless
         </span>
         
@@ -151,7 +151,7 @@
       </div>
 
       <!-- KANAN: Gambar + Animasi -->
-      <div class="hero-anim-4 relative flex items-center justify-center">
+      <div class="hero-anim-4 relative flex items-center justify-center mt-8 md:mt-0">
         <!-- Ring berdenyut di belakang gambar -->
         <div class="absolute inset-0 flex items-center justify-center">
           <div class="w-72 h-72 md:w-96 md:h-96 rounded-full relative">
@@ -159,14 +159,25 @@
           </div>
         </div>
         
-        <!-- Gambar Utama (melayang) -->
+        <!-- Gambar Utama (melayang & ganti otomatis saat ganti tema) -->
         <div class="hero-float relative z-10">
+          
+          <!-- Logo untuk Mode Terang -->
           <img 
-            src="assets/img/hero-pmi.png" 
-            alt="Ilustrasi Jumbara PMI" 
-            class="w-64 md:w-96 h-auto object-contain drop-shadow-2xl rounded-2xl"
-            onerror="this.onerror=null; this.src='https://via.placeholder.com/400x400/D32F2F/FFFFFF?text=Jumbara+PMI';"
+            src="assets/img/hero-pmi-light.png" 
+            alt="Logo Jumbara PMI Terang" 
+            class="w-72 md:w-[28rem] h-auto object-contain drop-shadow-2xl rounded-2xl block dark:hidden"
+            onerror="this.onerror=null; this.src='https://via.placeholder.com/500x500/D32F2F/FFFFFF?text=Jumbara+PMI';"
           >
+          
+          <!-- Logo untuk Mode Gelap -->
+          <img 
+            src="assets/img/hero-pmi-dark.png" 
+            alt="Logo Jumbara PMI Gelap" 
+            class="w-72 md:w-[28rem] h-auto object-contain drop-shadow-2xl rounded-2xl hidden dark:block"
+            onerror="this.onerror=null; this.src='https://via.placeholder.com/500x500/D32F2F/FFFFFF?text=Jumbara+PMI';"
+          >
+
         </div>
       </div>
 
@@ -198,7 +209,7 @@
         const { data, error } = await window.supabaseClient
           .from('berita')
           .select('judul')
-          .eq('status', 'published') // ✅ FIX: 'published' (bukan 'publish')
+          .eq('status', 'published') // ✅ Pastikan di DB statusnya 'published'
           .order('published_at', { ascending: false })
           .limit(1)
           .maybeSingle();
