@@ -546,3 +546,10 @@ html.dark aside > div:first-child {
 header h1, header p, header a:not(.btn-theme-toggle) {
   color: #ffffff !important;
 }
+
+/* PAKSA INPUT JADI GELAP DI MODE GELAP */
+html.dark .input-field {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #475569 !important;
+}
