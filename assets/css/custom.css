@@ -468,3 +468,35 @@ body, header, footer, .form-card, .bg-white, .bg-slate-50, .bg-slate-900, .text-
 body.theme-changing {
   animation: themeFade 0.5s ease-in-out;
 }
+
+/* =========================================================
+   FIX: Memastikan Input Terbaca di Mode Terang & Gelap
+   ========================================================= */
+
+/* Warna input di Mode Terang (Default) */
+.input-field {
+  background-color: #ffffff;
+  color: #1e293b; /* Warna teks gelap */
+  border-color: #cbd5e1;
+}
+
+.input-field::placeholder {
+  color: #94a3b8;
+}
+
+/* Warna input di Mode Gelap */
+html.dark .input-field {
+  background-color: #334155 !important; /* Abu-abu gelap */
+  color: #ffffff !important; /* Teks putih */
+  border-color: #475569 !important; /* Border abu terang */
+}
+
+html.dark .input-field::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Fokus input di Mode Gelap */
+html.dark .input-field:focus {
+  border-color: var(--pmi-red) !important;
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3) !important;
+}
