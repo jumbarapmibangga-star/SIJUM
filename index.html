@@ -7,6 +7,7 @@
   
   <base href="./">
   
+  <!-- Anti-FOUC -->
   <script>
     if (localStorage.getItem('theme') === 'dark' || 
        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -21,6 +22,7 @@
   <link rel="stylesheet" href="assets/css/custom.css">
   
   <style>
+    /* Animasi Running Text */
     @keyframes marquee {
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
@@ -32,6 +34,11 @@
     }
     .animate-marquee:hover { animation-play-state: paused; }
 
+    /* Animasi Hero Section */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(30px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -50,7 +57,8 @@
       100% { transform: scale(1.1);  opacity: 0; }
     }
 
-    .hero-anim-1 { animation: slideUp 0.8s ease-out 0.1s both; }
+    /* Badge pakai FadeIn agar tidak melompat */
+    .hero-anim-1 { animation: fadeIn 1s ease-out 0.1s both; }
     .hero-anim-2 { animation: slideUp 0.8s ease-out 0.3s both; }
     .hero-anim-3 { animation: slideUp 0.8s ease-out 0.5s both; }
     .hero-anim-4 { animation: slideInRight 1s ease-out 0.4s both; }
@@ -81,10 +89,7 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- Tombol Tema -->
         <button class="btn-theme-toggle text-xs px-2.5 py-1.5 bg-red-800 text-white border-red-600 hover:bg-red-900" onclick="toggleTheme()" aria-label="Ganti Tema"></button>
-        
-        <!-- Tombol Login: Putih dengan Teks Merah (Tegas) -->
         <a href="login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-bold text-sm md:text-base hover:bg-slate-100 transition shadow-sm border border-white">
           Login
         </a>
@@ -113,25 +118,26 @@
       <div class="hero-deco-amber absolute bottom-10 -right-20 w-80 h-80 bg-yellow-100 rounded-full opacity-40 blur-3xl"></div>
     </div>
 
-    <div class="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12 items-center relative z-10">
+    <div class="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-12 items-center relative z-10">
       
       <!-- KIRI: Teks -->
-      <div class="text-center md:text-left mt-4 md:mt-0">
+      <div class="text-center md:text-left mt-2 md:mt-0">
         
-        <div class="hero-anim-1 mb-4 md:mb-5">
+        <!-- Badge (Jarak dirapatkan) -->
+        <div class="hero-anim-1 mb-3 md:mb-4">
           <span class="inline-block bg-red-100 text-red-700 text-xs md:text-sm font-bold px-4 py-1.5 rounded-full border border-red-200">
             ✨ Terintegrasi &amp; Paperless
           </span>
         </div>
         
-        <!-- Judul: Merah Tua Tegas -->
+        <!-- Judul -->
         <h2 class="hero-anim-2 text-3xl md:text-5xl lg:text-6xl font-extrabold text-red-800 mb-3 md:mb-4 leading-tight">
           Sistem Informasi<br>
           <span class="text-red-600">Jumbara PMI</span><br>
           Purbalingga
         </h2>
         
-        <!-- Paragraf: Warna Gelap Tegas (Hitam/Abu Gelap) -->
+        <!-- Paragraf -->
         <p class="hero-anim-3 text-base md:text-lg text-gray-800 mb-6 md:mb-8 max-w-lg mx-auto md:mx-0">
           Portal resmi pendaftaran, verifikasi kontingen, penilaian juri, dan rekapitulasi hasil. 
           <span class="font-bold text-red-700">Satu platform untuk semua kebutuhan Jumbara.</span>
@@ -151,7 +157,7 @@
       </div>
 
       <!-- KANAN: Gambar -->
-      <div class="hero-anim-4 relative flex items-center justify-center mt-2 md:mt-0 pb-10 md:pb-0">
+      <div class="hero-anim-4 relative flex items-center justify-center mt-4 md:mt-0 pb-10 md:pb-0">
         <div class="absolute inset-0 flex items-center justify-center">
           <div class="w-56 h-56 md:w-96 md:h-96 rounded-full relative">
             <div class="hero-ring"></div>
