@@ -431,3 +431,40 @@ html.dark .admin-layout > main::-webkit-scrollbar-thumb {
 html.dark .admin-layout > main::-webkit-scrollbar-thumb:hover {
   background: #64748B;
 }
+/* ... (biarkan kode custom.css Anda yang lama di atas) ... */
+
+/* =========================================================
+   ANIMASI TRANSISI GANTI TEMA (TERANG <-> GELAP)
+   ========================================================= */
+
+/* 1. Transisi warna background & teks agar tidak kaku */
+body, header, footer, .form-card, .bg-white, .bg-slate-50, .bg-slate-900, .text-slate-800, nav, aside, main {
+  transition: background-color 0.5s ease-in-out, 
+              border-color 0.5s ease-in-out, 
+              color 0.5s ease-in-out !important;
+}
+
+/* 2. Animasi putar untuk ikon bulan/matahari saat diklik */
+@keyframes rotateIcon {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(0.8); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.btn-theme-toggle svg {
+  transition: transform 0.3s ease;
+}
+
+.btn-theme-toggle:active svg {
+  animation: rotateIcon 0.5s ease-out;
+}
+
+/* 3. Animasi Fade-in untuk seluruh halaman saat ganti tema */
+@keyframes themeFade {
+  from { opacity: 0.85; }
+  to { opacity: 1; }
+}
+
+body.theme-changing {
+  animation: themeFade 0.5s ease-in-out;
+}
