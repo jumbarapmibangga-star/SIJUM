@@ -7,14 +7,22 @@
   
   <base href="./">
   
+  <!-- Anti-FOUC: Cegah layar berkedip saat mode gelap -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark' || 
+       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#B91C1C">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=11.1">
   
   <style>
-    /* Animasi Running Text */
+    /* === Animasi Running Text === */
     @keyframes marquee {
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
@@ -27,11 +35,49 @@
     .animate-marquee:hover {
       animation-play-state: paused;
     }
+
+    /* === Animasi Hero Section === */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(50px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-15px); }
+    }
+    @keyframes pulseRing {
+      0%   { transform: scale(0.95); opacity: 0.7; }
+      70%  { transform: scale(1.1);  opacity: 0; }
+      100% { transform: scale(1.1);  opacity: 0; }
+    }
+
+    .hero-anim-1 { animation: slideUp 0.8s ease-out 0.1s both; }
+    .hero-anim-2 { animation: slideUp 0.8s ease-out 0.3s both; }
+    .hero-anim-3 { animation: slideUp 0.8s ease-out 0.5s both; }
+    .hero-anim-4 { animation: slideInRight 1s ease-out 0.4s both; }
+    .hero-float  { animation: floatY 4s ease-in-out infinite; }
+
+    .hero-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      border: 4px solid #D32F2F;
+      animation: pulseRing 3s ease-out infinite;
+    }
+
+    /* Dark mode: warna ring & dekorasi disesuaikan */
+    html.dark .hero-ring { border-color: #EF5350; }
+    html.dark .hero-deco-red   { background-color: #7F1D1D; }
+    html.dark .hero-deco-amber { background-color: #78350F; }
   </style>
 </head>
 <body class="halaman-root bg-slate-50 min-h-screen flex flex-col">
 
-  <!-- HEADER -->
+  <!-- ==================== HEADER ==================== -->
   <header class="bg-red-700 text-white p-3 md:p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto flex justify-between items-center">
       
@@ -41,10 +87,8 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <!-- Tombol Tema -->
-        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        </button>
+        <!-- Tombol Tema (ikon diisi otomatis oleh theme.js) -->
+        <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()" aria-label="Ganti Tema"></button>
         <!-- Tombol Login -->
         <a href="login.html" class="bg-white text-red-700 px-4 py-1.5 md:px-6 md:py-2 rounded font-semibold text-sm md:text-base hover:bg-slate-100 transition shadow-sm">
           Login
@@ -54,7 +98,7 @@
     </div>
   </header>
 
-  <!-- RUNNING TEXT BERITA -->
+  <!-- ==================== RUNNING TEXT ==================== -->
   <div id="runningTextContainer" class="bg-yellow-50 border-b border-yellow-200 py-2 overflow-hidden hidden">
     <div class="max-w-6xl mx-auto flex items-center gap-3 px-4">
       <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded whitespace-nowrap animate-pulse">📢 INFO TERBARU</span>
@@ -66,44 +110,86 @@
     </div>
   </div>
 
-  <!-- MAIN CONTENT -->
-  <main class="flex-1 flex flex-col items-center justify-center text-center p-6">
-    <div class="max-w-3xl animate-fade-in">
-      <h2 class="text-3xl md:text-5xl font-extrabold text-red-800 mb-4 leading-tight">
-        Sistem Informasi<br>Jumbara PMI Purbalingga
-      </h2>
-      <p class="text-base md:text-lg text-slate-600 mb-8">
-        Portal resmi pendaftaran, verifikasi kontingen, penilaian juri, dan rekapitulasi hasil Jumbara PMI Purbalingga. <span class="font-bold text-red-700">Terintegrasi dan paperless.</span>
-      </p>
+  <!-- ==================== HERO SECTION ==================== -->
+  <main class="flex-1 flex items-center justify-center p-6 md:p-12 relative overflow-hidden">
+    
+    <!-- Dekorasi Background (Blur) -->
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="hero-deco-red absolute top-20 -left-20 w-72 h-72 bg-red-100 rounded-full opacity-40 blur-3xl"></div>
+      <div class="hero-deco-amber absolute bottom-10 -right-20 w-96 h-96 bg-yellow-100 rounded-full opacity-40 blur-3xl"></div>
+    </div>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="dashboard-aula.html" class="btn-primary text-lg px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
-          Lihat Papan Skor (Aula)
-        </a>
-        <a href="login.html" class="btn-secondary text-lg px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
-          Masuk Portal
-        </a>
+    <div class="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
+      
+      <!-- KIRI: Teks -->
+      <div class="text-center md:text-left">
+        <span class="hero-anim-1 inline-block bg-red-100 text-red-700 text-xs md:text-sm font-bold px-4 py-1.5 rounded-full mb-4 border border-red-200">
+          ✨ Terintegrasi &amp; Paperless
+        </span>
+        
+        <h2 class="hero-anim-2 text-3xl md:text-5xl lg:text-6xl font-extrabold text-red-800 dark:text-red-300 mb-4 leading-tight">
+          Sistem Informasi<br>
+          <span class="text-red-600 dark:text-red-400">Jumbara PMI</span><br>
+          Purbalingga
+        </h2>
+        
+        <p class="hero-anim-3 text-base md:text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-lg mx-auto md:mx-0">
+          Portal resmi pendaftaran, verifikasi kontingen, penilaian juri, dan rekapitulasi hasil. 
+          <span class="font-bold text-red-700 dark:text-red-400">Satu platform untuk semua kebutuhan Jumbara.</span>
+        </p>
+
+        <div class="hero-anim-3 flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+          <a href="dashboard-aula.html" class="btn-primary text-base md:text-lg px-6 md:px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all inline-flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            Lihat Papan Skor
+          </a>
+          <a href="login.html" class="btn-secondary text-base md:text-lg px-6 md:px-8 py-3 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all inline-flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+            Masuk Portal
+          </a>
+        </div>
       </div>
+
+      <!-- KANAN: Gambar + Animasi -->
+      <div class="hero-anim-4 relative flex items-center justify-center">
+        <!-- Ring berdenyut di belakang gambar -->
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-72 h-72 md:w-96 md:h-96 rounded-full relative">
+            <div class="hero-ring"></div>
+          </div>
+        </div>
+        
+        <!-- Gambar Utama (melayang) -->
+        <div class="hero-float relative z-10">
+          <img 
+            src="assets/img/hero-pmi.png" 
+            alt="Ilustrasi Jumbara PMI" 
+            class="w-64 md:w-96 h-auto object-contain drop-shadow-2xl rounded-2xl"
+            onerror="this.onerror=null; this.src='https://via.placeholder.com/400x400/D32F2F/FFFFFF?text=Jumbara+PMI';"
+          >
+        </div>
+      </div>
+
     </div>
   </main>
 
-  <!-- FOOTER -->
-  <footer class="bg-white border-t p-4 text-center text-sm text-slate-500">
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="bg-white dark:bg-slate-800 border-t dark:border-slate-700 p-4 text-center text-sm text-slate-500 dark:text-slate-400">
     &copy; 2026 PMI Kabupaten Purbalingga. Hak Cipta Dilindungi.
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-client.js"></script>
-  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js?v=11.1"></script>
+  <script src="assets/js/theme.js?v=11.1"></script>
   <script>
-    // Registrasi Service Worker
+    // ==================== REGISTRASI SERVICE WORKER ====================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
       });
     }
 
-    // Ambil Berita Terbaru untuk Running Text
+    // ==================== RUNNING TEXT DARI SUPABASE ====================
     document.addEventListener('DOMContentLoaded', async () => {
       const container = document.getElementById('runningTextContainer');
       const linkBerita = document.getElementById('linkBerita');
@@ -112,7 +198,7 @@
         const { data, error } = await window.supabaseClient
           .from('berita')
           .select('judul')
-          .eq('status', 'publish')
+          .eq('status', 'published') // ✅ FIX: 'published' (bukan 'publish')
           .order('published_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -120,12 +206,10 @@
         if (error) throw error;
 
         if (data && data.judul) {
-          // Tampilkan container jika ada berita
           container.classList.remove('hidden');
           linkBerita.textContent = `📰 ${data.judul} — Klik untuk baca selengkapnya`;
           linkBerita.href = 'publik/berita.html';
         } else {
-          // Sembunyikan jika tidak ada berita
           container.classList.add('hidden');
         }
       } catch (err) {
