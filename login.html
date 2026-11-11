@@ -8,39 +8,48 @@
   <!-- ATURAN 1: BASE URL (ROOT) -->
   <base href="./">
   
+  <!-- Anti-FOUC: Cegah layar berkedip saat mode gelap -->
+  <script>
+    if (localStorage.getItem('theme') === 'dark' || 
+       (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  
   <!-- ATURAN 4: FAVICON & CSS -->
   <link rel="icon" type="image/png" href="assets/img/favicon.png">
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#B91C1C">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="assets/css/custom.css">
+  <link rel="stylesheet" href="assets/css/custom.css?v=11.1">
 </head>
-<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50">
+<body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
 
   <!-- KARTU LOGIN -->
-  <div class="bg-white w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 form-card animate-fade-in">
+  <div class="bg-white dark:bg-slate-800 w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 form-card animate-fade-in">
     
     <!-- Header Card (Logo & Judul) -->
     <div class="text-center mb-8">
       <div class="flex justify-center mb-3">
         <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-12 md:h-14 w-auto object-contain animate-heartbeat">
       </div>
-      <h1 class="text-2xl font-bold text-red-700">Jumbara PMI</h1>
-      <p class="text-sm text-slate-500">Kabupaten Purbalingga</p>
+      <h1 class="text-2xl font-bold text-red-700 dark:text-red-400">Jumbara PMI</h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Kabupaten Purbalingga</p>
     </div>
 
     <!-- Form Login -->
     <form id="loginForm" class="space-y-5">
       <div>
-        <label for="username" class="input-label">Username / Email</label>
-        <input type="text" id="username" required placeholder="Masukkan username" class="input-field">
+        <label for="username" class="input-label dark:text-slate-300">Username / Email</label>
+        <input type="text" id="username" required placeholder="Masukkan username" class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white" autocomplete="username">
       </div>
       <div>
-        <label for="password" class="input-label">Password</label>
-        <input type="password" id="password" required placeholder="••••••••" class="input-field">
+        <label for="password" class="input-label dark:text-slate-300">Password</label>
+        <input type="password" id="password" required placeholder="••••••••" class="input-field dark:bg-slate-700 dark:border-slate-600 dark:text-white" autocomplete="current-password">
       </div>
 
       <!-- Pesan Error -->
-      <div id="errorMsg" class="hidden text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-200"></div>
+      <div id="errorMsg" role="alert" aria-live="polite" class="hidden text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 p-3 rounded-lg border border-red-200 dark:border-red-800"></div>
 
       <!-- Tombol Submit -->
       <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -49,22 +58,22 @@
     </form>
 
     <!-- Tautan Daftar Kontingen & Kembali -->
-    <div class="mt-8 pt-6 border-t border-slate-200 text-center space-y-3">
+    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center space-y-3">
       <div>
-        <p class="text-sm text-slate-500 mb-2">Belum punya akun Kontingen?</p>
-        <a href="daftar.html" class="btn-secondary w-full block py-2 text-sm text-center"> Daftar Kontingen Baru</a>
+        <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">Belum punya akun Kontingen?</p>
+        <a href="daftar.html" class="btn-secondary w-full block py-2 text-sm text-center">Daftar Kontingen Baru</a>
       </div>
       <div>
-        <a href="index.html" class="text-sm text-slate-500 hover:text-red-600 transition-colors">&larr; Kembali ke Beranda</a>
+        <a href="index.html" class="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors">&larr; Kembali ke Beranda</a>
       </div>
     </div>
   </div>
 
   <!-- ATURAN 3: PATH RELATIF UNTUK SCRIPT -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="assets/js/supabase-client.js"></script>
-  <script src="assets/js/auth.js"></script>
-  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/supabase-client.js?v=11.1"></script>
+  <script src="assets/js/auth.js?v=11.1"></script>
+  <script src="assets/js/theme.js?v=11.1"></script>
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -78,11 +87,14 @@
       errDiv.classList.add('hidden');
 
       try {
+        // loginUser sudah menggunakan translateAuthError dari auth.js
         await loginUser(username, password);
+        
+        // Ambil session untuk cek role
         const { data: { session } } = await window.supabaseClient.auth.getSession();
         const role = session.user.app_metadata?.role;
 
-        // ATURAN 6: REDIRECT PAKAI BASE_URL / PATH RELATIF
+        // Redirect sesuai role
         if (['super_admin', 'koordinator', 'admin_event'].includes(role)) {
           window.location.href = 'admin/dashboard.html';
         } else if (role === 'juri') {
@@ -94,6 +106,7 @@
         }
 
       } catch (error) {
+        // auth.js sudah menerjemahkan error ke bahasa Indonesia
         errDiv.textContent = error.message; 
         errDiv.classList.remove('hidden');
         btn.innerHTML = 'Masuk'; 
