@@ -553,3 +553,9 @@ html.dark .input-field {
   color: #ffffff !important;
   border-color: #475569 !important;
 }
+/* PAKSA INPUT JADI GELAP DI MODE GELAP */
+html.dark .input-field {
+  background-color: #334155 !important; /* Warna abu gelap */
+  color: #ffffff !important; /* Teks putih */
+  border-color: #475569 !important;
+}
