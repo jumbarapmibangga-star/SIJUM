@@ -1,20 +1,26 @@
 {
   "name": "Jumbara PMI Purbalingga",
   "short_name": "JumbaraPMI",
-  "start_url": "/",
+  "description": "Sistem Informasi Jumbara PMI Kabupaten Purbalingga",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#F4F6F8",
   "theme_color": "#B71C1C",
+  "lang": "id",
   "icons": [
     {
-      "src": "/assets/img/logo-pmi.png",
+      "src": "assets/img/logo-pmi.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "/assets/img/logo-pmi.png",
+      "src": "assets/img/logo-pmi.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
