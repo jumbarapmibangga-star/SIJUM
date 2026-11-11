@@ -1,5 +1,5 @@
 /* =========================================================
-   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v11.3)
+   JUMBARA PMI PURBALINGGA - CENTRALIZED CSS (v12.0)
    ATURAN EMAS: Mobile-First, Dark Mode, Header Merah, Running Text
    ========================================================= */
 
@@ -62,6 +62,8 @@ body {
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
   font-family: inherit;
+  background-color: #ffffff; /* Putih di mode terang */
+  color: #1e293b;
 }
 .input-field:focus {
   border-color: var(--pmi-red);
@@ -82,10 +84,6 @@ body {
   border: 1px solid #E0E0E0;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-.form-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -5px rgba(0, 0, 0, 0.04);
-}
 
 /* --- 4. Komponen Tabel --- */
 .table-custom {
@@ -99,20 +97,9 @@ body {
   color: #455A64;
   font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
-.table-custom th {
-  padding: 1rem;
-  font-weight: 700;
-}
-.table-custom td {
-  padding: 1rem;
-  border-bottom: 1px solid #EEEEEE;
-  font-size: 0.9rem;
-}
-.table-custom tbody tr:hover {
-  background-color: #FAFAFA;
-}
+.table-custom th { padding: 1rem; font-weight: 700; }
+.table-custom td { padding: 1rem; border-bottom: 1px solid #EEEEEE; font-size: 0.9rem; }
 
 /* --- 5. Sidebar Menu --- */
 .sidebar-link {
@@ -127,33 +114,12 @@ body {
   margin-bottom: 0.25rem;
   text-decoration: none;
 }
-.sidebar-link:hover {
-  background-color: #FFEBEE;
-  color: var(--pmi-red);
-}
-.sidebar-link.active {
-  background-color: var(--pmi-red);
-  color: white;
-  box-shadow: 0 2px 4px rgba(211, 47, 47, 0.2);
-}
+.sidebar-link:hover { background-color: #FFEBEE; color: var(--pmi-red); }
+.sidebar-link.active { background-color: var(--pmi-red); color: white; }
 
 /* --- 6. Badge Status --- */
-.badge-active {
-  background-color: #E8F5E9;
-  color: #2E7D32;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 9999px;
-}
-.badge-locked {
-  background-color: #FFEBEE;
-  color: var(--pmi-red-dark);
-  padding: 0.25rem 0.6rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  border-radius: 9999px;
-}
+.badge-active { background-color: #E8F5E9; color: #2E7D32; padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; }
+.badge-locked { background-color: #FFEBEE; color: var(--pmi-red-dark); padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 700; border-radius: 9999px; }
 
 /* --- 7. Tombol Ganti Tema --- */
 .btn-theme-toggle {
@@ -171,391 +137,118 @@ body {
   color: #475569;
   border: 1px solid #CBD5E1;
 }
-.btn-theme-toggle:hover {
-  background-color: #E2E8F0;
-}
+.btn-theme-toggle:hover { background-color: #E2E8F0; }
 
 /* =========================================================
    ANIMASI & EFEK VISUAL
    ========================================================= */
-@keyframes heartbeat {
-  0% { transform: scale(1); }
-  14% { transform: scale(1.1); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.1); }
-  70% { transform: scale(1); }
-}
-.animate-heartbeat {
-  animation: heartbeat 2s infinite ease-in-out;
-}
+@keyframes heartbeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.animate-heartbeat { animation: heartbeat 2s infinite ease-in-out; }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in { animation: fadeInUp 0.6s ease-out forwards; }
 
 /* =========================================================
-   ATURAN EMAS NO. 4 & 5: DARK MODE (MODE GELAP)
+   DARK MODE (MODE GELAP)
    ========================================================= */
-
-/* Background Utama Gelap */
-html.dark body {
-  background-color: #121212;
-  color: #ECEFF1;
-}
-
-/* Kartu & Form Gelap */
-html.dark .bg-white, html.dark .form-card {
-  background-color: #1E1E1E !important;
-  border-color: #333333 !important;
-}
-
-/* Teks Gelap */
+html.dark body { background-color: #121212; color: #ECEFF1; }
+html.dark .bg-white, html.dark .form-card { background-color: #1E1E1E !important; border-color: #333333 !important; }
 html.dark .text-slate-800, html.dark .text-slate-700 { color: #ECEFF1 !important; }
 html.dark .text-slate-600 { color: #B0BEC5 !important; }
-html.dark .border-slate-200 { border-color: #333333 !important; }
 
-/* Tabel Gelap */
+/* Input di Mode Gelap */
+html.dark .input-field { 
+  background-color: #334155 !important; 
+  border-color: #475569 !important; 
+  color: #ffffff !important; 
+}
+html.dark .input-field::placeholder { color: #94a3b8 !important; }
+html.dark .input-label { color: #B0BEC5 !important; }
+
+/* Tabel di Mode Gelap */
 html.dark .table-custom thead { background-color: #2C2C2C; color: #B0BEC5; border-color: #424242; }
 html.dark .table-custom td { border-color: #333333; }
-html.dark .table-custom tbody tr:hover { background-color: #2C2C2C; }
 
-/* Input Gelap */
-html.dark .input-field { background-color: #2C2C2C; border-color: #424242; color: white; }
-html.dark .input-label { color: #B0BEC5; }
-
-/* Sidebar Menu Gelap */
+/* Sidebar di Mode Gelap */
 html.dark .sidebar-link { color: #B0BEC5; }
 html.dark .sidebar-link:hover { background-color: #2C2C2C; color: #EF5350; }
 html.dark .sidebar-link.active { background-color: var(--pmi-red-dark); color: white; }
 
-/* Tombol Tema Gelap */
-html.dark .btn-theme-toggle {
-  background-color: #1E293B;
-  color: #CBD5E1;
-  border-color: #334155;
-}
-html.dark .btn-theme-toggle:hover {
-  background-color: #334155;
+/* Tombol Tema di Mode Gelap */
+html.dark .btn-theme-toggle { background-color: #1E293B; color: #CBD5E1; border-color: #334155; }
+
+/* =========================================================
+   PAKSA HEADER SELALU MERAH (ATURAN EMAS)
+   ========================================================= */
+header, html.dark header {
+  background-color: #B71C1C !important; 
+  color: #ffffff !important;
 }
 
 /* =========================================================
-   ATURAN EMAS NO. 5: PAKSA HEADER TETAP MERAH DI MODE GELAP
+   FIX: TOMBOL LOGIN DI HEADER
    ========================================================= */
-
-/* Header Mobile & Sidebar Desktop */
-html.dark .md\:hidden > div,
-html.dark aside > div:first-child,
-html.dark #header-juri {
-  background-color: #8B0000 !important; /* Merah Gelap PMI */
-  border-color: #5a0000 !important;
+/* Memastikan tombol login selalu putih dengan teks merah */
+header a[href="login.html"] {
+  background-color: #ffffff !important;
+  color: #B71C1C !important;
+  border: 2px solid #ffffff !important;
 }
-
-/* Teks di dalam header dipaksa Putih */
-html.dark .md\:hidden > div h1,
-html.dark .md\:hidden > div p,
-html.dark aside > div:first-child h1,
-html.dark aside > div:first-child p,
-html.dark #header-juri h1,
-html.dark #header-juri p {
-  color: #FFFFFF !important;
-}
-
-/* Tombol Keluar di Header disesuaikan */
-html.dark .md\:hidden > div button#btnLogoutMobile,
-html.dark #header-juri #btnLogoutMobile {
-  background-color: #FFEBEE !important;
-  color: #8B0000 !important;
-  border-color: #ef9a9a !important;
-}
-
-/* Tombol Tema (Kapsul) di Header */
-html.dark .md\:hidden > div .btn-theme-toggle {
-  background-color: #5a0000 !important;
-  color: #FFEBEE !important;
-  border-color: #8B0000 !important;
+html.dark header a[href="login.html"] {
+  background-color: #ffffff !important;
+  color: #B71C1C !important;
+  border: 2px solid #ffffff !important;
 }
 
 /* =========================================================
-   PERBAIKAN: RUNNING TEXT DI MODE GELAP
+   FIX: BACKGROUND PUTIH BERSIH DI MODE TERANG
    ========================================================= */
-html.dark #runningTextContainer {
-  background-color: #1E293B !important;
-  border-color: #334155 !important;
-}
-
-html.dark #linkBerita {
-  color: #E2E8F0 !important;
-}
-
-html.dark #linkBerita:hover {
-  color: #F87171 !important;
-}
-
-/* Pastikan background halaman root ikut gelap */
-html.dark body.halaman-root {
-  background-color: #121212 !important;
-  color: #ECEFF1 !important;
-}
-
-/* =========================================================
-   ============  TAMBAHAN v11.1 (DASHBOARD LAYOUT)  =========
-   =========================================================
-   Tambahan di bawah ini TIDAK mengubah apa pun di atas.
-   Hanya menambah fitur yang dibutuhkan halaman admin/dashboard.
-   ========================================================= */
-
-/* --- A. LAYOUT ADMIN: Sidebar Fixed, Main Scroll --- */
-.admin-layout {
-  height: 100vh;
-  overflow: hidden;
-}
-.admin-layout > aside {
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  flex-shrink: 0;
-}
-.admin-layout > main {
-  height: 100vh;
-  overflow-y: auto;
-}
-
-/* Scrollbar halus khusus <main> dashboard
-   (override global ::-webkit-scrollbar { display:none } di atas) */
-.admin-layout > main::-webkit-scrollbar {
-  display: block;
-  width: 8px;
-}
-.admin-layout > main::-webkit-scrollbar-track {
-  background: transparent;
-}
-.admin-layout > main::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
-  border-radius: 4px;
-}
-.admin-layout > main::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
-}
-
-/* Mobile: matikan fixed layout → kembali normal scroll */
-@media (max-width: 767px) {
-  .admin-layout { height: auto; overflow: visible; }
-  .admin-layout > main { height: auto; overflow-y: visible; }
-  /* tetap sembunyikan scrollbar di mobile sesuai aturan global */
-  .admin-layout > main::-webkit-scrollbar { display: none; }
-}
-
-/* --- B. KARTU STATISTIK (hover lift lebih halus dari .form-card) --- */
-.stat-card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12);
-}
-
-/* --- C. PROGRESS BAR --- */
-.progress-bar {
-  height: 0.5rem;
-  border-radius: 9999px;
-  background: #E2E8F0;
-  overflow: hidden;
-}
-.progress-bar > div {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.4s ease;
-}
-
-/* --- D. SKELETON LOADING --- */
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-.skeleton {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.2s infinite;
-  border-radius: 0.5rem;
-}
-
-/* --- E. HELPER TEXT (untuk form register) --- */
-.helper {
-  font-size: 0.75rem;
-  line-height: 1rem;
-  color: #64748B;
-  margin-top: 0.25rem;
-  transition: color 0.15s ease;
-}
-.helper.error { color: #DC2626; }
-.helper.ok    { color: #16A34A; }
-
-/* --- F. VALIDASI INPUT (border merah/hijau) --- */
-.input-field.invalid,
-input.invalid,
-select.invalid {
-  border-color: #DC2626 !important;
-  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
-}
-.input-field.valid,
-input.valid {
-  border-color: #16A34A !important;
-}
-
-/* --- G. DARK MODE: tambahan untuk komponen baru di atas --- */
-html.dark .stat-card:hover {
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
-}
-html.dark .progress-bar {
-  background: #334155;
-}
-html.dark .skeleton {
-  background: linear-gradient(90deg, #1E293B 25%, #334155 50%, #1E293B 75%);
-  background-size: 200% 100%;
-}
-html.dark .helper {
-  color: #94A3B8;
-}
-html.dark .helper.error { color: #F87171; }
-html.dark .helper.ok    { color: #4ADE80; }
-html.dark .admin-layout > main::-webkit-scrollbar-thumb {
-  background: #475569;
-}
-html.dark .admin-layout > main::-webkit-scrollbar-thumb:hover {
-  background: #64748B;
-}
-/* ... (biarkan kode custom.css Anda yang lama di atas) ... */
-
-/* =========================================================
-   ANIMASI TRANSISI GANTI TEMA (TERANG <-> GELAP)
-   ========================================================= */
-
-/* 1. Transisi warna background & teks agar tidak kaku */
-body, header, footer, .form-card, .bg-white, .bg-slate-50, .bg-slate-900, .text-slate-800, nav, aside, main {
-  transition: background-color 0.5s ease-in-out, 
-              border-color 0.5s ease-in-out, 
-              color 0.5s ease-in-out !important;
-}
-
-/* 2. Animasi putar untuk ikon bulan/matahari saat diklik */
-@keyframes rotateIcon {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(0.8); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-.btn-theme-toggle svg {
-  transition: transform 0.3s ease;
-}
-
-.btn-theme-toggle:active svg {
-  animation: rotateIcon 0.5s ease-out;
-}
-
-/* 3. Animasi Fade-in untuk seluruh halaman saat ganti tema */
-@keyframes themeFade {
-  from { opacity: 0.85; }
-  to { opacity: 1; }
-}
-
-body.theme-changing {
-  animation: themeFade 0.5s ease-in-out;
-}
-
-/* =========================================================
-   FIX: Memastikan Input Terbaca di Mode Terang & Gelap
-   ========================================================= */
-
-/* Warna input di Mode Terang (Default) */
-.input-field {
-  background-color: #ffffff;
-  color: #1e293b; /* Warna teks gelap */
-  border-color: #cbd5e1;
-}
-
-.input-field::placeholder {
-  color: #94a3b8;
-}
-
-/* Warna input di Mode Gelap */
-html.dark .input-field {
-  background-color: #334155 !important; /* Abu-abu gelap */
-  color: #ffffff !important; /* Teks putih */
-  border-color: #475569 !important; /* Border abu terang */
-}
-
-html.dark .input-field::placeholder {
-  color: #94a3b8 !important;
-}
-
-/* Fokus input di Mode Gelap */
-html.dark .input-field:focus {
-  border-color: var(--pmi-red) !important;
-  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3) !important;
-}
-
-/* =========================================================
-   ATURAN MUTLAK: PUTIH BERSIH & HEADER MERAH
-   (Mengalahkan class Tailwind di HTML)
-   ========================================================= */
-
-/* 1. Paksa Body Putih Bersih di Mode Terang */
-html:not(.dark) body,
-body.bg-slate-50,
-body.bg-white {
+html:not(.dark) body, body.bg-slate-50, body.bg-white {
   background-color: #ffffff !important;
 }
-
-/* 2. Paksa Body Hitam di Mode Gelap */
-html.dark body,
-html.dark body.bg-slate-900 {
+html.dark body, html.dark body.bg-slate-900 {
   background-color: #0f172a !important;
 }
 
-/* 3. Paksa Input Putih & Teks Gelap di Mode Terang */
-html:not(.dark) .input-field {
-  background-color: #ffffff !important;
-  color: #1e293b !important; /* Teks gelap agar terbaca */
-  border-color: #cbd5e1 !important;
+/* =========================================================
+   ANIMASI TRANSISI GANTI TEMA
+   ========================================================= */
+body, header, footer, .form-card, .bg-white, .bg-slate-50, .bg-slate-900, .text-slate-800, nav, aside, main {
+  transition: background-color 0.5s ease-in-out, border-color 0.5s ease-in-out, color 0.5s ease-in-out !important;
 }
 
-/* 4. Paksa Input Gelap & Teks Putih di Mode Gelap */
-html.dark .input-field {
-  background-color: #334155 !important;
-  color: #ffffff !important;
-  border-color: #475569 !important;
+body.theme-changing { animation: themeFade 0.5s ease-in-out; }
+@keyframes themeFade { from { opacity: 0.85; } to { opacity: 1; } }
+
+/* =========================================================
+   LAYOUT ADMIN (SIDEBAR FIXED)
+   ========================================================= */
+.admin-layout { height: 100vh; overflow: hidden; }
+.admin-layout > aside { height: 100vh; position: sticky; top: 0; flex-shrink: 0; }
+.admin-layout > main { height: 100vh; overflow-y: auto; }
+.admin-layout > main::-webkit-scrollbar { display: block; width: 8px; }
+.admin-layout > main::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+@media (max-width: 767px) {
+  .admin-layout { height: auto; overflow: visible; }
+  .admin-layout > main { height: auto; overflow-y: visible; }
+  .admin-layout > main::-webkit-scrollbar { display: none; }
 }
 
-/* 5. PAKSA HEADER SELALU MERAH (Sesuai Aturan Emas No.5) */
-header,
-html.dark header,
-html.dark .md\:hidden > div,
-html.dark aside > div:first-child {
-  background-color: #B71C1C !important; /* Merah Gelap PMI */
-  color: #ffffff !important;
-}
+/* =========================================================
+   KOMPONEN TAMBAHAN (STAT CARD, HELPER, DLL)
+   ========================================================= */
+.stat-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.12); }
+html.dark .stat-card:hover { box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5); }
 
-/* 6. Pastikan Teks di Header Selalu Putih */
-header h1, header p, header a:not(.btn-theme-toggle) {
-  color: #ffffff !important;
-}
+.progress-bar { height: 0.5rem; border-radius: 9999px; background: #E2E8F0; overflow: hidden; }
+.progress-bar > div { height: 100%; border-radius: 9999px; transition: width 0.4s ease; }
+html.dark .progress-bar { background: #334155; }
 
-/* PAKSA INPUT JADI GELAP DI MODE GELAP */
-html.dark .input-field {
-  background-color: #1e293b !important;
-  color: #ffffff !important;
-  border-color: #475569 !important;
-}
-/* PAKSA INPUT JADI GELAP DI MODE GELAP */
-html.dark .input-field {
-  background-color: #334155 !important; /* Warna abu gelap */
-  color: #ffffff !important; /* Teks putih */
-  border-color: #475569 !important;
-}
+.helper { font-size: 0.75rem; line-height: 1rem; color: #64748B; margin-top: 0.25rem; }
+.helper.error { color: #DC2626; }
+.helper.ok { color: #16A34A; }
+html.dark .helper { color: #94A3B8; }
+
+.input-field.invalid, input.invalid, select.invalid { border-color: #DC2626 !important; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important; }
+.input-field.valid, input.valid { border-color: #16A34A !important; }
