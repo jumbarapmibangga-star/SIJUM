@@ -17,38 +17,48 @@
   <!-- HEADER MOBILE -->
   <div class="md:hidden relative z-50">
     <div class="bg-white border-b border-slate-200 shadow-sm sticky top-0 px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
-        <div>
-          <h1 class="text-sm font-bold text-red-700 leading-tight">Riwayat</h1>
-          <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none mt-0.5">Memuat...</p>
+      <div class="flex items-center gap-3">
+        <button id="btnMobileMenu" class="p-2 text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-8 w-auto object-contain animate-heartbeat">
+          <div>
+            <h1 class="text-sm font-bold text-red-700 leading-tight">Riwayat</h1>
+            <p id="userNameDisplayMobile" class="text-[10px] text-slate-500 leading-none mt-0.5">Memuat...</p>
+          </div>
         </div>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-2">
         <button class="btn-theme-toggle text-xs px-2.5 py-1.5" onclick="toggleTheme()">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         </button>
-        <a href="juri/pos.html" class="text-xs font-bold bg-red-50 text-red-700 px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Kembali</a>
+        <button id="btnLogoutMobile" class="text-xs font-bold bg-red-50 text-red-700 px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition-colors">Keluar</button>
       </div>
+    </div>
+    <div id="mobileMenuDropdown" class="hidden bg-white border-b border-slate-200 shadow-lg absolute w-full">
+      <nav class="flex flex-col p-4 space-y-2" id="navMenuMobile"></nav>
     </div>
   </div>
 
   <!-- SIDEBAR DESKTOP -->
   <aside class="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col min-h-screen shadow-sm z-10">
     <div class="p-5 text-white shadow-md" style="background-color: #B71C1C;">
-      <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
-      <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+      <div class="flex items-center space-x-3">
+        <img src="assets/img/logo-pmi.png" alt="Logo PMI" class="h-10 w-auto object-contain animate-heartbeat">
+        <div>
+          <h1 class="text-lg font-bold tracking-wide">Juri PMI</h1>
+          <p id="userNameDisplay" class="text-xs text-red-100">Memuat...</p>
+        </div>
+      </div>
     </div>
-    <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-      <a href="juri/pos.html" class="sidebar-link">Daftar Pos Saya</a>
-      <a href="juri/riwayat.html" class="sidebar-link active">Riwayat Penilaian</a>
-    </nav>
+    <nav class="flex-1 p-4 space-y-1 overflow-y-auto" id="navMenu"></nav>
     <div class="p-4 border-t border-slate-200 flex justify-between items-center">
       <button class="btn-theme-toggle" onclick="toggleTheme()">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
         <span>Mode Gelap</span>
       </button>
-      <button id="btnLogout" class="text-sm font-semibold text-red-600">Keluar</button>
+      <button id="btnLogout" class="text-sm font-semibold text-red-600 hover:text-red-800 transition-colors">Keluar</button>
     </div>
   </aside>
 
@@ -99,11 +109,23 @@
       if (!auth) return;
 
       document.getElementById('btnLogout').addEventListener('click', logoutUser);
+      document.getElementById('btnLogoutMobile').addEventListener('click', logoutUser);
       document.getElementById('btnTutupModal').addEventListener('click', () => {
         document.getElementById('modalCetak').classList.add('hidden');
       });
       document.getElementById('btnCetakBt').addEventListener('click', cetakViaBluetooth);
       document.getElementById('btnCetakPdf').addEventListener('click', cetakViaBrowser);
+
+      // Hamburger mobile
+      const btnMenu = document.getElementById('btnMobileMenu');
+      const dropdown = document.getElementById('mobileMenuDropdown');
+      btnMenu.addEventListener('click', () => dropdown.classList.toggle('hidden'));
+
+      // Render menu
+      const menuDesktop = document.getElementById('navMenu');
+      const menuMobile  = document.getElementById('navMenuMobile');
+      menuDesktop.innerHTML = await renderMenu(auth.role, 'riwayat');
+      menuMobile.innerHTML  = await renderMenu(auth.role, 'riwayat');
 
       const { data: juri } = await window.supabaseClient.from('juri').select('id, nama').eq('user_id', auth.user.id).single();
       document.getElementById('userNameDisplay').textContent = juri.nama;
