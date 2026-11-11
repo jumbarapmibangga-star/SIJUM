@@ -24,56 +24,50 @@
 <body class="halaman-root min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
 
   <!-- KARTU LOGIN -->
-  <div class="bg-white dark:bg-slate-800 w-full max-w-md p-8 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 form-card animate-fade-in relative z-10">
+  <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 form-card animate-fade-in relative z-10 overflow-hidden">
     
-    <!-- Header Card -->
-    <div class="text-center mb-6">
-      
-      <!-- LOGO PMI DENGAN LATAR MERAH (AGAR TULISAN HITAM TERBACA) -->
+    <!-- Header Card (Kotak Merah di bagian atas kartu) -->
+    <div class="bg-red-700 p-6 text-center">
       <div class="flex justify-center mb-3">
-        <div class="bg-red-700 p-2 rounded-lg shadow-sm">
-          <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-12 md:h-14 w-auto object-contain animate-heartbeat">
+        <img src="assets/img/logo-pmi.png" alt="Palang Merah Indonesia" class="h-14 w-auto object-contain animate-heartbeat bg-white p-1 rounded-full">
+      </div>
+      <h1 class="text-2xl font-bold text-white">Jumbara PMI</h1>
+      <p class="text-sm text-red-100">Kabupaten Purbalingga</p>
+    </div>
+
+    <div class="p-6">
+      <!-- Form Login -->
+      <form id="loginForm" class="space-y-5">
+        <div>
+          <label for="username" class="input-label dark:text-slate-300">Username / Email</label>
+          <input type="text" id="username" required placeholder="Masukkan username" class="input-field bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white" autocomplete="username">
+        </div>
+        <div>
+          <label for="password" class="input-label dark:text-slate-300">Password</label>
+          <input type="password" id="password" required placeholder="••••••••" class="input-field bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white" autocomplete="current-password">
+        </div>
+
+        <!-- Pesan Error -->
+        <div id="errorMsg" role="alert" aria-live="polite" class="hidden text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 p-3 rounded-lg border border-red-200 dark:border-red-800"></div>
+
+        <!-- Tombol Submit -->
+        <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
+          Masuk
+        </button>
+      </form>
+
+      <!-- Tautan -->
+      <div class="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 text-center space-y-3">
+        <div>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">Belum punya akun Kontingen?</p>
+          <a href="daftar.html" class="btn-secondary w-full block py-2 text-sm text-center dark:bg-slate-800 dark:text-red-400 dark:border-red-400">Daftar Kontingen Baru</a>
+        </div>
+        <div>
+          <a href="index.html" class="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors">&larr; Kembali ke Beranda</a>
         </div>
       </div>
-      
-      <h1 class="text-2xl font-bold text-red-700 dark:text-red-400">Jumbara PMI</h1>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Kabupaten Purbalingga</p>
-      
-      <!-- TOMBOL TEMA -->
-      <button class="btn-theme-toggle mx-auto flex items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-xs font-semibold" onclick="toggleTheme()" aria-label="Ganti Tema"></button>
     </div>
 
-    <!-- Form Login -->
-    <form id="loginForm" class="space-y-5">
-      <div>
-        <label for="username" class="input-label dark:text-slate-300">Username / Email</label>
-        <!-- Input menggunakan class dark:bg-slate-700 agar tidak putih menyala di mode gelap -->
-        <input type="text" id="username" required placeholder="Masukkan username" class="input-field bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white" autocomplete="username">
-      </div>
-      <div>
-        <label for="password" class="input-label dark:text-slate-300">Password</label>
-        <input type="password" id="password" required placeholder="••••••••" class="input-field bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-white" autocomplete="current-password">
-      </div>
-
-      <!-- Pesan Error -->
-      <div id="errorMsg" role="alert" aria-live="polite" class="hidden text-sm text-red-600 bg-red-50 dark:bg-red-900/30 dark:text-red-400 p-3 rounded-lg border border-red-200 dark:border-red-800"></div>
-
-      <!-- Tombol Submit -->
-      <button type="submit" id="btnSubmit" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
-        Masuk
-      </button>
-    </form>
-
-    <!-- Tautan -->
-    <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center space-y-3">
-      <div>
-        <p class="text-sm text-slate-500 dark:text-slate-400 mb-2">Belum punya akun Kontingen?</p>
-        <a href="daftar.html" class="btn-secondary w-full block py-2 text-sm text-center dark:bg-slate-800 dark:text-red-400 dark:border-red-400">Daftar Kontingen Baru</a>
-      </div>
-      <div>
-        <a href="index.html" class="text-sm text-slate-500 dark:text-slate-400 hover:text-red-600 transition-colors">&larr; Kembali ke Beranda</a>
-      </div>
-    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
