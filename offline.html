@@ -20,13 +20,48 @@
     </div>
 
     <h1 class="text-2xl font-bold text-red-700 mb-2">Anda Sedang Offline</h1>
-    <p class="text-slate-500 mb-6">Koneksi internet terputus. Silakan periksa jaringan Anda dan coba lagi.</p>
+    <p class="text-slate-500 mb-6" id="statusMessage">
+      Koneksi internet terputus. Silakan periksa jaringan Anda dan coba lagi.
+    </p>
 
-    <button onclick="window.location.reload()" class="btn-primary w-full py-2.5">
+    <button id="btnReload" onclick="reloadPage()" class="btn-primary w-full py-2.5 disabled:opacity-50 disabled:cursor-not-allowed">
       Muat Ulang
     </button>
 
   </div>
+
+  <script>
+    function reloadPage() {
+      const btn = document.getElementById('btnReload');
+      const msg = document.getElementById('statusMessage');
+      
+      btn.innerHTML = 'Memuat...';
+      btn.disabled = true;
+      msg.textContent = 'Mencoba menghubungkan kembali...';
+      
+      // Beri jeda sedikit agar user lihat feedback, lalu reload
+      setTimeout(() => {
+        window.location.reload();
+      }, 300);
+    }
+
+    // Deteksi otomatis saat koneksi kembali online
+    window.addEventListener('online', () => {
+      const msg = document.getElementById('statusMessage');
+      msg.textContent = 'Koneksi kembali! Memuat ulang...';
+      msg.classList.remove('text-slate-500');
+      msg.classList.add('text-green-600', 'font-semibold');
+      setTimeout(() => window.location.reload(), 800);
+    });
+
+    // Deteksi saat koneksi terputus lagi (setelah sempat online)
+    window.addEventListener('offline', () => {
+      const msg = document.getElementById('statusMessage');
+      msg.textContent = 'Koneksi terputus kembali. Periksa jaringan Anda.';
+      msg.classList.remove('text-green-600', 'font-semibold');
+      msg.classList.add('text-slate-500');
+    });
+  </script>
 
 </body>
 </html>
