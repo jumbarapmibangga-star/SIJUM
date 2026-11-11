@@ -1,3 +1,5 @@
+// assets/js/theme.js
+
 function setTheme(isDark) {
   const html = document.documentElement;
   if (isDark) {
@@ -36,11 +38,16 @@ function updateThemeIcon() {
   });
 }
 
+// Saat halaman selesai dimuat, pastikan ikon tombol sudah sesuai tema saat ini.
+// (Pengecekan tema awal sudah dilakukan di <head> untuk mencegah layar berkedip)
 document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    setTheme(true);
-  } else {
-    setTheme(false);
-  }
+  updateThemeIcon();
+  
+  // Opsional: Pantau perubahan preferensi OS secara langsung
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    // Hanya ikuti OS jika user belum pernah memilih tema secara manual
+    if (!localStorage.getItem('theme')) {
+      setTheme(e.matches);
+    }
+  });
 });
