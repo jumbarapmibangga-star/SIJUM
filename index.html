@@ -212,7 +212,7 @@
         const { data, error } = await window.supabaseClient
           .from('berita')
           .select('judul')
-          .eq('status', 'published')
+          .eq('status', 'publish')
           .order('published_at', { ascending: false })
           .limit(1)
           .maybeSingle();
